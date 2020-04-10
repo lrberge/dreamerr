@@ -188,6 +188,14 @@ plot_cor(rnorm(100), line.opts = list(col = "dark"))
 
 Why sperating argument checking in two functions? First, it is because `check_arg_plus` requires (marginally, but still) more processing--so it's better to always use the faster function when appropriate, and use `check_arg_plus` only when needed. Second, and this is the main reason, it is because `dreamerr` allows the user to turn off argument checking with `setDreamerr_check(FALSE)`. If a call to a function works, then writting off all `check_arg` calls would also work. This is not the case for `check_arg_plus` since it re-assigns values to the arguments--and therefore can't be turned off.
 
+#### Developer mode
+
+Ironically, to improve perfomance (since its computational footprint should be very low), there is almost no error-handling in `check_arg`!
+
+But no worries: if you turn the developer mode on with `setDreamerr_dev.mode(TRUE)`, an in-depth check of any call to dreamerr's functions will be performed. This is especially useful if you are not familiar with the syntax. 
+
+Yet beware, this error checking is really in-depth, thus rather computationnally intensive (about half a millisecond). Thus the developer mode should be off the majority of the time.
+
  
 # Adding error-handling to `lm`
 

@@ -43,8 +43,9 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, call_u
     return(NULL)
   }
 
-  #  Additional information on the main types
+  #  Additional information on the main classes
   all_main_types = attr(all_reasons, "all_main_types")
+  if(length(all_main_types) == 0) all_main_types = rep("", length(all_types))
   all_main_types_ok = nchar(all_main_types) > 0
 
   # First, we create the error message with
@@ -52,7 +53,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, call_u
 
   all_requested_types = c()
 
-  for(i in seq_along(all_types_clean)){
+  for(i in seq_along(all_types)){
 
     add_len = add_dim = add_equality = FALSE
 
@@ -491,7 +492,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, call_u
   }
 
   if(all(all_requested_types == "invalid")){
-    stop_up(up = 2, "You must have at least one main type. None was found in '", type, "'. Please refer to the details, the examples or the vignette.")
+    stop_up(up = 2, "You must have at least one main class. None was found in '", type, "'. Please refer to the details, the examples or the vignette.")
   }
 
   if(missing(message) || is.null(message)){
@@ -773,7 +774,7 @@ message_in_between = function(n_expected, code, .value, .data){
       if(missing(.data)){
         N_TYPES = get("N_TYPES", parent.frame())
         if(N_TYPES == 1){
-          stop_up(up = 3, "You have only one main type in which you use the keyword '", code, "(data)'. In such cases the argument '.data' must NEVER be missing, which is currently the case. This is a big problem, please revise your code such that it never happens.")
+          stop_up(up = 3, "You have only one main class in which you use the keyword '", code, "(data)'. In such cases the argument '.data' must NEVER be missing, which is currently the case. This is a big problem, please revise your code such that it never happens.")
         }
 
 
@@ -1113,8 +1114,8 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' Full-fledged argument checking. Checks that the user provides arguments of the requested type (even complex) in a very simple way for the developer. Provides detailed and informative error messages for the user.
 #'
 #' @param .x An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
-#' @param .type A character string representing the requested type(s) of the arguments. This is a bit long so please look at the details section or the vignette for explanations. The main types are: i) \code{"scalar"} for scalars, i.e. vectors of length one, ii) \code{"vector"}, iii) \code{"matrix"}, iv) \code{"data.frame"}, v) \code{"list"}, vi) \code{"match"}, i.e. a character scalar that should partially match a vector of choices, vii) \code{"function"}, viii) \code{"list"}, ix) \code{"NA"}, i.e. a vector of length one identical to \code{NA}, x) \code{formula}, xi) \code{"class(my_class1, my_class2)"}, i.e. an object whose class is any of the ones in parentheses.
-#' You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object should be of length between \code{a} and \code{b} (you can leave \code{a} or \code{b} missing, \code{len(a)} means length *equal* to \code{a}), 2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the object to have between \code{a} and \code{b} arguments, 4) \code{"naok"} or \code{"na ok"} to allow the object to have NAs (for "scalar", "vector", "matrix" types), or \code{"nona"} (or \code{"no na"}) to restrict the object to have no NA (for "data.frame" only), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}: for numeric scalars/vectors/matrices, \code{GE{value}} restrics the object to have only values striclty greater than (greater or equal/strictly lower than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)}, for scalars/vectors/matrices you can estrict the type of the object by adding the expected type in parentheses: should it be numeric, logical, etc.
+#' @param .type A character string representing the requested type(s) of the arguments. This is a bit long so please look at the details section or the vignette for explanations. Each type is composed of one main class and restrictions (optional). Types can be separated with pipes (\code{|}). The main classes are: i) \code{"scalar"} for scalars, i.e. vectors of length one, ii) \code{"vector"}, iii) \code{"matrix"}, iv) \code{"data.frame"}, v) \code{"list"}, vi) \code{formula}, vii) \code{function}, viii) \code{charin}, i.e. a character string in a set of choices, viii) \code{"match"}, i.e. a character scalar that should partially match a vector of choices, x) \code{"class(my_class1, my_class2)"}, i.e. an object whose class is any of the ones in parentheses, xi) \code{"NA"}, something identical to \code{NA}.
+#' You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object should be of length between \code{a} and \code{b} (you can leave \code{a} or \code{b} missing, \code{len(a)} means length *equal* to \code{a}), \code{len(data)} and \code{len(value)} are also possible (see details), 2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the number of arguments, 4) \code{"na ok"} to allow the object to have NAs (for "scalar", "vector", "matrix" types), or \code{"no na"} to restrict the object to have no NA (for "data.frame" only), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}: for numeric scalars/vectors/matrices, \code{GE{expr}} restrics the object to have only values striclty greater than (greater or equal/strictly lower than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)}, for scalars/vectors/matrices you can restrict the type of the object by adding the expected type in parentheses: should it be numeric, logical, etc.
 #' @param .x1 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param .x2 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param .x3 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
@@ -1135,13 +1136,13 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'
 #' @section How to form a type:
 #'
-#' To write the expected type of an argument, you need to write the main type in combination with the type's options and restrictions (if any).
+#' To write the expected type of an argument, you need to write the main class in combination with the class's options and restrictions (if any).
 #'
-#' The syntax is: \code{"main_type option(s) restriction(s)"}
+#' The syntax is: \code{"main_class option(s) restriction(s)"}
 #'
-#' A type MUST have at least one main type. For example: in the type \code{"logical vector len(,2) NA OK"}, \code{vector} is the main type, \code{NA OK} is the option, and \code{logical} and \code{len(,2)} are restrictions
+#' A type MUST have at least one main class. For example: in the type \code{"logical vector len(,2) NA OK"}, \code{vector} is the main class, \code{NA OK} is the option, and \code{logical} and \code{len(,2)} are restrictions
 #'
-#' There are 13 main types that can be checked. On the left the keyword, on the right what is expected from the argument, and in square brackets the related section in the examples:
+#' There are 13 main classes that can be checked. On the left the keyword, on the right what is expected from the argument, and in square brackets the related section in the examples:
 #' \itemize{
 #' \item \code{scalar}: an atomic vector of length 1 [Section I)]
 #' \item \code{vector}: an atomic vector [Section IV)]
@@ -1155,7 +1156,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' \item \code{charin}: a character vector with values in a vector of choices [Section III)]
 #' \item \code{match}: a character vector with values in a vector of choices, partial matching enabled and only available in \code{check_arg_plus} [Section III)]
 #' \item \code{class}: a custom class [Section VI)]
-#' \item \code{NA}: a vector of length 1 equal to NA--does not support options nor restrictions, usually combined with other main types (see Section on combining multiple types) [Section VI)]
+#' \item \code{NA}: a vector of length 1 equal to NA--does not support options nor restrictions, usually combined with other main classes (see Section on combining multiple types) [Section VI)]
 #' }
 #'
 #' There are seven type options, they are not available for each types. Here what they do and the types to which they are associated:
@@ -1171,7 +1172,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'
 #' You can further add restrictions. There are roughly six types of restrictions. Here what they do and the types to which they are associated:
 #' \itemize{
-#' \item sub-type restriction: For atomic types (\code{scalar}, \code{vector}, \code{matrix} or \code{vmatrix}), you can restrict the underlying data to be of a specific sub-type. The simple sub-types are: i) \code{integer} (numeric without decimals and logicals), i') \code{strict integer} (numeric that can be converted to integer with \code{as.integer}, and not logicals), ii) \code{numeric}, iii) \code{factor}, iv) \code{logical} (a logical or a numeric equal to 0 or 1) and iv') \code{strict logical} (a logical only). Simply add the sub-type in the type string (e.g. \code{"integer scalar"}), or if you allow multiple types, put them in parentheses rigth after the main type: e.g. \code{"scalar(character, integer)"}. See Section XI) in the examples. See also the section below for more information on the sub-types. Some types (\code{character}, \code{integer}, \code{numeric}, \code{logical} and \code{factor}) also support the keyword \code{"conv"} in \code{check_arg_plus}.
+#' \item sub-type restriction: For atomic types (\code{scalar}, \code{vector}, \code{matrix} or \code{vmatrix}), you can restrict the underlying data to be of a specific sub-type. The simple sub-types are: i) \code{integer} (numeric without decimals and logicals), i') \code{strict integer} (numeric that can be converted to integer with \code{as.integer}, and not logicals), ii) \code{numeric}, iii) \code{factor}, iv) \code{logical} (a logical or a numeric equal to 0 or 1) and iv') \code{strict logical} (a logical only). Simply add the sub-type in the type string (e.g. \code{"integer scalar"}), or if you allow multiple types, put them in parentheses rigth after the main class: e.g. \code{"scalar(character, integer)"}. See Section XI) in the examples. See also the section below for more information on the sub-types. Some types (\code{character}, \code{integer}, \code{numeric}, \code{logical} and \code{factor}) also support the keyword \code{"conv"} in \code{check_arg_plus}.
 #' \item \code{GE}/\code{GT}/\code{LE}/\code{LT}: For atomic types with numeric data, you can check the values in the object. The GE/GT/LE/LT mean respectively greater or equal/greater than/lower or equal/lower than. The syntax is \code{GE{expr}}, with expr any expression. See Section IV) in the examples.
 #' \item \code{len(a, b)}: You can restrict the length of objects with \code{len(a, b)} (with \code{a} and \code{b} integers). Available for \code{vector} and \code{list}. Then the length must be in between \code{a} and \code{b}. Either \code{a} or \code{b} can be missing which means absence of restriction. If \code{len(a)}, this means must be equal to \code{a}. You can also use the keywords len(data) which ensures that the length is the same as the length of the object given in the argument \code{.data}, or \code{len(value)} which ensures the length is equal to the value given in \code{.value}. See Section IV) in the examples.
 #' \item \code{nrow(a, b)}, \code{ncol(a, b)}: To restrict the number of rows and columns. Available for \code{matrix}, \code{vmatrix}, \code{data.frame}, \code{vdata.frame}. Tolerates the \code{data} and \code{value} keywords (see in \code{len}). See Section IV) in the examples.
@@ -1187,7 +1188,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' There are eight global keywords that can be placed anywhere in the type. They are described in Section II) in the examples.
 #' \itemize{
 #' \item \code{NULL}: allows the argument to be equal to \code{NULL}.
-#' \item \code{safe NULL}: allows the argument to be equal to \code{NULL}, but an error is thrown if the argument is of the type \code{base$variable} or \code{base[["variable"]]}. This is to prevent oversights from the user, especially useful when the main type is a vector.
+#' \item \code{safe NULL}: allows the argument to be equal to \code{NULL}, but an error is thrown if the argument is of the type \code{base$variable} or \code{base[["variable"]]}. This is to prevent oversights from the user, especially useful when the main class is a vector.
 #' \item \code{NULL{expr}}: allows the argument to be equal to \code{NULL}, if the argument is \code{NULL}, then it assigns the value of expr to the argument.
 #' \item \code{MBT}: (means "must be there") an error is thrown if the argument is not provided by the user.
 #' \item \code{L0}: allows 0-length vectors--overrides the default which requires that any argument should have a positive length
@@ -1200,9 +1201,9 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'
 #' @section The \code{match} and \code{charin} types:
 #'
-#' The main types \code{match} and \code{charin} are similar to \code{\link[base]{match.arg}}. These two types are detailed in the examples Section III).
+#' The main classes \code{match} and \code{charin} are similar to \code{\link[base]{match.arg}}. These two types are detailed in the examples Section III).
 #'
-#' By default, the main type \code{match} expects a single character string whose value is in a set of choices. By default, there is no case sensitity (which can be turned on with the option \code{strict}) and there is always partial matching. It can expect a vector (instead of a single element) if the option \code{multi} is present.
+#' By default, the main class \code{match} expects a single character string whose value is in a set of choices. By default, there is no case sensitity (which can be turned on with the option \code{strict}) and there is always partial matching. It can expect a vector (instead of a single element) if the option \code{multi} is present.
 #'
 #' You have three different ways to set the choices:
 #' \itemize{
@@ -1212,9 +1213,9 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' }
 #'
 #' When the user doesn't provide the argument, the default is set to the first choice.
-#' Since the main type \code{match} performs a re-assignment of the variable, it is only available in \code{check_arg_plus}.
+#' Since the main class \code{match} performs a re-assignment of the variable, it is only available in \code{check_arg_plus}.
 #'
-#' The main type \code{charin} is similar to \code{match} in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) [that's the main difference between \code{check_arg} and \code{check_arg_plus}].
+#' The main class \code{charin} is similar to \code{match} in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) [that's the main difference between \code{check_arg} and \code{check_arg_plus}].
 #'
 #'
 #'
@@ -1232,9 +1233,9 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'
 #' @section Tips on the type:
 #'
-#' The type MUST be a character string of length 1. Two main types must be separated by a pipe. Otherwise the order of the keywords, the spaces, or the case don't matter. Further the global keywords can be placed anywhere and need not be separated by a pipe.
+#' The type MUST be a character string of length 1. Two main classes must be separated by a pipe. Otherwise the order of the keywords, the spaces, or the case don't matter. Further the global keywords can be placed anywhere and need not be separated by a pipe.
 #'
-#' Note that a rare but problematic situation is when you set a default with the global \code{NULL{default}} and that default contains a keyword. For example in the type \code{"NULL{list()} numeric matrix"} \code{list} should not be considered as a main type, but only \code{matrix}. To be on the safe side, then just separate them with a pipe: \code{"NULL{list()} | numeric matrix"} would work appropriately.
+#' Note that a rare but problematic situation is when you set a default with the global \code{NULL{default}} and that default contains a keyword. For example in the type \code{"NULL{list()} numeric matrix"} \code{list} should not be considered as a main class, but only \code{matrix}. To be on the safe side, then just separate them with a pipe: \code{"NULL{list()} | numeric matrix"} would work appropriately.
 #'
 #'
 #'
@@ -1275,7 +1276,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' \item \code{evalset}: evaluates the argument in a data set (i.e. the argument can be variables names of a data set), then re-assigns back its value.
 #' \item \code{NULL{default}}: if the argument is \code{NULL}, then the value in curly brackets is assigned to the argument.
 #' \item \code{match}: if the argument partially matches the choices, then the matches are assigned to the argument.
-#' \item \code{conv}: in atomic main types (\code{scalar}, \code{vector} and \code{matrix}), the data can be converted to a given sub-type (currently \code{integer}, \code{numeric}, \code{logical}, \code{character} and \code{factor}), then assigned back to the argument.
+#' \item \code{conv}: in atomic main classes (\code{scalar}, \code{vector} and \code{matrix}), the data can be converted to a given sub-type (currently \code{integer}, \code{numeric}, \code{logical}, \code{character} and \code{factor}), then assigned back to the argument.
 #' }
 #'
 #' As you can see, it's all about assignment: these special keywords of \code{check_arg_plus} will modify the arguments \emph{in place}. You have such examples in Section II), III) and XI) of the examples.
@@ -1328,7 +1329,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' # check_arg is only used within functions
 #'
 #' #
-#' # I) Example for the main type "scalar"
+#' # I) Example for the main class "scalar"
 #' #
 #'
 #' test_scalar = function(xlog, xnum, xint, xnumlt, xdate){
@@ -1618,8 +1619,8 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' # Matrix multiplication X * Y * Z
 #' test_dynamic_restriction = function(x, y, z){
 #'   check_arg(x, "mbt numeric matrix")
-#'   #check_arg(y, "mbt numeric matrix nrow(value)", .value = ncol(x))
-#'   #check_arg(z, "mbt numeric matrix nrow(value)", .value = ncol(y))
+#'   check_arg(y, "mbt numeric matrix nrow(value)", .value = ncol(x))
+#'   check_arg(z, "mbt numeric matrix nrow(value)", .value = ncol(y))
 #'
 #'   # An alternative to the previous two lines:
 #'   # check_arg(z, "mbt numeric matrix")
@@ -1842,14 +1843,14 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' # - a) if it's one of the simple sub-types: add the keyword directly in the type
 #' # - b) otherwise: add the sub-type in parentheses
 #' #
-#' # Note that the parentheses MUST follow the main type directly.
+#' # Note that the parentheses MUST follow the main class directly.
 #' #
 #' # Example:
 #' # - a) "integer scalar"
 #' # - b) "scalar(Date)"
 #' #
 #' # If you want to check multiple sub-types: you must add them in parentheses.
-#' # Again, the parentheses MUST follow the main type directly.
+#' # Again, the parentheses MUST follow the main class directly.
 #' # Examples:
 #' # "vector(character, factor)"
 #' # "scalar(integer, strict logical)"
@@ -2109,15 +2110,11 @@ check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...
 
   if(!getOption("dreamerr_check")) return(NULL)
 
-  # START::CHUNK(devmode)
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    mc_new = mc
-    mc_new[[1]] = as.name("check_dreamerr_calls")
-    eval(mc_new, parent.frame())
+    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up)
   }
-  # END::CHUNK(devmode)
 
   check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up + 1, .mc = mc, .is_plus = FALSE, .is_value = FALSE)
 
@@ -2126,15 +2123,11 @@ check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...
 #' @describeIn check_arg Same as \code{check_arg}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
 check_arg_plus = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .call_up = 0){
 
-  # START::COPY(devmode)
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    mc_new = mc
-    mc_new[[1]] = as.name("check_dreamerr_calls")
-    eval(mc_new, parent.frame())
+    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up)
   }
-  # END::COPY(devmode)
 
   check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up + 1, .mc = mc, .is_plus = TRUE, .is_value = FALSE)
 
@@ -2145,15 +2138,11 @@ check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = 
 
   if(!getOption("dreamerr_check")) return(NULL)
 
-  # START::COPY(devmode)
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    mc_new = mc
-    mc_new[[1]] = as.name("check_dreamerr_calls")
-    eval(mc_new, parent.frame())
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up)
   }
-  # END::COPY(devmode)
 
   check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up + 1, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
 
@@ -2162,15 +2151,11 @@ check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = 
 #' @describeIn check_arg Same as \code{check_value}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
 check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .call_up = 0){
 
-  # START::COPY(devmode)
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    mc_new = mc
-    mc_new[[1]] = as.name("check_dreamerr_calls")
-    eval(mc_new, parent.frame())
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up)
   }
-  # END::COPY(devmode)
 
   check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up + 1, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
 
@@ -2485,204 +2470,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       # if(FLAG == "mbt") return(NULL)
 
-      #
-      # Evaluation problems ####
-      #
-
-      # Evaluation MUST be done, it is something that will save a lot of time to the user
-      # However error catching is rather costly, especially if we need to parse it (5 times more costly)...
-      # This is the reason I chose to add the arguments .x1 to .x9 instead of using ...
-      # Let me explain, if we use ..., then either:
-      #   1) we don't do evaluation checking => this was a no go
-      #   2) we evaluate with eval(parse(text = "try(is.null(the name of the object), silent=TRUE)"), parent.frame())
-      #      => but this evaluation, although more general, was 5 times more coslty than a direct evaluation
-      #
-      # Conclusion: this is why there are the arguments .x1 to .x9 which replace the ...
-      #
-
-      IS_EVAL = grepl("eval", type_low, fixed = TRUE)
-
-      x_all = list()
-
-      # START::CHUNK(evaluation)
-      for(i in which(!is_done)){
-
-        # Evaluation of the argument
-        if(IS_EVAL){
-
-          if(IS_PLUS && IS_LIST[i]) stop_up("The keywords 'eval' and 'evalset' are not available when checking list elements.")
-
-          if(missing(.env)){
-            .env = parent.frame(sysOrigin)
-          }
-
-          value_dp = deparse(mc_origin[[x_names[i]]])
-          x = try(eval(parse(text = value_dp), .data, .env), silent = TRUE)
-
-          # We try to extract some precise information if error
-          if(any(class(x) == "try-error")){
-            .message = paste0("Argument '", x_names[i], "' (equal to '", value_dp, "') could not be evaluated.")
-
-            reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
-            if(length(.data) > 0 && !is.null(names(.data))){
-              x_vars = all.vars(parse(text = value_dp))
-              if(length(x_vars) > 0){
-                x_pblm = setdiff(x_vars, names(.data))
-                x_real_pblm = c()
-                for(v in x_pblm){
-                  if(!exists(v, envir = .env)) x_real_pblm = c(x_real_pblm, v)
-                }
-                if(length(x_real_pblm) > 0){
-                  reason = paste0("The variable", enumerate_items(x_real_pblm, "s.is.quote"), " not in the data set (given in argument '", deparse(mc[[".data"]]), "') nor in the environment")
-                }
-              }
-            }
-
-            send_error(reason, x_name = x_names[i], type = type, message = .message, call_up = .call_up, .value = .value, .data = .data)
-
-          }
-
-          # No real benefit to dealy assignment:
-          # - if type is OK => we will assign anyway
-          # - if type not OK => it's longer but since it will lead to an error, that's fine
-          #
-          if(grepl("evalset", type_low, fixed = TRUE)){
-
-            if(!IS_PLUS){
-              FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
-              stop_up("The type evalset is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
-            }
-
-            assign(x_names[i], x, parent.frame(2))
-          }
-
-        } else {
-          x = switch(args[i], ".x" = try(.x, silent = TRUE), ".type" = try(.type, silent = TRUE), ".x1" = try(.x1, silent = TRUE), ".x2" = try(.x2, silent = TRUE), ".x3" = try(.x3, silent = TRUE), ".x4" = try(.x4, silent = TRUE), ".x5" = try(.x5, silent = TRUE), ".x6" = try(.x6, silent = TRUE), ".x7" = try(.x7, silent = TRUE), ".x8" = try(.x8, silent = TRUE), ".x9" = try(.x9, silent = TRUE))
-
-          # If error => it's an undefined evaluation => we're out
-          if(any(class(x) == "try-error")){
-            .message = paste0("Argument '", x_names[i], "' (equal to '", deparse(mc_origin[[x_names[i]]]), "') could not be evaluated.")
-            reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
-
-            send_error(reason, x_name = x_names[i], type = type, message = .message, call_up = .call_up, .value = .value, .data = .data)
-
-          }
-
-        }
-
-        if(is.null(x)){
-          if(grepl("null", type_low, fixed = TRUE)){
-
-            if(grepl("safe", type_low, fixed = TRUE)){
-              value_dp = deparse(mc_origin[[x_names[i]]])
-              if(grepl("$", value_dp, fixed = TRUE)){
-                msg = paste0("it is NULL (fine) but you entered '", value_dp, "'. If you really want it to be NULL, please use NULL directly or a variable containing NULL")
-                send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-              }
-            }
-
-            if(grepl("null{", type_low, fixed = TRUE)){
-
-              if(!IS_PLUS){
-                FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
-                stop_up("The type NULL{default} is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
-              }
-
-              value2eval = extract_curly(type, "null", as.string = TRUE)
-              value = eval(parse(text = value2eval), parent.frame(2))
-
-              if(IS_LIST[i]){
-                # we get the list, assign the value to the list, reassign back in the parent frame
-                l_name = gsub("\\$.+", "", x_names[i])
-                my_list = get(l_name, parent.frame(2))
-                var_name = gsub(".+\\$", "", x_names[i])
-                my_list[[var_name]] = value
-                assign(l_name, my_list, parent.frame(2))
-
-              } else {
-                assign(x_names[i], value, parent.frame(2))
-              }
-
-              is_done[i] = TRUE
-              next
-
-            } else {
-              is_done[i] = TRUE
-              next
-            }
-
-          } else if(IS_PLUS && IS_LIST[i]){
-            # List elements that are NULL are like missing
-
-            if(is.null(IS_MBT)) IS_MBT = grepl("mbt", type_low, fixed = TRUE)
-
-            if(IS_MBT){
-              l_name = gsub("\\$.+", "", x_names[i])
-              var_name = gsub(".+\\$", "", x_names[i])
-              msg = paste0("In the list argument '", l_name, "', the element '", var_name, "' must be provided and cannot be NULL.")
-              stop_up(msg, up = .call_up + 1)
-            } else {
-              is_done[i] = TRUE
-              next
-            }
-          } else {
-            send_error("it is NULL", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-          }
-        }
-
-        # START::CHUNK(L0)
-        if(length(x) == 0){
-          if(grepl("l0", type_low, fixed = TRUE)){
-
-            if(is.list(x)){
-              if(grepl("list", type_low, fixed = TRUE)){
-                is_done[i] = TRUE
-                next
-              } else {
-                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-              }
-            } else {
-              is_int = grepl("integer", type_low, fixed = TRUE)
-              is_num = grepl("numeric", type_low, fixed = TRUE)
-              is_log = grepl("logical", type_low, fixed = TRUE)
-              n_types = is_int + is_num + is_log
-              if(n_types == 3){
-                is_done[i] = TRUE
-                next
-
-              } else if(n_types == 0){
-                if(grepl("list", type_low, fixed = TRUE)){
-                  send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-                } else {
-                  is_done[i] = TRUE
-                  next
-                }
-
-              } else {
-                ok = class(x)[1] %in% c("integer", "numeric", "logical")[c(is_int, is_num, is_log)]
-                if(ok){
-                  is_done[i] = TRUE
-                  next
-                } else {
-                  msg = paste0("it is of length 0 and of type '", class(x)[1], "'")
-                  send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-                }
-              }
-            }
-
-          } else {
-            send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-          }
-        }
-        # END::CHUNK(L0)
-
-        # if here we will perform the full check, so we save the value of x
-        x_all[[i]] = x
-
-      }
-      # END::CHUNK(evaluation)
-
-
     } else {
       #
       # dot-dot-dot ####
@@ -2953,7 +2740,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         if(is_list){
           IS_LIST = TRUE
         } else {
-          stop_up("In check_value_plus(), the argument '.x' must be a variable name or a list element of the form x$element. Currently it is neither.")
+          stop_up("In check_value_plus(), the argument '.x' must be a variable name or a list-element of the form x$element. Currently it is neither.")
         }
       }
 
@@ -2985,171 +2772,217 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
     x_all = list()
 
-    # START::COPY(evaluation)
-      for(i in which(!is_done)){
+  }
 
-        if(IS_EVAL){
 
-          if(IS_PLUS && IS_LIST[i]) stop_up("The keywords 'eval' and 'evalset' are not available when checking list elements.")
 
-          if(missing(.env)){
-            .env = parent.frame(sysOrigin)
-          }
+  if(!IS_DOTS){
+    # IS_DOTS has been already evaluated
 
-          value_dp = deparse(mc_origin[[x_names[i]]])
-          x = try(eval(parse(text = value_dp), .data, .env), silent = TRUE)
+    #
+    # Evaluation problems ####
+    #
 
-          if(any(class(x) == "try-error")){
-            .message = paste0("Argument '", x_names[i], "' (equal to '", value_dp, "') could not be evaluated.")
+    # Evaluation MUST be done, it is something that will save a lot of time to the user
+    # However error catching is rather costly, especially if we need to parse it (5 times more costly)...
+    # This is the reason I chose to add the arguments .x1 to .x9 instead of using ...
+    # Let me explain, if we use ..., then either:
+    #   1) we don't do evaluation checking => this was a no go
+    #   2) we evaluate with eval(parse(text = "try(is.null(the name of the object), silent=TRUE)"), parent.frame())
+    #      => but this evaluation, although more general, was 5 times more coslty than a direct evaluation
+    #
+    # Conclusion: this is why there are the arguments .x1 to .x9 which replace the ...
+    #
 
-            reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
-            if(length(.data) > 0 && !is.null(names(.data))){
-              x_vars = all.vars(parse(text = value_dp))
-              if(length(x_vars) > 0){
-                x_pblm = setdiff(x_vars, names(.data))
-                x_real_pblm = c()
-                for(v in x_pblm){
-                  if(!exists(v, envir = .env)) x_real_pblm = c(x_real_pblm, v)
-                }
-                if(length(x_real_pblm) > 0){
-                  reason = paste0("The variable", enumerate_items(x_real_pblm, "s.is.quote"), " not in the data set (given in argument '", deparse(mc[[".data"]]), "') nor in the environment")
-                }
+    IS_EVAL = grepl("eval", type_low, fixed = TRUE)
+
+    x_all = list()
+
+
+    for(i in which(!is_done)){
+
+      # Evaluation of the argument
+      if(IS_EVAL){
+
+        if(IS_PLUS && IS_LIST[i]) stop_up("The keywords 'eval' and 'evalset' are not available when checking list elements.")
+
+        if(missing(.env)){
+          .env = parent.frame(sysOrigin)
+        }
+
+        value_dp = deparse(mc_origin[[x_names[i]]])
+        x = try(eval(parse(text = value_dp), .data, .env), silent = TRUE)
+
+        # We try to extract some precise information if error
+        if(any(class(x) == "try-error")){
+          .message = paste0("Argument '", x_names[i], "' (equal to '", value_dp, "') could not be evaluated.")
+
+          reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
+          if(length(.data) > 0 && !is.null(names(.data))){
+            x_vars = all.vars(parse(text = value_dp))
+            if(length(x_vars) > 0){
+              x_pblm = setdiff(x_vars, names(.data))
+              x_real_pblm = c()
+              for(v in x_pblm){
+                if(!exists(v, envir = .env)) x_real_pblm = c(x_real_pblm, v)
+              }
+              if(length(x_real_pblm) > 0){
+                reason = paste0("The variable", enumerate_items(x_real_pblm, "s.is.quote"), " not in the data set (given in argument '", deparse(mc[[".data"]]), "') nor in the environment")
               }
             }
-
-            send_error(reason, x_name = x_names[i], type = type, message = .message, call_up = .call_up, .value = .value, .data = .data)
-
           }
 
-          if(grepl("evalset", type_low, fixed = TRUE)){
+          send_error(reason, x_name = x_names[i], type = type, message = .message, call_up = .call_up, .value = .value, .data = .data)
 
-            if(!IS_PLUS){
-              FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
-              stop_up("The type evalset is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
-            }
+        }
 
-            assign(x_names[i], x, parent.frame(2))
+        # No real benefit to dealy assignment:
+        # - if type is OK => we will assign anyway
+        # - if type not OK => it's longer but since it will lead to an error, that's fine
+        #
+        if(grepl("evalset", type_low, fixed = TRUE)){
+
+          if(!IS_PLUS){
+            FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
+            stop_up("The type evalset is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
           }
 
-        } else {
-          x = switch(args[i], ".x" = try(.x, silent = TRUE), ".type" = try(.type, silent = TRUE), ".x1" = try(.x1, silent = TRUE), ".x2" = try(.x2, silent = TRUE), ".x3" = try(.x3, silent = TRUE), ".x4" = try(.x4, silent = TRUE), ".x5" = try(.x5, silent = TRUE), ".x6" = try(.x6, silent = TRUE), ".x7" = try(.x7, silent = TRUE), ".x8" = try(.x8, silent = TRUE), ".x9" = try(.x9, silent = TRUE))
+          assign(x_names[i], x, parent.frame(2))
+        }
 
-          if(any(class(x) == "try-error")){
+      } else {
+        x = switch(args[i], ".x" = try(.x, silent = TRUE), ".type" = try(.type, silent = TRUE), ".x1" = try(.x1, silent = TRUE), ".x2" = try(.x2, silent = TRUE), ".x3" = try(.x3, silent = TRUE), ".x4" = try(.x4, silent = TRUE), ".x5" = try(.x5, silent = TRUE), ".x6" = try(.x6, silent = TRUE), ".x7" = try(.x7, silent = TRUE), ".x8" = try(.x8, silent = TRUE), ".x9" = try(.x9, silent = TRUE))
+
+        # If error => it's an undefined evaluation => we're out
+        if(any(class(x) == "try-error")){
+
+          if(IS_VALUE){
+            # if in value => it's an internal error (developer side, big error: this should NEVER happen)
+            stop_up("The value '", x_names[i], "' could not be evaluated. This should never happen, please revise the code accordingly so that the value passed to check_value", ifelse(IS_PLUS, "_plus", ""), " always exists.")
+
+          } else {
             .message = paste0("Argument '", x_names[i], "' (equal to '", deparse(mc_origin[[x_names[i]]]), "') could not be evaluated.")
             reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
 
             send_error(reason, x_name = x_names[i], type = type, message = .message, call_up = .call_up, .value = .value, .data = .data)
-
           }
 
         }
 
-        if(is.null(x)){
-          if(grepl("null", type_low, fixed = TRUE)){
+      }
 
-            if(grepl("safe", type_low, fixed = TRUE)){
-              value_dp = deparse(mc_origin[[x_names[i]]])
-              if(grepl("$", value_dp, fixed = TRUE)){
-                msg = paste0("it is NULL (fine) but you entered '", value_dp, "'. If you really want it to be NULL, please use NULL directly or a variable containing NULL")
+      if(is.null(x)){
+        if(grepl("null", type_low, fixed = TRUE)){
+
+          if(grepl("safe", type_low, fixed = TRUE)){
+            value_dp = deparse(mc_origin[[x_names[i]]])
+            if(grepl("$", value_dp, fixed = TRUE)){
+              msg = paste0("it is NULL (fine) but you entered '", value_dp, "'. If you really want it to be NULL, please use NULL directly or a variable containing NULL")
+              send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+            }
+          }
+
+          if(grepl("null{", type_low, fixed = TRUE)){
+
+            if(!IS_PLUS){
+              FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
+              stop_up("The type NULL{default} is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
+            }
+
+            value2eval = extract_curly(type, "null", as.string = TRUE)
+            value = eval(parse(text = value2eval), parent.frame(2))
+
+            if(IS_LIST[i]){
+              # we get the list, assign the value to the list, reassign back in the parent frame
+              l_name = gsub("\\$.+", "", x_names[i])
+              my_list = get(l_name, parent.frame(2))
+              var_name = gsub(".+\\$", "", x_names[i])
+              my_list[[var_name]] = value
+              assign(l_name, my_list, parent.frame(2))
+
+            } else {
+              assign(x_names[i], value, parent.frame(2))
+            }
+
+            is_done[i] = TRUE
+            next
+
+          } else {
+            is_done[i] = TRUE
+            next
+          }
+
+        } else if(IS_PLUS && IS_LIST[i]){
+          # List elements that are NULL are like missing
+
+          if(is.null(IS_MBT)) IS_MBT = grepl("mbt", type_low, fixed = TRUE)
+
+          if(IS_MBT){
+            l_name = gsub("\\$.+", "", x_names[i])
+            var_name = gsub(".+\\$", "", x_names[i])
+            msg = paste0("In the list argument '", l_name, "', the element '", var_name, "' must be provided and cannot be NULL.")
+            stop_up(msg, up = .call_up + 1)
+          } else {
+            is_done[i] = TRUE
+            next
+          }
+        } else {
+          send_error("it is NULL", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+        }
+      }
+
+      # START::CHUNK(L0)
+      if(length(x) == 0){
+        if(grepl("l0", type_low, fixed = TRUE)){
+
+          if(is.list(x)){
+            if(grepl("list", type_low, fixed = TRUE)){
+              is_done[i] = TRUE
+              next
+            } else {
+              send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+            }
+          } else {
+            is_int = grepl("integer", type_low, fixed = TRUE)
+            is_num = grepl("numeric", type_low, fixed = TRUE)
+            is_log = grepl("logical", type_low, fixed = TRUE)
+            n_types = is_int + is_num + is_log
+            if(n_types == 3){
+              is_done[i] = TRUE
+              next
+
+            } else if(n_types == 0){
+              if(grepl("list", type_low, fixed = TRUE)){
+                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+              } else {
+                is_done[i] = TRUE
+                next
+              }
+
+            } else {
+              ok = class(x)[1] %in% c("integer", "numeric", "logical")[c(is_int, is_num, is_log)]
+              if(ok){
+                is_done[i] = TRUE
+                next
+              } else {
+                msg = paste0("it is of length 0 and of type '", class(x)[1], "'")
                 send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
               }
             }
-
-            if(grepl("null{", type_low, fixed = TRUE)){
-
-              if(!IS_PLUS){
-                FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
-                stop_up("The type NULL{default} is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
-              }
-
-              value2eval = extract_curly(type, "null", as.string = TRUE)
-              value = eval(parse(text = value2eval), parent.frame(2))
-
-              if(IS_LIST[i]){
-                l_name = gsub("\\$.+", "", x_names[i])
-                my_list = get(l_name, parent.frame(2))
-                var_name = gsub(".+\\$", "", x_names[i])
-                my_list[[var_name]] = value
-                assign(l_name, my_list, parent.frame(2))
-
-              } else {
-                assign(x_names[i], value, parent.frame(2))
-              }
-
-              is_done[i] = TRUE
-              next
-
-            } else {
-              is_done[i] = TRUE
-              next
-            }
-
-          } else if(IS_PLUS && IS_LIST[i]){
-
-            if(is.null(IS_MBT)) IS_MBT = grepl("mbt", type_low, fixed = TRUE)
-
-            if(IS_MBT){
-              l_name = gsub("\\$.+", "", x_names[i])
-              var_name = gsub(".+\\$", "", x_names[i])
-              msg = paste0("In the list argument '", l_name, "', the element '", var_name, "' must be provided and cannot be NULL.")
-              stop_up(msg, up = .call_up + 1)
-            } else {
-              is_done[i] = TRUE
-              next
-            }
-          } else {
-            send_error("it is NULL", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
           }
+
+        } else {
+          send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
         }
-
-        if(length(x) == 0){
-          if(grepl("l0", type_low, fixed = TRUE)){
-
-            if(is.list(x)){
-              if(grepl("list", type_low, fixed = TRUE)){
-                is_done[i] = TRUE
-                next
-              } else {
-                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-              }
-            } else {
-              is_int = grepl("integer", type_low, fixed = TRUE)
-              is_num = grepl("numeric", type_low, fixed = TRUE)
-              is_log = grepl("logical", type_low, fixed = TRUE)
-              n_types = is_int + is_num + is_log
-              if(n_types == 3){
-                is_done[i] = TRUE
-                next
-
-              } else if(n_types == 0){
-                if(grepl("list", type_low, fixed = TRUE)){
-                  send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-                } else {
-                  is_done[i] = TRUE
-                  next
-                }
-
-              } else {
-                ok = class(x)[1] %in% c("integer", "numeric", "logical")[c(is_int, is_num, is_log)]
-                if(ok){
-                  is_done[i] = TRUE
-                  next
-                } else {
-                  msg = paste0("it is of length 0 and of type '", class(x)[1], "'")
-                  send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-                }
-              }
-            }
-
-          } else {
-            send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
-          }
-        }
-
-        x_all[[i]] = x
-
       }
-    # END::COPY(evaluation)
+      # END::CHUNK(L0)
+
+      # if here we will perform the full check, so we save the value of x
+      x_all[[i]] = x
+
+    }
+
+
 
   }
 
@@ -3170,7 +3003,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
   # if(FLAG == "sub") return(NULL)
 
-  # Reason & main type will be later used when error is called
+  # Reason & main class will be later used when error is called
   all_reasons = list()
   all_main_types = list()
 
@@ -3200,7 +3033,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     my_type = tolower(my_type_raw)
 
     #
-    # MAIN TYPES ####
+    # MAIN CLASSES ####
     #
 
     subtypes = c()
@@ -3625,10 +3458,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       if(!IS_PLUS){
         FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
-        stop_up("The main type 'match' is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
+        stop_up("The main class 'match' is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
       }
 
-      if(IS_DOTS) stop_up("The main type 'match' is not available when checking dot-dot-dot ('...').")
+      if(IS_DOTS) stop_up("The main class 'match' is not available when checking dot-dot-dot ('...').")
 
       if(grepl("match(", my_type, fixed = TRUE)){
         .choices = choices = extract_par(my_type_raw, "match")
@@ -3901,7 +3734,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
     } else {
       next
-      # stop_up("Malformed 'type' argument: in '", my_type, "' the main type could not be found (like: vector, matrix, etc). Please see the documentation on how to form the '.type' argument.")
     }
 
     #
