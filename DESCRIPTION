@@ -1,0 +1,14 @@
+Package: dreamerr
+Type: Package
+Title: Error Handling Made Easy
+Version: 1.0.0
+Authors@R: person("Laurent", "Berge", email = "laurent.berge@uni.lu", role = c("aut", "cre"))
+Imports: Formula
+Suggests: knitr, graphics, stats
+Description: Package made to make R a more user-friendly place. Mostly for developpers (or anyone who writes functions). Provides a simple, powerful and flexible way to check the arguments passed to functions. 
+    The developper can easily describe the type of argument needed. If the user provides a wrong argument, then an informative error message is prompted with the requested type and the problem clearly stated--saving the user precious time in debugging. 
+License: GPL-3
+Encoding: UTF-8
+VignetteBuilder: knitr
+LazyData: true
+RoxygenNote: 6.1.1
