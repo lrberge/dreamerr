@@ -95,13 +95,13 @@ lm_check()
 # Problems in the formula
 lm_check(~Sepal.Width, iris) 
 #> Error : in lm_check(~Sepal.Width, iris):
-#>  Argument 'formula' must be a two sided formula. Problem: it is currently only one-sided.
+#>  Argument 'formula' must be a two-sided formula. Problem: it is currently only one-sided.
 
-lm_check(1+1, iris) 
+lm_check(1 + 1, iris) 
 #> Error : in lm_check(1 + 1, iris):
-#>  Argument 'formula' must be a two sided formula. Problem: it is currently not a formula (instead it is a vector).
+#>  Argument 'formula' must be a two-sided formula. Problem: it is not a formula (instead it is a vector).
 
-lm_check(1+"a", iris) 
+lm_check(1 + "a", iris) 
 #> Error : in lm_check(1 + "a", iris):
 #>  Argument 'formula' (equal to '1 + "a"') could not be evaluated. Problem: non-numeric argument to binary operator.
 
@@ -110,18 +110,21 @@ lm_check(moien, iris)
 #>  Argument 'formula' (equal to 'moien') could not be evaluated. Problem: object 'moien' not found.
 
 # Problem in the data
-lm_check(Sepal.Length~Sepal.Width, pt) 
+lm_check(Sepal.Length ~ Sepal.Width, pt) 
 #> Error : in lm_check(Sepal.Length ~ Sepal.Width, pt):
-#>  Argument 'data' must be either: i) a data.frame, or ii) a named list. Problem: it is not a data.frame nor a list (instead it is a function).
+#>  Argument 'data' must be either: i) a data.frame, or ii) a named list. Problem: it is not a data.frame nor a list
+#> (instead it is a function).
 
 lm_check(Sepal.Length ~ Sepal.Width, 1:5) 
 #> Error : in lm_check(Sepal.Length ~ Sepal.Width, 1:...:
-#>  Argument 'data' must be either: i) a data.frame, or ii) a named list. Problem: it is not a data.frame nor a list (instead it is a vector).
+#>  Argument 'data' must be either: i) a data.frame, or ii) a named list. Problem: it is not a data.frame nor a list
+#> (instead it is a vector).
 
 # Mistake in the variable name
-lm_check(Sopal.Length~Sepal.Width, iris) 
+lm_check(Sopal.Length ~ Sepal.Width, iris) 
 #> Error : in lm_check(Sopal.Length ~ Sepal.Width, iris):
-#>  The argument 'formula' is a formula whose variables must be in the data set (given in argument 'data') or in the environment. Problem: the variable 'Sopal.Length' isn't there.
+#>  The argument 'formula' is a formula whose variables must be in the data set (given in argument 'data') or in the
+#> environment. Problem: the variable 'Sopal.Length' isn't there.
 
 ```
 

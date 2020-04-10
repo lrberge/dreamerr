@@ -10,5 +10,6 @@ Description: Package made to make R a more user-friendly place. Mostly for devel
 License: GPL-3
 Encoding: UTF-8
 VignetteBuilder: knitr
+BugReports: https://github.com/lrberge/dreamerr/issues
 LazyData: true
 RoxygenNote: 6.1.1

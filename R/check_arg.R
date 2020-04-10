@@ -595,7 +595,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, call_u
   }
 
 
-  stop("in ", my_call, ":\n", full_msg, call. = FALSE)
+  stop("in ", my_call, ":\n", fit_screen(full_msg), call. = FALSE)
 
 }
 

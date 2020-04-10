@@ -210,6 +210,8 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message = TRUE, w
 
     res = paste0("The argument", enumerate_items(args_invalid, "s.is.quote"), " not valid", suggest)
 
+    my_call = fit_screen(my_call)
+
     if(stop){
       stop_up(my_call, res)
     } else if(warn){
@@ -290,7 +292,7 @@ stop_up = function(..., up = 1){
   nmax = 50
   if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax - 1), "...")
 
-  stop("in ", my_call, ":\n ", message, call. = FALSE)
+  stop("in ", my_call, ":\n ", fit_screen(message), call. = FALSE)
 
 }
 
@@ -305,7 +307,7 @@ warn_up = function(..., up = 1, immediate. = FALSE){
   nmax = 50
   if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax - 1), "...")
 
-  warning("In ", my_call, ":\n ", message, call. = FALSE, immediate. = immediate.)
+  warning("In ", my_call, ":\n ", fit_screen(message), call. = FALSE, immediate. = immediate.)
 
 }
 
@@ -856,7 +858,40 @@ signif_plus = function (x, s = 2, r = 0, commas = TRUE){
 }
 
 
+fit_screen = function(msg){
+  # makes a message fit the current screen, by cutting the text at the appropriate location
+  # msg must be a character string of length 1
 
+  # Note that \t are NOT handled
+
+  MAX_WIDTH = options("width")$width
+
+  res = c()
+
+  msg_split = strsplit(msg, "\n", fixed = TRUE)[[1]]
+
+  for(m in msg_split){
+    if(nchar(m) <= MAX_WIDTH){
+      res = c(res, m)
+    } else {
+      # we apply a splitting algorithm
+      m_split = strsplit(m, " ", fixed = TRUE)[[1]]
+
+      while(TRUE){
+        where2split = which.max(cumsum(nchar(m_split) + 1) - 1 > MAX_WIDTH) - 1
+        res = c(res, paste(m_split[1:where2split], collapse = " "))
+        m_split = m_split[-(1:where2split)]
+
+        if(sum(nchar(m_split) + 1) - 1 <= MAX_WIDTH){
+          res = c(res, paste(m_split, collapse = " "))
+          break
+        }
+      }
+    }
+  }
+
+  paste(res, collapse = "\n")
+}
 
 
 
