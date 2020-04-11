@@ -34,11 +34,8 @@ lm_check = function(formula, data){
   # - the variables of the formula must be in the data set or in the environment (var(data, env))
   check_arg(formula, "ts formula var(data, env) mbt", .data = data)
 
-  # we rewrite the call to lm
-  mc = match.call()
-  mc[[1]] = as.name("lm")
-
-  eval(mc, parent.frame())
+  # Now the all to lm
+  lm(formula, data)
 }
 ```
 
