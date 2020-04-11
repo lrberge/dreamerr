@@ -7,7 +7,7 @@
 # roxygen2::roxygenise(roclets = "rd")
 
 
-# type = tolower("scalarNumericGT{5}LT{7}|NA|scalarLogical|matrix nrow(,5) ncol(2,5) GT{log(5)}")
+# type = "scalarNumericGT{5}LT{7}|NA|scalarLogical|matrix nrow(,5) ncol(2,5) GT{log(5)}"
 
 send_error = function(all_reasons, x_name, type, message, choices = NULL, call_up, .value, .data){
 
@@ -71,8 +71,10 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, call_u
         req_type = ifelse(grepl("os", my_type), "a one-sided formula", "a two-sided formula")
       }
 
+      IS_RIGHT = FALSE
       if(grepl("right\\(", my_type) && all_main_types_ok[i]){
         # We add information on the number of parts
+        IS_RIGHT = TRUE
         n_expected = extract_par(my_type, "right", int = TRUE)
         msg = message_in_between(n_expected, "right", .value)
         req_type = paste0(req_type, " ", msg)
@@ -82,7 +84,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, call_u
         # We add information on the number of parts
         n_expected = extract_par(my_type, "left", int = TRUE)
         msg = message_in_between(n_expected, "left", .value)
-        req_type = paste0(req_type, " ", msg)
+        req_type = paste0(req_type, ifelse(IS_RIGHT, " and ", " "), msg)
       }
 
       all_requested_types[i] = req_type
@@ -258,11 +260,11 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, call_u
       add_len = add_equality = TRUE
     } else if(grepl("charin", my_type)){
       #
-      # MATCH
+      # CHARIN
       #
 
       if(grepl("charin\\(", my_type)){
-        choices = extract_par(my_type, "charin")
+        choices = extract_par(my_type_raw, "charin")
       }
 
       my_type_corrected = gsub("\\([^\\)]*\\)", "", my_type)
@@ -278,7 +280,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, call_u
       #
 
       if(grepl("match\\(", my_type)){
-        choices = extract_par(my_type, "match")
+        choices = extract_par(my_type_raw, "match")
       }
 
       my_type_corrected = gsub("\\([^\\)]*\\)", "", my_type)
@@ -697,19 +699,19 @@ extract_type = function(x){
 
 extract_multi_types = function(type, main_type){
 
-  values = extract_par(tolower(type), main_type)
+  values = extract_par(type, main_type)
 
   for(i in seq_along(values)){
-    if(grepl("character", values[i], fixed = TRUE)){
+    if(grepl("(?i)character", values[i])){
       values[i] = "character"
 
-    } else if(grepl("integer", values[i], fixed = TRUE)){
+    } else if(grepl("(?i)integer", values[i])){
       values[i] = "integer"
 
-    } else if(grepl("numeric", values[i], fixed = TRUE)){
+    } else if(grepl("(?i)numeric", values[i])){
       values[i] = "numeric"
 
-    } else if(grepl("logical", values[i], fixed = TRUE)){
+    } else if(grepl("(?i)logical", values[i])){
       values[i] = "logical"
     }
   }
@@ -839,7 +841,7 @@ message_in_between = function(n_expected, code, .value, .data){
         res = paste0("with, in this context, ", n_expected, " argument", plural(n_expected))
 
       } else if(code %in% c("left", "right")){
-        res = paste0("with, in this context, ", n_letter(n_expected), " part", plural(n_expected), " in the ", code, "-hand-side")
+        res = paste0("with, in this context, ", n_expected, " part", plural(n_expected), " in the ", code, "-hand-side")
 
       }
 
@@ -858,7 +860,7 @@ message_in_between = function(n_expected, code, .value, .data){
         res = paste0("with ", n_expected, " argument", plural(n_expected))
 
       } else if(code %in% c("left", "right")){
-        res = paste0("with ", n_letter(n_expected), " part", plural(n_expected), " in the ", code, "-hand-side")
+        res = paste0("with ", n_expected, " part", plural(n_expected), " in the ", code, "-hand-side")
 
       }
 
@@ -896,7 +898,7 @@ message_in_between = function(n_expected, code, .value, .data){
       res = paste0("with at least ", n_expected[1], " argument", plural(n_expected[1]))
 
     } else if(code %in% c("left", "right")){
-      res = paste0("with at least ", n_letter(n_expected[1]), " part", plural(n_expected[1]), " in the ", code, "-hand-side")
+      res = paste0("with at least ", n_expected[1], " part", plural(n_expected[1]), " in the ", code, "-hand-side")
 
     }
 
@@ -914,7 +916,7 @@ message_in_between = function(n_expected, code, .value, .data){
       res = paste0("with no more than ", n_expected[2], " argument", plural(n_expected[2]))
 
     } else if(code %in% c("left", "right")){
-      res = paste0("with no more than ", n_letter(n_expected[2]), " part", plural(n_expected[2]), " in the ", code, "-hand-side")
+      res = paste0("with no more than ", n_expected[2], " part", plural(n_expected[2]), " in the ", code, "-hand-side")
 
     }
 
@@ -1821,7 +1823,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'   check_arg(xlog1, xlog2, "logical scalar")
 #'
 #'   # checking the numerics
-#'   # => you can add the type first
+#'   # => Alternatively, you can add the type first
 #'   check_arg("numeric vector", xnum1, xnum2, xnum3)
 #'
 #'   invisible(NULL)
@@ -1869,9 +1871,16 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' test_multi_subtypes = function(x, y){
 #'   check_arg(x, "scalar(integer, strict logical)")
 #'   check_arg(y, "vector(character, factor, Date)")
+#'   invisible(NULL)
 #' }
 #'
+#' # What follows doesn't work
 #' try(test_multi_subtypes(x = 5.5))
+#'
+#' # Note that it works if x = 5
+#' #  (for check_arg 5 is integer although is.integer(5) returns FALSE)
+#' test_multi_subtypes(x = 5)
+#'
 #' try(test_multi_subtypes(y = 5.5))
 #'
 #' # Testing the "conv" keyword:
@@ -1957,12 +1966,15 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'
 #'   # plotting the correlation, with defaults
 #'   check_arg_plus(plot.opts$main, "character scalar NULL{'Correlation between x and y'}")
+#'
 #'   # you can use variables created in the function when setting the default
 #'   x_name = deparse(substitute(x))
 #'   check_arg_plus(plot.opts$xlab, "character scalar NULL{x_name}")
 #'   check_arg_plus(plot.opts$ylab, "character scalar NULL{'y'}")
+#'
 #'   # we restrict to only two plotting types: p or h
 #'   check_arg_plus(plot.opts$type, "NULL{'p'} match(p, h)")
+#'
 #'   plot.opts$x = x
 #'   plot.opts$y = y
 #'   do.call("plot", plot.opts)
@@ -2079,7 +2091,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'
 #'   # Now we check that x and y are valid => with check_value
 #'   # We also use the possibility to assign the value of y and x directly
-#'   # We add a custom message because y/x is NOT an argument
+#'   # We add a custom message because y/x are NOT arguments
 #'   check_value_plus(y, "evalset numeric vector", .data = data,
 #'                    .message = "In the argument 'fml', the LHS must be numeric.")
 #'   check_value_plus(x, "evalset numeric vector", .data = data,

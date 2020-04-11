@@ -226,7 +226,7 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message = TRUE, w
 }
 
 
-#' Stops sub-function execution
+#' Stops (or warns in) sub-function execution
 #'
 #' Useful if you employ non-user level sub-functions within user-level functions. When an error is thrown in the sub function, the error message will integrate the call of the user-level function, which is more informative and appropriate for the user. It offers a similar functionality for \code{warning}.
 #'

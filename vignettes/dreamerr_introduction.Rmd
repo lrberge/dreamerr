@@ -159,7 +159,7 @@ plot_cor = function(x, y = NULL, line.opts = list(), ...){
   check_arg_plus(y, "NULL{x + rnorm(length(x))} numeric vector len(data)", .data = x)
   
   # We ensure the arguments are lists (even of 0-length)
-  check_arg(lm.opts, line.opts, "named list L0")
+  check_arg(line.opts, "named list L0")
   
   # The linear regression + options from ...
   reg = lm(y ~ x, ...)
