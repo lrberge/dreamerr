@@ -1468,8 +1468,12 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' #
 #'
 #' # Note the three different ways to provide the choices
+#' #
+#' # If the argument has no default, it is kept that way (see x2)
+#' # If the argument is not provided by the user,
+#' #  it is left untouched (see x3)
 #'
-#' test_match = function(x1 = c("bonjour", "Au revoir"), x2 = "Sarah", x3){
+#' test_match = function(x1 = c("bonjour", "Au revoir"), x2, x3 = "test"){
 #'   # 1) choices set thanks to the argument default (like in match.arg)
 #'   check_arg_plus(x1, "strict match")
 #'
@@ -1479,7 +1483,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'   # 3) choices set with the parentheses
 #'   check_arg_plus(x3, "multi match(Orange, Juice, Good)")
 #'
-#'   cat("x1:", x1, "\nx2:", x2, "\nx3:", x3, "\n")
+#'   cat("x1:", x1, "\nx2:", ifelse(missing(x2), "[missing]", x2), "\nx3:", x3, "\n")
 #' }
 #'
 #' # Everything below is OK
@@ -1496,6 +1500,8 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' try(test_match(x2 = "san"))
 #' try(test_match(x2 = "santa"))
 #'
+#' # Same value as x3's default, but now provided by the user
+#' try(test_match(x3 = "test"))
 #' try(test_match(x3 = c("or", "ju", "bad")))
 #'
 #' # You can check multiple arguments at once
@@ -2394,8 +2400,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 }
               }
 
-              if(IS_MATCH){
+              if(IS_MATCH && is.null(.choices) && !grepl("match(", type_low, fixed = TRUE)){
                 # We need to take care of this special type
+                # if the choices are provided in match() or in .choices, we skip
+                # otherwise, same behavior as match.arg
 
                 if(is.null(formal.args)){
                   formal.args = formals(sys.function(sysOrigin))
@@ -2410,20 +2418,11 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 }
 
                 if(NO_DEFAULT){
-                  if(grepl("match(", type_low, fixed = TRUE)){
-                    choices = extract_par(type, "match")
-
-                  } else if(!is.null(.choices)){
-                    choices = .choices
-
-                  } else {
-                    # BUG
-                    if(length(value_all) == 0){
-                      stop_up("Type 'match' could not be set since the choices were not found. Argument ", x_names[i], " is missing with no default. Either: i) provide the argument '.choices', ii) include the choices directly in the type in parentheses: e.g. match(choice1, choice2, etc), or iii) set the choices in the argument's default, e.g. ", x_names[i], " = c(\"choice1\", \"choice2\", etc).")
-                    }
+                  # BUG
+                  if(length(value_all) == 0){
+                    stop_up("Type 'match' could not be set since the choices were not found. Argument ", x_names[i], " is missing with no default. Either: i) provide the argument '.choices', ii) include the choices directly in the type in parentheses: e.g. match(choice1, choice2, etc), or iii) set the choices in the argument's default, e.g. ", x_names[i], " = c(\"choice1\", \"choice2\", etc).")
                   }
 
-                  value = choices[1]
                 } else {
                   # There is a default value
                   # if the type is multi type => we go through all the checking (ex: NA | match(value1, value2) with NA default)
@@ -2434,28 +2433,11 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
                   value_all = eval(fa, envir = sys.frame(sysOrigin))
 
-                  value = value_all
-                  if(grepl("match(", type_low, fixed = TRUE) || !is.null(.choices)){
-
-                    if(grepl("match(", type_low, fixed = TRUE)){
-                      choices = extract_par(type, "match")
-
-                    } else {
-                      choices = .choices
-                    }
-
-                    if(length(value_all) > 1 && !grepl("multi", type_low, fixed = TRUE)){
-                      msg = ifelse(grepl("match(", type, fixed = TRUE), paste0("choices set in the type ('", type, "')"), "choices passed through the argument .choices.")
-                      stop_up("You cannot have at the same time a default value for ", x_names[i], " with multiple elements and ", msg, " Either: i) add the 'multi' keyword to 'match' type if you really want multiple elements, or ii) set ", x_names[i], " to '", value_all[1], "' only.")
-                    }
-
-                    if(!all(value_all %in% choices)){
-                      stop_up("Default value for ", x_names[i], " is ill-formed. It should be one of ", enumerate_items(choices, "quote"), ".")
-                    }
-
-                  } else {
-                    value = value_all[1]
+                  if(!is.character(value_all)){
+                    stop_up("The default values of argument ", x_names[i], " is not of type character (instead it is of type ", enumerate_items(class(value_all[1]), "quote"), "). To initialize the class 'match', it must be of type character.")
                   }
+
+                  value = value_all[1]
                 }
 
                 assign(x_names[i], value, parent.frame(2))
@@ -2798,7 +2780,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
     x_all = list()
 
-
     for(i in which(!is_done)){
 
       # Evaluation of the argument
@@ -3001,18 +2982,15 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
   }
 
 
-  # if(FLAG == "sub") return(NULL)
-
   # Reason & main class will be later used when error is called
   all_reasons = list()
   all_main_types = list()
 
+  n_types = length(all_types)
   for(i in which(!is_done)){
-    all_reasons[[i]] = rep("", length(all_types))
-    all_main_types[[i]] = rep("", length(all_types))
+    all_reasons[[i]] = rep("", n_types)
+    all_main_types[[i]] = rep("", n_types)
   }
-
-  # if(FLAG == "eval") return(NULL)
 
   #
   # Main loop
@@ -3631,7 +3609,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         }
 
         if(pblm_match){
-          if(is_multi){
+          if(is_multi && length(x) > 1){
             all_reasons[[k]][i] = paste0(all_reasons[[k]][i], " [", n_th(j), " element]")
           }
           is_done_or_fail[k] = TRUE

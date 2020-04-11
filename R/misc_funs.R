@@ -864,7 +864,7 @@ fit_screen = function(msg){
 
   # Note that \t are NOT handled
 
-  MAX_WIDTH = options("width")$width
+  MAX_WIDTH = getOption("width")
 
   res = c()
 
