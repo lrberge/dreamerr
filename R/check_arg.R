@@ -9,12 +9,24 @@
 
 # type = "scalarNumericGT{5}LT{7}|NA|scalarLogical|matrix nrow(,5) ncol(2,5) GT{log(5)}"
 
-send_error = function(all_reasons, x_name, type, message, choices = NULL, call_up, .value, .data){
+send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .value, .data){
+
+  # Retro compatibility of .call_up + "up" with set_up
+  mc_origin = sys.call(sys.parent(2))
+  if(".call_up" %in% names(mc_origin)){
+    # I do that to avoid having a new argument to send_error
+    up_value = get(".call_up", parent.frame(2))
+    up = up_value[[1]]
+
+  } else if(!".up" %in% names(mc_origin)){
+    up_value = mget("DREAMERR__UP", parent.frame(3), ifnotfound = 0)
+    up = up_value[[1]]
+  }
 
   all_types = strsplit(type, "|", fixed = TRUE)[[1]]
 
   if(grepl("(?i)match|charin", type)){
-    sysOrigin = sys.parent(call_up + 2)
+    sysOrigin = sys.parent(up + 3)
     choices = extract_choices(x_name, type, choices, sysOrigin)
   }
 
@@ -582,7 +594,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, call_u
   #
 
   # The original call
-  my_call = deparse(sys.calls()[[sys.nframe()-(2 + call_up)]])[1] # call can have svl lines
+  my_call = deparse(sys.calls()[[sys.nframe()-(up + 3)]])[1] # call can have svl lines
   nmax = 40
   if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax-1), "...")
 
@@ -1134,7 +1146,8 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' @param .value An integer scalar or a named list of integers scalars. Used when the keyword \code{value} is present (like for instance in \code{len(value)}). If several values are to be provided, then it must be a named list with names equal to the codes: for instance if \code{nrow(value)} and \code{ncol(value)} are both present in the type, you can use (numbers are an example) \code{.value = list(nrow = 5, ncol = 6)}. See Section IV) in the examples.
 #' @param .arg_name A character scalar. If \code{.message} is not provided, an automatic error message will be generated using \code{.arg_name} as the argument name.
 #' @param .env An environment defaults to the frame where the user called the original function. Only used in two situations. 1) if the global keywords \code{eval} or \code{evalset} are present: the argument will also be evaluated in this environment. 2) if the argument is expected to be a formula and \code{var(env)} is included in the type: then the formula will be expected to contain variables existing in \code{.env}.
-#' @param .call_up Integer, default is 0. If the user provides a wrong argument, the error message will integrate the call of the function from which \code{check_arg} has been called. If \code{check_arg} is  called in a non-user level sub function of a main user-level function, then use \code{call_up = 1} to make the error message look like it occured in the main function (and not in the sub function). Of course you can have values higher than 1.
+#' @param .up Integer, default is 0. If the user provides a wrong argument, the error message will integrate the call of the function from which \code{check_arg} has been called. If \code{check_arg} is  called in a non-user level sub function of a main user-level function, then use \code{.up = 1} to make the error message look like it occured in the main function (and not in the sub function). Of course you can have values higher than 1.
+#' @param .call_up Deprecated, only kept for retro-compatibility. Use argument \code{.up} instead.
 #'
 #' @section How to form a type:
 #'
@@ -1251,11 +1264,11 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'
 #'
 #'
-#' @section Nesting argument checking (\code{.call_up}):
+#' @section Nesting argument checking (\code{.up}):
 #'
 #' When you develop several functions that share common features, it is usually good practice to pool the common computations into an internal function (to avoid code duplication).
 #'
-#' When you do so, you can do all the argument checking in the internal function. Then use the argument \code{.call_up = 1} so that if the user provdes a wrong argument, the error message will refer to the user-level function and NOT to the internal function, making it much clearer for the user.
+#' When you do so, you can do all the argument checking in the internal function. Then use the argument \code{.up = 1} so that if the user provdes a wrong argument, the error message will refer to the user-level function and NOT to the internal function, making it much clearer for the user.
 #'
 #' This is detailed in Section XII) in the examples.
 #'
@@ -1901,13 +1914,13 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'
 #'
 #' #
-#' # XII) Nested checking: using .call_up
+#' # XII) Nested checking: using .up
 #' #
 #'
 #' # Say you have two user level functions
 #' # But you do all the computation in an internal function.
 #' # The error message should be at the level of the user-level function
-#' # You can use the argument .call_up to do that
+#' # You can use the argument .up to do that
 #' #
 #'
 #' sum_fun = function(x, y){
@@ -1921,7 +1934,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' my_internal = function(x, y, sum){
 #'   # The error messages will be at the level of the user-level functions
 #'   # which are 1 up the stack
-#'   check_arg(x, y, "numeric scalar mbt", .call_up = 1)
+#'   check_arg(x, y, "numeric scalar mbt", .up = 1)
 #'
 #'   if(sum) return(x + y)
 #'   return(x - y)
@@ -2124,58 +2137,58 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #'
 #'
 #'
-check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .call_up = 0){
+check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
 
   if(!getOption("dreamerr_check")) return(NULL)
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up)
+    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
   }
 
-  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up + 1, .mc = mc, .is_plus = FALSE, .is_value = FALSE)
+  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = FALSE, .is_value = FALSE)
 
 }
 
 #' @describeIn check_arg Same as \code{check_arg}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
-check_arg_plus = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .call_up = 0){
+check_arg_plus = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up)
+    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
   }
 
-  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up + 1, .mc = mc, .is_plus = TRUE, .is_value = FALSE)
+  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = TRUE, .is_value = FALSE)
 
 }
 
 #' @describeIn check_arg Checks if a (single) value is of the appropriate type
-check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .call_up = 0){
+check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
 
   if(!getOption("dreamerr_check")) return(NULL)
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up)
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
   }
 
-  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up + 1, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
+  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
 
 }
 
 #' @describeIn check_arg Same as \code{check_value}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
-check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .call_up = 0){
+check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up)
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
   }
 
-  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .call_up = .call_up + 1, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
+  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
 
 }
 
@@ -2188,7 +2201,7 @@ check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .da
 #### CORE FUNCTION ####
 ####
 
-check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .call_up = 0, .arg_name, .mc, .is_plus = FALSE, .is_value = FALSE){
+check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0, .arg_name, .mc, .is_plus = FALSE, .is_value = FALSE){
 
   # NOTA: the price to pay to using a core function called by user-level functions is about 4us. I think that's fair for the
   # clarity it adds to the code (and I hate duplication anyway).
@@ -2224,6 +2237,14 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
   mc = .mc
 
+  # Retro compatibility .call_up (dammit!) + set_up
+  if(!is.na(match(".call_up", names(mc)))){
+    .up = .call_up
+  } else if(is.na(match(".up", names(mc)))){
+    up_value = mget("DREAMERR__UP", parent.frame(2), ifnotfound = 0)
+    .up = up_value[[1]]
+  }
+
   if(IS_VALUE == FALSE){
     #
     # CHECK ARG ####
@@ -2258,7 +2279,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     mc_arg = mc[match(names(mc), c(".x", ".type", ".x1", ".x2", ".x3", ".x4", ".x5", ".x6", ".x7", ".x8", ".x9"), nomatch = 0) > 0]
 
     # The original call (nedded to identify missing arguments OR for the '...' case)
-    sysOrigin = sys.parent(.call_up + 1)
+    sysOrigin = sys.parent(.up + 2)
     mc_origin = match.call(definition = sys.function(sysOrigin), call = sys.call(sysOrigin), expand.dots = FALSE)
 
     if(!IS_DOTS){
@@ -2353,7 +2374,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               .message = paste0(" Argument '", x_names[i], "' is required.")
             }
             reason = "it is missing"
-            send_error(reason, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+            send_error(reason, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
           } else {
 
             is_done[i] = TRUE
@@ -2479,7 +2500,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         RM_TYPE = TRUE
         type = NULL
         if(!is.null(names(current_call))){
-          current_call = current_call[!names(current_call) %in% c(".message", ".choices", ".data", ".env", ".call_up")]
+          current_call = current_call[!names(current_call) %in% c(".message", ".choices", ".data", ".env", ".up")]
         }
 
         if(length(current_call) > 0){
@@ -2507,7 +2528,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       # Missing
       if(n_dots == 0){
         if(grepl("mbt", type_low, fixed = TRUE)){
-          stop_up("In argument '...', no value is provided. Problem: at least one value is required.", up = .call_up + 1)
+          stop_up("In argument '...', no value is provided. Problem: at least one value is required.", up = .up + 2)
         } else {
           return(NULL)
         }
@@ -2523,7 +2544,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         if("try-error" %in% class(x_dots)){
           reason = gsub("^.+:( \n )? |\n$", "", as.character(x_dots))
-          stop_up("In argument '...', ", ifsingle(dots_origin, "the element", "some elements"), " could not be evaluated. Problem: ", reason, up = .call_up + 1)
+          stop_up("In argument '...', ", ifsingle(dots_origin, "the element", "some elements"), " could not be evaluated. Problem: ", reason, up = .up + 2)
         }
 
       }
@@ -2548,7 +2569,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             reason = paste0("the ", enumerate_items(n_th(qui_pblm)), " element", plural_len(qui_pblm, "s.isn't"), " named.")
           }
 
-          stop_up("In argument '...': all elements must be named. Problem: that's not the case, ", reason, up = .call_up + 1)
+          stop_up("In argument '...': all elements must be named. Problem: that's not the case, ", reason, up = .up + 2)
 
         } else if(nchar(type_low) <= 9){
           return(NULL)
@@ -2556,8 +2577,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       }
 
       args = names(mc_arg)
-
       if(length(args) > 0 && n_named_dots < n_dots){
+
+        # we check the consistency (developer-side mistake)
+        if(n_dots - n_named_dots)
 
         rm_adj = 0
 
@@ -2568,7 +2591,17 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           # If error => it's an undefined evaluation => we're out
           if(any(class(x) == "try-error")){
             reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
-            stop_up("In argument '...', the ", n_th(naked_order[i - rm_adj]), " element could not be evaluated. Problem: ", reason, up = .call_up + 1)
+
+            if(grepl("^argument \".+\" is missing, with no default", reason)){
+              # Developer side error
+              arg_name = gsub("^[^\"]+\"|\"[^\"]+$", "", reason)
+              fun_name = deparse(sys.call(sys.parent(2))[[1]])
+              stop_up("Problem in the call to the internal function '", fun_name, "'. The argument '", arg_name, "' has been mistakenly passed in '...'.")
+            } else {
+              stop_up("In argument '...', the ", n_th(naked_order[i - rm_adj]), " element could not be evaluated. Problem: ", reason, up = .up + 2)
+            }
+
+
           }
 
           if(RM_TYPE && identical(x, type)){
@@ -2634,7 +2667,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               value_dp = deparse(mc_origin[[x_names[i]]])
               if(grepl("$", value_dp, fixed = TRUE)){
                 msg = paste0("it is NULL (fine) but you entered '", value_dp, "'. If you really want it to be NULL, please use NULL directly or a variable containing NULL")
-                send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+                send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
               }
             }
 
@@ -2646,7 +2679,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
 
           }  else {
-            send_error("it is NULL", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+            send_error("it is NULL", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
           }
         }
 
@@ -2660,7 +2693,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 is_done[i] = TRUE
                 next
               } else {
-                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
               }
             } else {
               is_int = grepl("integer", type_low, fixed = TRUE)
@@ -2673,7 +2706,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
               } else if(n_types == 0){
                 if(grepl("list", type_low, fixed = TRUE)){
-                  send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+                  send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
                 } else {
                   is_done[i] = TRUE
                   next
@@ -2686,13 +2719,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                   next
                 } else {
                   msg = paste0("it is of length 0 and of type '", class(x)[1], "'")
-                  send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+                  send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
                 }
               }
             }
 
           } else {
-            send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+            send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
           }
         }
         # END::COPY(L0)
@@ -2725,7 +2758,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
     if(IS_PLUS){
 
-      sysOrigin = sys.parent(.call_up + 1)
+      sysOrigin = sys.parent(.up + 2)
 
       IS_LIST = FALSE
       if(!is.name(mc[[".x"]])){
@@ -2800,11 +2833,16 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         if(IS_PLUS && IS_LIST[i]) stop_up("The keywords 'eval' and 'evalset' are not available when checking list elements.")
 
         if(missing(.env)){
-          .env = parent.frame(sysOrigin)
+          .env = parent.frame(.up + 3)
         }
 
         value_dp = deparse(mc_origin[[x_names[i]]])
-        x = try(eval(parse(text = value_dp), .data, .env), silent = TRUE)
+        if(missing(.data)){
+          x = try(eval(parse(text = value_dp), .env), silent = TRUE)
+        } else {
+          x = try(eval(parse(text = value_dp), .data, .env), silent = TRUE)
+        }
+
 
         # We try to extract some precise information if error
         if(any(class(x) == "try-error")){
@@ -2825,7 +2863,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
           }
 
-          send_error(reason, x_name = x_names[i], type = type, message = .message, call_up = .call_up, .value = .value, .data = .data)
+          send_error(reason, x_name = x_names[i], type = type, message = .message, up = .up, .value = .value, .data = .data)
 
         }
 
@@ -2857,7 +2895,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             .message = paste0("Argument '", x_names[i], "' (equal to '", deparse(mc_origin[[x_names[i]]]), "') could not be evaluated.")
             reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
 
-            send_error(reason, x_name = x_names[i], type = type, message = .message, call_up = .call_up, .value = .value, .data = .data)
+            send_error(reason, x_name = x_names[i], type = type, message = .message, up = .up, .value = .value, .data = .data)
           }
 
         }
@@ -2871,7 +2909,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             value_dp = deparse(mc_origin[[x_names[i]]])
             if(grepl("$", value_dp, fixed = TRUE)){
               msg = paste0("it is NULL (fine) but you entered '", value_dp, "'. If you really want it to be NULL, please use NULL directly or a variable containing NULL")
-              send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+              send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
             }
           }
 
@@ -2914,13 +2952,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             l_name = gsub("\\$.+", "", x_names[i])
             var_name = gsub(".+\\$", "", x_names[i])
             msg = paste0("In the list argument '", l_name, "', the element '", var_name, "' must be provided and cannot be NULL.")
-            stop_up(msg, up = .call_up + 1)
+            stop_up(msg, up = .up + 2)
           } else {
             is_done[i] = TRUE
             next
           }
         } else {
-          send_error("it is NULL", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+          send_error("it is NULL", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
         }
       }
 
@@ -2933,7 +2971,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               is_done[i] = TRUE
               next
             } else {
-              send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+              send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
             }
           } else {
             is_int = grepl("integer", type_low, fixed = TRUE)
@@ -2946,7 +2984,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
             } else if(n_types == 0){
               if(grepl("list", type_low, fixed = TRUE)){
-                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
               } else {
                 is_done[i] = TRUE
                 next
@@ -2959,13 +2997,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 next
               } else {
                 msg = paste0("it is of length 0 and of type '", class(x)[1], "'")
-                send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+                send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
               }
             }
           }
 
         } else {
-          send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, call_up = .call_up, .value = .value, .data = .data)
+          send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
         }
       }
       # END::CHUNK(L0)
@@ -3304,7 +3342,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             if("data" %in% where){
               if(length(where) == 1){
 
-                if(length(.data) == 0){
+                if(missing(.data) || length(.data) == 0){
                   data_dp = deparse(mc[[".data"]])
 
                   if(missing(.data) || data_dp == "NULL"){
@@ -3312,22 +3350,22 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                   } else {
 
                     info_arg = arg_name_header(x_names[i])
-                    stop_up(info_arg, " is a formula that must contain variables from the data set given in argument '", data_dp, "'. Problem: this data set has no variable.", up = .call_up + 1)
+                    stop_up(info_arg, " is a formula that must contain variables from the data set given in argument '", data_dp, "'. Problem: this data set has no variable.", up = .up + 2)
                   }
 
                 } else if(is.null(names(.data))){
                   info_arg = arg_name_header(x_names[i])
                   msg = ifelse(is.list(.data), "is a list but has no names attribute.", "is not a data.frame nor a list.")
-                  stop_up(info_arg, " is a formula that must contain variables from the data set given in argument '", deparse(mc[[".data"]]), "'. Problem: this data set ", msg, up = .call_up + 1)
+                  stop_up(info_arg, " is a formula that must contain variables from the data set given in argument '", deparse(mc[[".data"]]), "'. Problem: this data set ", msg, up = .up + 2)
 
                 } else {
                   x_pblm = setdiff(x_vars, names(.data))
                   if(length(x_pblm) > 0){
                     info_arg = arg_name_header(x_names[i])
-                    stop_up(info_arg, " is a formula whose variables must be in the data set given in argument '", deparse(mc[[".data"]]), "'. Problem: the variable", enumerate_items(x_pblm, "s.is.quote"), " not in the data.", up = .call_up + 1)
+                    stop_up(info_arg, " is a formula whose variables must be in the data set given in argument '", deparse(mc[[".data"]]), "'. Problem: the variable", enumerate_items(x_pblm, "s.is.quote"), " not in the data.", up = .up + 2)
                   }
                 }
-              } else if(!is.null(names(.data))){
+              } else if(!missing(.data) && !is.null(names(.data))){
                 x_pblm = setdiff(x_vars, names(.data))
               }
             }
@@ -3335,7 +3373,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             if(length(x_pblm) > 0 && "env" %in% where){
 
               if(missing(.env)){
-                .env =  parent.frame(sysOrigin)
+                .env = parent.frame(.up + 3)
               }
 
               is_ok = sapply(x_pblm, exists, envir = .env)
@@ -3358,7 +3396,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 }
 
                 info_arg = arg_name_header(x_names[i])
-                stop_up(info_arg, " is a formula whose variables must be ", msg, ". Problem: the variable", enumerate_items(x_real_pblm, "s.isn't.quote"), " there.", up = .call_up + 1)
+                stop_up(info_arg, " is a formula whose variables must be ", msg, ". Problem: the variable", enumerate_items(x_real_pblm, "s.isn't.quote"), " there.", up = .up + 2)
 
               }
 
@@ -3883,7 +3921,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             if(any_NA[k]){
               x_omit[[k]] = as.vector(x)[!is.na(as.vector(x))]
               if(length(x_omit[[k]]) == 0){
-                is_done_or_fail[k] = TRUE
+                is_done[k] = is_done_or_fail[k] = TRUE
                 next
               }
             } else {
@@ -3893,6 +3931,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
           }
         }
+
+        if(all(is_done)) return(NULL)
+        if(all(is_done_or_fail)) next
+
       }
 
     } else if(check_NONA){
@@ -4105,8 +4147,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
         }
 
-        if(all(is_done_or_fail)) next
-
       } else {
 
         for(k in which(!is_done_or_fail)){
@@ -4295,18 +4335,15 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
         }
 
-        if(all(is_done_or_fail)) next
-
       }
 
       if(all(is_done)) return(NULL)
+      if(all(is_done_or_fail)) next
     }
-
 
     #
     # ...Equality ####
     #
-
 
     if(check_equality && (grepl("ge{", my_type, fixed = TRUE) || grepl("gt{", my_type, fixed = TRUE) || grepl("le{", my_type, fixed = TRUE) || grepl("lt{", my_type, fixed = TRUE))){
       # fixed is still faster than (ge|gt|le|lt)\\{
@@ -4412,7 +4449,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
     }
 
-
     # If we're here, this means that's fine!
     is_done[!is_done_or_fail] = TRUE
     # Out of the loop
@@ -4435,7 +4471,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
   # If here => it means no type has been matched => error
 
-  send_error(all_reasons, x_name = x_names[qui], type, .message, .choices, .call_up, .value = .value, .data = .data)
+  send_error(all_reasons, x_name = x_names[qui], type, .message, .choices, .up, .value = .value, .data = .data)
 
 }
 

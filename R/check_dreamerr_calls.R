@@ -6,7 +6,7 @@
 
 
 
-check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .call_up = 0, .arg_name){
+check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up, .call_up, .arg_name){
   # This internal function tries to fully check the call to check_arg
   # in particular errors/warnings will pop when the types are ill-formed
 
@@ -25,12 +25,14 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
 
   FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
 
+  not_missing = function(arg) deparse(substitute(arg)) %in% names(current_call)
+
   #
   # Basic Arguments ####
   #
 
   # .message: character scalar
-  if(!missing(.message)){
+  if(not_missing(.message)){
     if(length(.message) != 1){
       stop_up(up = 1, "Argument '.message' must be a character string of length 1. Currently it is of length ", length(.message), ".")
     }
@@ -40,39 +42,44 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
   }
 
   # .choices: character vector
-  if(!missing(.choices) && !is.null(.choices)){
+  if(not_missing(.choices) && !is.null(.choices)){
     if(!is.character(.choices)){
       stop_up(up = 1, "Argument '.choices' must be a character vector. Currently it is not of type character.")
     }
   }
 
   # .env: an environment
-  if(!missing(.env)){
+  if(not_missing(.env)){
     if(!is.environment(.env)){
       stop_up(up = 1, "Argument '.env' must be an environment (default it is the environment from the main call of the function). Currently it is not an environment.")
     }
   }
 
-  # .call_up: integer scalar
-  if(!missing(.call_up)){
-    if(length(.call_up) != 1){
-      stop_up(up = 1, "Argument '.call_up' must be a positive integer scalar. Currently it is of length ", length(.call_up), ".")
+  # .up: integer scalar
+  if(not_missing(.call_up)){
+    warn_up("Argument '.call_up' is deprecated, please use '.up' instead ('.call_up' will be removed in the future).")
+    .up = .call_up
+  }
+
+  if(not_missing(.up)){
+    if(length(.up) != 1){
+      stop_up(up = 1, "Argument '.up' must be a positive integer scalar. Currently it is of length ", length(.up), ".")
     }
-    if(!is.numeric(.call_up)){
-      stop_up(up = 1, "Argument '.call_up' must be a positive integer scalar. Currently it is not numeric.")
+    if(!is.numeric(.up)){
+      stop_up(up = 1, "Argument '.up' must be a positive integer scalar. Currently it is not numeric.")
     }
-    if((.call_up - floor(.call_up)) != 0){
-      stop_up(up = 1, "Argument '.call_up' must be a positive integer scalar. Currently it is not an integer although numeric.")
+    if((.up - floor(.up)) != 0){
+      stop_up(up = 1, "Argument '.up' must be a positive integer scalar. Currently it is not an integer although numeric.")
     }
-    if(.call_up < 0){
-      stop_up(up = 1, "Argument '.call_up' must be a positive integer scalar. Currently it is not positive.")
+    if(.up < 0){
+      stop_up(up = 1, "Argument '.up' must be a positive integer scalar. Currently it is not positive.")
     }
   }
 
   # .value: integer scalar
-  if(!missing(.value)){
+  if(not_missing(.value)){
     if(length(.value) != 1){
-      stop_up(up = 1, "Argument '.value' must be a positive integer scalar. Currently it is of length ", length(.call_up), ".")
+      stop_up(up = 1, "Argument '.value' must be a positive integer scalar. Currently it is of length ", length(.value), ".")
     }
     if(!is.numeric(.value)){
       stop_up(up = 1, "Argument '.value' must be a positive integer scalar. Currently it is not numeric.")
@@ -86,7 +93,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
   }
 
   # .arg_name: character scalar
-  if(!missing(.arg_name)){
+  if(not_missing(.arg_name)){
     if(length(.arg_name) != 1){
       stop_up(up = 1, "Argument '.arg_name' must be a character string of length 1. Currently it is of length ", length(.arg_name), ".")
     }
@@ -107,7 +114,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
     mc = match.call(definition = sys.function(sysUp), call = sys.call(sysUp), expand.dots = FALSE)
     mc_arg = mc[match(names(mc), c(".x", ".type", ".x1", ".x2", ".x3", ".x4", ".x5", ".x6", ".x7", ".x8", ".x9"), nomatch = 0) > 0]
 
-    sysOrigin = sys.parent(.call_up + 2) # I checked, this is 1
+    sysOrigin = sys.parent(.up + 2)
     mc_origin = match.call(definition = sys.function(sysOrigin), call = sys.call(sysOrigin), expand.dots = FALSE)
 
     #
@@ -119,7 +126,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
       nb_args = length(current_call) - 2
     } else {
       # We count the number of unnamed args or with names in .x[d] .type
-      nb_args = length(current_call[!names(current_call) %in% c(".message", ".choices", ".data", ".env", ".call_up")]) - 2
+      nb_args = length(current_call[!names(current_call) %in% c(".message", ".choices", ".data", ".env", ".up")]) - 2
     }
 
     if(nb_args < 1){
@@ -161,7 +168,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
     } else {
       type = NULL
       if(!is.null(names(current_call))){
-        current_call = current_call[!names(current_call) %in% c(".message", ".choices", ".data", ".env", ".call_up")]
+        current_call = current_call[!names(current_call) %in% c(".message", ".choices", ".data", ".env", ".up")]
       }
 
       if(IS_DOTS){

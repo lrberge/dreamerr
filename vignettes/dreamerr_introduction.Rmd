@@ -92,9 +92,9 @@ The meaning of the classes is as follows:
  
  - **vmatrix**: a matrix or vector, no tolerance for NAs. Option `NA OK` allows NA values, `square` requires the matrix to be square (if a vector, then it must be of length 1).
  
- - **data.frame**: an object that inherits from `data.frame`, tolerate NAs. Option `No NA` throws an error if it contains NAs.
+ - **data.frame**: an object that inherits from `data.frame`, tolerates NAs. Option `No NA` throws an error if it contains NAs.
  
- - **vdata.frame**: an object that inherits from `data.frame`, or a vector; tolerate NAs. Option `No NA` throws an error if it contains NAs.
+ - **vdata.frame**: an object that inherits from `data.frame`, or a vector; tolerates NAs. Option `No NA` throws an error if it contains NAs.
  
  - **list**: a list. Option `named` requires it to have names.
  
@@ -147,7 +147,7 @@ On top of the types, you also have 8 global keywords that can be anywhere in the
 
 Actually there are two functions to check arguments: `check_arg` and `check_arg_plus`. The difference between the two is that i) the second allows keywords that re-assigns values to the argument (i.e. the `match` class, the `conv` keyword, `NULL{expr}`, and `evalset`), and ii) allows to check list elements of list arguments.
 
-Let's illustrate when using `check_arg_plus`:
+Let's illustrate when to use `check_arg_plus`:
 
 ```{r}
 plot_cor = function(x, y = NULL, line.opts = list(), ...){
@@ -158,7 +158,7 @@ plot_cor = function(x, y = NULL, line.opts = list(), ...){
   # - if y is NULL, then x with some noise is assigned to it 
   check_arg_plus(y, "NULL{x + rnorm(length(x))} numeric vector len(data)", .data = x)
   
-  # We ensure the arguments are lists (even of 0-length)
+  # We ensure line.opts is a list (even of 0-length)
   check_arg(line.opts, "named list L0")
   
   # The linear regression + options from ...
@@ -174,7 +174,7 @@ plot_cor = function(x, y = NULL, line.opts = list(), ...){
   # - otherwise, a positive integer or a character scalar
   check_arg_plus(line.opts$col, "NULL{'firebrick'} match(firebrick, darkblue) | scalar(integer, character) GE{0}") 
   # lwd:
-  # - if not provide => 2
+  # - if not provided => 2
   # - otherwise a positive integer scalar
   check_arg_plus(line.opts$lwd, "integer scalar GE{0} NULL{2}") # check + default
   
@@ -199,7 +199,7 @@ Yet beware, this error checking is really in-depth, thus rather computationnally
  
 # Adding error-handling to `lm`
 
-Now that we know how to use `check_arg`, let's provide some error-handling to the `lm` function. There is still need to check some stuff after that, but the bulk of the job is done:
+Now that we know how to use `check_arg`, let's provide some error-handling to the `lm` function. There is still need to check some stuff after that, but the bulk of the job is done (the code is long because of the comments, otherwise it's 9 lines for 13 arguments):
 
 ```{r}
 lm_check = function(formula, data, subset, weights, na.action, method = "qr", model = TRUE, x = FALSE, y = FALSE, qr = TRUE, singular.ok = TRUE, contrasts = NULL, offset, ...){

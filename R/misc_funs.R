@@ -109,6 +109,58 @@ setDreamerr_dev.mode = function(dev.mode = FALSE){
 }
 
 
+#' Sets semi-globally the 'up' argument of dreamerr's functions
+#'
+#' When \code{\link[dreamerr]{check_arg}} (or \code{\link[dreamerr]{stop_up}}) is used in non user-level functions, the argument \code{.up} is used to provide an appropriate error message referencing the right function.
+#'
+#' To avoid repeating the argument \code{.up} in each \code{check_arg} call, you can set it (kind of) "globally" with \code{set_up}.
+#'
+#' @param .up An integer greater or equal to 0.
+#'
+#' @details
+#' The function \code{set_up} does not set the argument \code{up} globally.
+#'
+#'
+#' @examples
+#'
+#' # Example with computation being made within a non user-level function
+#'
+#' sum_fun = function(x, y){
+#'   my_internal(x, y, sum = TRUE)
+#' }
+#'
+#' diff_fun = function(x, y){
+#'   my_internal(x, y, sum = FALSE)
+#' }
+#'
+#' my_internal = function(x, y, sum){
+#'   set_up(1) # => errors will be at the user-level function
+#'   check_arg(x, y, "numeric scalar mbt")
+#'
+#'   # Identical to calling
+#'   # check_arg(x, y, "numeric scalar mbt", .call_up = 1)
+#'
+#'   if(sum) return(x + y)
+#'   return(x - y)
+#' }
+#'
+#' # we check it works
+#' sum_fun(5, 6)
+#' diff_fun(5, 6)
+#'
+#' # Let's throw some errors
+#' try(sum_fun(5))
+#' try(sum_fun(5, 1:5))
+#'
+set_up = function(.up = 1){
+  if(length(.up) == 1 && is.numeric(.up) && !is.na(.up) && .up == floor(.up) && .up >= 0){
+    assign("DREAMERR__UP", .up, parent.frame())
+  } else {
+    stop("Argument '.up' must be an integer scalar greater or equal to 1. This is currently not the case.")
+  }
+}
+
+
 #' Checks the arguments in dots from methods
 #'
 #' This function informs the user of arguments passed to a method but which are not used by the method.
@@ -231,7 +283,7 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message = TRUE, w
 #' Useful if you employ non-user level sub-functions within user-level functions. When an error is thrown in the sub function, the error message will integrate the call of the user-level function, which is more informative and appropriate for the user. It offers a similar functionality for \code{warning}.
 #'
 #' @param ... Objects that will be coerced to character and will compose the error message.
-#' @param up The number of frames up, default is 1. The call in the error message will be based on the function \code{up} frames up the stack. See examples.
+#' @param up The number of frames up, default is 1. The call in the error message will be based on the function \code{up} frames up the stack. See examples. If you have many calls to \code{stop_up}/\code{warn_up} with a value of \code{up} different than one, you can use \code{\link[dreamerr]{set_up}} to change the default value of \code{up} within the function.
 #' @param immediate. Whether the warning message should be prompted directly. Defaults to \code{FALSE}.
 #'
 #' @details
@@ -287,6 +339,13 @@ stop_up = function(..., up = 1){
 
   message = paste0(...)
 
+  # up with set_up
+  mc = match.call()
+  if(!"up" %in% names(mc)){
+    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 1)
+    up = up_value[[1]]
+  }
+
   # The original call
   my_call = deparse(sys.calls()[[sys.nframe() - (1 + up)]])[1] # call can have svl lines
   nmax = 50
@@ -301,6 +360,13 @@ stop_up = function(..., up = 1){
 warn_up = function(..., up = 1, immediate. = FALSE){
 
   message = paste0(...)
+
+  # up with set_up
+  mc = match.call()
+  if(!"up" %in% names(mc)){
+    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 1)
+    up = up_value[[1]]
+  }
 
   # The original call
   my_call = deparse(sys.calls()[[sys.nframe() - (1 + up)]])[1] # call can have svl lines
@@ -720,7 +786,7 @@ n_times = function(n){
   qui = n <= 4
   res[qui] = dict[n[qui]]
 
-  if(any(!qui)){
+  if(any(!is.na(qui) & !qui)){
     res[!qui] = paste0(n[!qui], " times")
   }
 
@@ -737,7 +803,7 @@ n_th = function(n){
   qui = n <= 13
   res[qui] = dict[n[qui]]
 
-  if(any(!qui)){
+  if(any(!is.na(qui) & !qui)){
     other = n[!qui]
     rest = other %% 10
     rest[rest == 0 | rest >= 4] = 4
@@ -892,6 +958,139 @@ fit_screen = function(msg){
 
   paste(res, collapse = "\n")
 }
+
+
+#' Fills a character vector with a symbol
+#'
+#' Fills a character vector with a user-provided symbol, up to the required length.
+#'
+#' @param x A character vector.
+#' @param n A positive integer giving the total expected length of each character string. Can be NULL (default). If \code{NULL}, then \code{n} is set to the maximum number of characters in \code{x} (i.e. \code{max(nchar(x))}).
+#' @param symbol Character scalar, default to \code{" "}. The symbol used to fill.
+#' @param right Logical, default is \code{FALSE}. Whether the character vector should be filled on the left( default) or on the right.
+#' @param anchor Character scalar, can be missing. If provided, the filling is done up to this anchor. See examples.
+#'
+#' @return
+#' Returns a character vector of the same length as \code{x}.
+#'
+#' @examples
+#'
+#' # Some self-explaining examples
+#' x = c("hello", "I", "am", "No-one")
+#' cat(sep = "\n", fill_symbol(x))
+#' cat(sep = "\n", fill_symbol(x, symbol = "."))
+#' cat(sep = "\n", fill_symbol(x, symbol = ".", n = 15))
+#' cat(sep = "\n", fill_symbol(x, symbol = ".", right = TRUE))
+#'
+#' cat(sep = "\n", paste(fill_symbol(x, symbol = ".", right = TRUE), ":", 1:4))
+#'
+#' # Argument 'anchor' can be useful when using numeric vectors
+#' x = c(-15.5, 1253, 32.52, 665.542)
+#' cat(sep = "\n", fill_symbol(x))
+#' cat(sep = "\n", fill_symbol(x, anchor = "."))
+#'
+fill_symbol = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor){
+  # Character vectors starting with " " are not well taken care of
+
+  check_arg_plus(x, "character vector conv")
+  check_arg(n, "NULL integer scalar GE{0}")
+  check_arg(symbol, "character scalar")
+  check_arg(right, "logical scalar")
+  check_arg(anchor, "character scalar")
+
+  if(nchar(symbol) != 1) stop("Argument 'symbol' must be a single character (currenlty it is of length ", nchar(symbol), ").")
+
+  IS_ANCHOR = FALSE
+  if(!missing(anchor)){
+    if(nchar(anchor) != 1){
+      stop("If provided, argument 'anchor' must be a single character (currenlty it is of length ", nchar(symbol), ").")
+    }
+    IS_ANCHOR = TRUE
+    x_origin = x
+    is_x_anchor = grepl(anchor, x, fixed = TRUE)
+    x_split = strsplit(x, anchor, fixed = TRUE)
+    x = sapply(x_split, function(v) v[1])
+  }
+
+  if(!is.null(n) && n == 0) return(x)
+
+  n_all = nchar(x)
+  if(is.null(n)) n = max(n_all)
+
+  n2fill = n - n_all
+  qui = which(n2fill > 0)
+  if(length(qui) == 0) return(x)
+
+  if(symbol == " "){
+    if(right == TRUE){
+      x_new = sprintf("%-*s", n, x[qui])
+    } else {
+      x_new = sprintf("%*s", n, x[qui])
+    }
+  } else {
+    pattern = rep(symbol, n)
+    value2append = sapply(n2fill[qui], function(nmax) paste(pattern[1:nmax], collapse = ""))
+    if(right == TRUE){
+      x_new = paste0(x[qui], value2append)
+    } else {
+      x_new = paste0(value2append, x[qui])
+    }
+  }
+
+  res = x
+  res[qui] = x_new
+
+  if(IS_ANCHOR){
+    for(i in seq_along(x_split)){
+      if(is_x_anchor[i]){
+        x_split[[i]][1] = res[i]
+        res[i] = paste(x_split[[i]], collapse = anchor)
+      }
+    }
+  }
+
+  res
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
