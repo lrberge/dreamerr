@@ -11,18 +11,6 @@
 
 send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .value, .data){
 
-  # Retro compatibility of .call_up + "up" with set_up
-  mc_origin = sys.call(sys.parent(2))
-  if(".call_up" %in% names(mc_origin)){
-    # I do that to avoid having a new argument to send_error
-    up_value = get(".call_up", parent.frame(2))
-    up = up_value[[1]]
-
-  } else if(!".up" %in% names(mc_origin)){
-    up_value = mget("DREAMERR__UP", parent.frame(3), ifnotfound = 0)
-    up = up_value[[1]]
-  }
-
   all_types = strsplit(type, "|", fixed = TRUE)[[1]]
 
   if(grepl("(?i)match|charin", type)){
@@ -41,6 +29,10 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
   if(!missing(message) && grepl("__arg_name__", message, fixed = TRUE)){
     x_name = extract_par(message, "__arg_name__")
     message = NULL
+  }
+
+  if(!missing(message) && grepl("__ARG__", message, fixed = TRUE)){
+    message = gsub("__ARG__", x_name, message)
   }
 
   # We check the type is well formed
@@ -124,8 +116,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
       } else {
         subtypes = extract_type(my_type)
         if(is.null(subtypes)){
-          all_requested_types[i] = "a scalar"
-          next
+          req_type = "a scalar"
         } else {
           req_type = switch(subtypes,
                             numeric = "a numeric scalar",
@@ -135,6 +126,11 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
                             logical = "a logical scalar",
                             strict_logical = "a scalar strictly logical")
         }
+      }
+
+      # precision NA
+      if(grepl("NA", all_reasons[i]) & !grepl("na ?ok", my_type)){
+        req_type = paste0(req_type, " without NA")
       }
 
       precision_numeric = ""
@@ -224,6 +220,11 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
         req_type = paste0(req_type, " of type ", enumerate_items(delayed_typeof, "or.quote"))
       }
 
+      # precision NA
+      if(grepl("NA", all_reasons[i]) & !grepl("na ?ok", my_type)){
+        req_type = paste0(req_type, " without NAs")
+      }
+
       add_dim = add_equality = TRUE
     } else if(grepl("vector", my_type)){
       #
@@ -267,6 +268,11 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
           is_int = !"numeric" %in% subtypes
           precision_numeric = paste0(" (if ", ifelse(is_int, "integer", "numeric"), ")")
         }
+      }
+
+      # precision NA
+      if(grepl("NA", all_reasons[i]) & !grepl("na ?ok", my_type)){
+        req_type = paste0(req_type, " without NAs")
       }
 
       add_len = add_equality = TRUE
@@ -1076,6 +1082,7 @@ error_in_between = function(n_x, n_expected, code, my_type, .value, .data){
 inform_class = function(x, short = FALSE){
 
   its = ifelse(short, "it's", "it is")
+
   if(is.function(x)){
     res = paste0(its, " a function")
   } else if(is.matrix(x)){
@@ -1091,6 +1098,7 @@ inform_class = function(x, short = FALSE){
   } else {
     res = paste0("it is of class ", enumerate_items(class(x), quote = TRUE))
   }
+
 
   res
 }
@@ -1140,7 +1148,7 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
 #' @param .x8 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param .x9 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param ... Only used to check \code{'...'} (dot-dot-dot) arguments.
-#' @param .message A character string, optional. By default, if the user provides a wrong argument, the error message stating what type of argument is required is automatically formed. You can alternatively provide your own error message, maybe more tailored to your function. The reason of why there is a problem is appended in the end of the message.
+#' @param .message A character string, optional. By default, if the user provides a wrong argument, the error message stating what type of argument is required is automatically formed. You can alternatively provide your own error message, maybe more tailored to your function. The reason of why there is a problem is appended in the end of the message. You can use the special character \code{__ARG__} in the message. If found, \code{__ARG__} will be replaced by the appropriate argument name.
 #' @param .choices Only if one of the types (in argument \code{type}) is \code{"match"}. The values the argument can take. Note that even if the \code{type} is \code{"match"}, this argument is optional since you have other ways to declare the choices.
 #' @param .data Must be a data.frame, a list or a vector. Used in three situations. 1) if the global keywords \code{eval} or \code{evalset} are present: the argument will also be evaluated in the data (i.e. the argument can be a variable name of the data set). 2) if the argument is expected to be a formula and \code{var(data)} is included in the type: then the formula will be expected to contain variables from \code{.data}. 3) if the keywords \code{len(data)}, \code{nrow(data)} or \code{ncol(data)} are requested, then the required length, number of rows/columns, will be based on the data provided in \code{.data}.
 #' @param .value An integer scalar or a named list of integers scalars. Used when the keyword \code{value} is present (like for instance in \code{len(value)}). If several values are to be provided, then it must be a named list with names equal to the codes: for instance if \code{nrow(value)} and \code{ncol(value)} are both present in the type, you can use (numbers are an example) \code{.value = list(nrow = 5, ncol = 6)}. See Section IV) in the examples.
@@ -2147,6 +2155,17 @@ check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...
     check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
   }
 
+  # START::CHUNK(set_up)
+  # Retro compatibility .call_up (dammit!) + set_up
+  # It's faster to write it here than in check_arg_core (where we would need call evaluation)
+  if(!missing(.call_up)){
+    .up = .call_up
+  } else if(missing(.up)){
+    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
+    .up = up_value[[1]]
+  }
+  # END::CHUNK(set_up)
+
   check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = FALSE, .is_value = FALSE)
 
 }
@@ -2159,6 +2178,15 @@ check_arg_plus = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
   if(getOption("dreamerr_dev.mode")){
     check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
   }
+
+  # START::COPY(set_up)
+  if(!missing(.call_up)){
+    .up = .call_up
+  } else if(missing(.up)){
+    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
+    .up = up_value[[1]]
+  }
+  # END::COPY(set_up)
 
   check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = TRUE, .is_value = FALSE)
 
@@ -2175,6 +2203,15 @@ check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = 
     check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
   }
 
+  # START::COPY(set_up)
+  if(!missing(.call_up)){
+    .up = .call_up
+  } else if(missing(.up)){
+    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
+    .up = up_value[[1]]
+  }
+  # END::COPY(set_up)
+
   check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
 
 }
@@ -2187,6 +2224,15 @@ check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .da
   if(getOption("dreamerr_dev.mode")){
     check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
   }
+
+  # START::COPY(set_up)
+  if(!missing(.call_up)){
+    .up = .call_up
+  } else if(missing(.up)){
+    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
+    .up = up_value[[1]]
+  }
+  # END::COPY(set_up)
 
   check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
 
@@ -2236,14 +2282,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
   IS_PLUS = .is_plus
 
   mc = .mc
-
-  # Retro compatibility .call_up (dammit!) + set_up
-  if(!is.na(match(".call_up", names(mc)))){
-    .up = .call_up
-  } else if(is.na(match(".up", names(mc)))){
-    up_value = mget("DREAMERR__UP", parent.frame(2), ifnotfound = 0)
-    .up = up_value[[1]]
-  }
 
   if(IS_VALUE == FALSE){
     #
@@ -2685,49 +2723,49 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         # DO NOT EDIT BY HAND! => edit in CHUNK(L0)
         # START::COPY(L0)
-        if(length(x) == 0){
-          if(grepl("l0", type_low, fixed = TRUE)){
+      if(length(x) == 0){
+        if(grepl("l0", type_low, fixed = TRUE)){
 
-            if(is.list(x)){
-              if(grepl("list", type_low, fixed = TRUE)){
-                is_done[i] = TRUE
-                next
-              } else {
-                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-              }
+          if(is.list(x)){
+            if(grepl("list", type_low, fixed = TRUE)){
+              is_done[i] = TRUE
+              next
             } else {
-              is_int = grepl("integer", type_low, fixed = TRUE)
-              is_num = grepl("numeric", type_low, fixed = TRUE)
-              is_log = grepl("logical", type_low, fixed = TRUE)
-              n_types = is_int + is_num + is_log
-              if(n_types == 3){
+              send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
+            }
+          } else {
+            is_int = grepl("integer", type_low, fixed = TRUE)
+            is_num = grepl("numeric", type_low, fixed = TRUE)
+            is_log = grepl("logical", type_low, fixed = TRUE)
+            n_types = is_int + is_num + is_log
+            if(n_types == 3){
+              is_done[i] = TRUE
+              next
+
+            } else if(n_types == 0){
+              if(grepl("list", type_low, fixed = TRUE)){
+                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
+              } else {
                 is_done[i] = TRUE
                 next
+              }
 
-              } else if(n_types == 0){
-                if(grepl("list", type_low, fixed = TRUE)){
-                  send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-                } else {
-                  is_done[i] = TRUE
-                  next
-                }
-
+            } else {
+              ok = class(x)[1] %in% c("integer", "numeric", "logical")[c(is_int, is_num, is_log)]
+              if(ok){
+                is_done[i] = TRUE
+                next
               } else {
-                ok = class(x)[1] %in% c("integer", "numeric", "logical")[c(is_int, is_num, is_log)]
-                if(ok){
-                  is_done[i] = TRUE
-                  next
-                } else {
-                  msg = paste0("it is of length 0 and of type '", class(x)[1], "'")
-                  send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-                }
+                msg = paste0("it is of length 0 and of type '", class(x)[1], "'")
+                send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
               }
             }
-
-          } else {
-            send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
           }
+
+        } else {
+          send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
         }
+      }
         # END::COPY(L0)
       }
 
@@ -3060,10 +3098,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     my_type_raw = all_types[i]
     my_type = tolower(my_type_raw)
 
-    #
-    # MAIN CLASSES ####
-    #
-
     subtypes = c()
     check_len = check_equality = check_dim = check_typeof = check_NAOK = check_NONA = FALSE
     dim_loose = FALSE
@@ -3082,7 +3116,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         class_ok = intersect(tolower(class(x_all[[k]])), all_classes)
 
         if(length(class_ok) == 0){
-          all_reasons[[k]][i] = paste0("the object is not of the appropriate class (instead ", inform_class(x_all[[k]]), ")")
+          all_reasons[[k]][i] = paste0("the object is not of the appropriate class (instead it is of class ", enumerate_items(x_all[[k]]), ")")
           is_done_or_fail[k] = TRUE
           next
         }
