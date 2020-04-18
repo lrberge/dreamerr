@@ -385,7 +385,7 @@ warn_up = function(..., up = 1, immediate. = FALSE){
 #' Transforms a vector into a single character string enumerating the values of the vector. Many options exist to customize the result. The main purpose of this function is to ease the creation of user-level messages.
 #'
 #' @param x A vector.
-#' @param type A single character string, optional. If this argument is used, it supersedes all other arguments. It compactly provides the arguments of the function: it must be like \code{"arg1.arg2.arg3"}, i.e. a list of arguments separated by a point. The arguments are: "s" (to add a starting s if \code{length(x)>1}), "or" (to have "or" instead of "and"), "start" (to place the verb at the start instead of in the end), "quote" (to quote the elements of the vector), "enum" (to make an enumeration), "past" (to put the verb in past tense), a verb (i.e. anything different from the previous codes is a verb). See details and examples.
+#' @param type A single character string, optional. If this argument is used, it supersedes all other arguments. It compactly provides the arguments of the function: it must be like \code{"arg1.arg2.arg3"}, i.e. a list of arguments separated by a point. The arguments are: "s" (to add a starting s if \code{length(x)>1}), "or" (to have "or" instead of "and"), "start" (to place the verb at the start instead of in the end), "quote" (to quote the elements of the vector), "enum" (to make an enumeration), "past" (to put the verb in past tense), a verb (i.e. anything different from the previous codes is a verb). Use \code{other(XX)} to set the argument \code{other} to \code{XX}. See details and examples.
 #' @param verb Default is \code{FALSE}. If provided, a verb is added at the end of the string, at the appropriate form. You add the verb at the start of the string using the argument \code{start_verb}. Valid verbs are: "be", "is", "has", "have", and any other verb with a regular form.
 #' @param s Logical, default is \code{FALSE}. If \code{TRUE} a \code{s} is added at the beginning of the string if the length of \code{x} is greater than one.
 #' @param past Logical, default is \code{FALSE}. If \code{TRUE} the verb is put at the past tense.
@@ -393,6 +393,7 @@ warn_up = function(..., up = 1, immediate. = FALSE){
 #' @param start_verb Logical, default is \code{FALSE}. If \code{TRUE} the verb is placed at the beginning of the string instead of the end.
 #' @param quote Logical, default is \code{FALSE}. If \code{TRUE} all items are put in between single quotes.
 #' @param enum Logical, default is \code{FALSE}. If provided, an enumeration of the items of \code{x} is created. The possible values are "i", "I", "1", "a" and "A". Example: \code{x = c(5, 3, 12)}, \code{enum = "i"} will lead to "i) 5, ii) 3, and iii) 12".
+#' @param other Character scalar, defaults to the empty string: \code{""}. If there are more than \code{nmax} elements, then the character string will end with \code{"and XX others"} with \code{XX} the number of remaining items. Use this argument to change what is between the \code{and} and the \code{XX}. E.g. if \code{other = "any of"}, then you would get \code{"... and any of 15 others"} instead of \code{"... and 15 others"}.
 #' @param nmax Integer, default is 7. If \code{x} contains more than \code{nmax} items, then these items are grouped into an "other" group.
 #'
 #' @section The argument \code{type}:
@@ -433,7 +434,7 @@ warn_up = function(..., up = 1, immediate. = FALSE){
 #' message("You should: ", enumerate_items(todo, "enum.or"), "?")
 #'
 #'
-enumerate_items = function (x, type, verb = FALSE, s = FALSE, past = FALSE, or = FALSE, start_verb = FALSE, quote = FALSE, enum = FALSE, nmax = 7){
+enumerate_items = function (x, type, verb = FALSE, s = FALSE, past = FALSE, or = FALSE, start_verb = FALSE, quote = FALSE, enum = FALSE, other = "", nmax = 7){
   # function that enumerates items and add verbs
   # in argument type, you can have a mix of the different arguments, all separated with a "."
 
@@ -464,6 +465,14 @@ enumerate_items = function (x, type, verb = FALSE, s = FALSE, past = FALSE, or =
       args = args[!grepl("^enum", args)]
     }
 
+    is_other = any(grepl("^other\\(", args))
+    if(is_other){
+      arg_other = args[grepl("^other\\(", args)][1]
+      other = gsub("^.+\\(|\\).*", "", arg_other)
+
+      args = args[!grepl("^other", args)]
+    }
+
     # Now the verb
     verb = setdiff(args, c("s", "past", "or", "start", "quote"))
     if(length(verb) == 0){
@@ -483,8 +492,23 @@ enumerate_items = function (x, type, verb = FALSE, s = FALSE, past = FALSE, or =
 
   # Ensuring it's not too long
   if(n > nmax){
-    x = c(x[1:5], paste0(n - 5, " others"))
+
+    other = trimws(other)
+    if(nchar(other) > 0){
+      other = paste0(other, " ", n - 5, " others")
+    } else {
+      other = paste0(n - 5, " others")
+    }
+
+    if(quote){
+      x = c(paste0("'", x[1:5], "'"), other)
+    } else {
+      x = c(x[1:5], other)
+    }
+
     n = length(x)
+  } else if(quote){
+    x = paste0("'", x, "'")
   }
 
   # The verb
@@ -524,10 +548,6 @@ enumerate_items = function (x, type, verb = FALSE, s = FALSE, past = FALSE, or =
     startWord = ifelse(n == 1, " ", "s ")
   } else {
     startWord = ""
-  }
-
-  if(quote){
-    x = paste0("'", x, "'")
   }
 
   if(enum != "FALSE"){
