@@ -18,7 +18,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
 
   current_call = sys.call(sys.nframe() - 1)
 
-  FUN_NAME_FULL = deparse(current_call[[1]])
+  FUN_NAME_FULL = deparse_long(current_call[[1]])
 
   IS_VALUE = grepl("value", FUN_NAME_FULL)
   IS_PLUS = grepl("plus", FUN_NAME_FULL)
@@ -102,7 +102,8 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
     }
   }
 
-
+  sysUp = sys.parent()
+  mc = match.call(definition = sys.function(sysUp), call = sys.call(sysUp), expand.dots = FALSE)
 
   if(IS_VALUE == FALSE){
     #
@@ -110,12 +111,19 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
     #
 
     IS_DOTS = identical(current_call[[2]], quote(...))
-    sysUp = sys.parent()
-    mc = match.call(definition = sys.function(sysUp), call = sys.call(sysUp), expand.dots = FALSE)
     mc_arg = mc[match(names(mc), c(".x", ".type", ".x1", ".x2", ".x3", ".x4", ".x5", ".x6", ".x7", ".x8", ".x9"), nomatch = 0) > 0]
 
     sysOrigin = sys.parent(.up + 2)
     mc_origin = match.call(definition = sys.function(sysOrigin), call = sys.call(sysOrigin), expand.dots = FALSE)
+
+    #
+    # Error if dots arguments provided
+    #
+
+    if("..." %in% names(mc) && !is.null(names(mc[["..."]]))){
+      arg_pblm = names(mc[["..."]])
+      stop_up("Argument", enumerate_items(arg_pblm, "s.is"), " not valid. If it was an argument to be checked, please use only .x, .x1 to .x9 and .type.")
+    }
 
     #
     # Finding the type
@@ -202,24 +210,48 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
         is_name = sapply(mc_arg, is.name)
         if(any(!is_name)){
           # we check if it's because it's alist
-          is_list = sapply(mc_arg, function(x) is.call(x) && grepl("^[\\.[:alpha:]][[:alnum:]\\._]*\\$", deparse(x)))
+          is_list = sapply(mc_arg, function(x) is.call(x) && grepl("^[\\.[:alpha:]][[:alnum:]\\._]*\\$", deparse_long(x)))
           if(all(!is_name & is_list)){
             stop_up(up = 1, "You cannot check list elements in check_arg, but you can in check_arg_plus. Please refer to Section XIII) in the examples.")
           } else {
-            stop_up(up = 1, "In check_arg, the arguments '.x' to '.x9' must be argument names. This is not the case for '", deparse(mc_arg[[which(!is_name)[1]]]), "'. Please refer to the details/examples/vignette.")
+            stop_up(up = 1, "In check_arg, the arguments '.x' to '.x9' must be argument names. This is not the case for '", deparse_long(mc_arg[[which(!is_name)[1]]]), "'. Please refer to the details/examples/vignette.")
           }
 
         }
       } else {
         # => all names and lists base$var
         is_name = sapply(mc_arg, is.name)
-        is_list = sapply(mc_arg, function(x) is.call(x) && grepl("^[\\.[:alpha:]][[:alnum:]\\._]*\\$", deparse(x)))
+        is_list = sapply(mc_arg, function(x) is.call(x) && grepl("^[\\.[:alpha:]][[:alnum:]\\._]*\\$", deparse_long(x)))
         is_ok = is_name | is_list
         if(any(!is_ok)){
-          stop_up(up = 1, "In check_arg_plus, the arguments '.x' to '.x9' must be argument names (or list elements). This is not the case for '", deparse(mc_arg[[which(!is_ok)[1]]]), "'. Please refer to the details/examples/vignette.")
+          stop_up(up = 1, "In check_arg_plus, the arguments '.x' to '.x9' must be argument names (or list elements). This is not the case for '", deparse_long(mc_arg[[which(!is_ok)[1]]]), "'. Please refer to the details/examples/vignette.")
         }
       }
     }
+
+    # Now we check for a super nasty error: when the arg names of an internal function don't match the arg names
+    # of the original function
+    # Default behavior is that the argument is left unchecked => not GOOD! this can lead to BIG PROBLEMS
+    # And for check_arg users, it's impossible to find out their mistake.
+    #
+
+    if(!IS_DOTS){
+      x_names = sapply(mc_arg, deparse_long)
+      browser()
+
+      args_origin = names(formals(sys.function(sysOrigin)))
+      if(is.null(args_origin)){
+        stop_up("The function '", deparse_long(mc_origin[[1]]), "' has no argument. Thus check_arg cannot check the argument", enumerate_items(x_names, "s.quote"), " given in input.")
+      }
+
+      arg_pblm = setdiff(x_names, args_origin)
+      if(length(arg_pblm) > 0){
+        msg = ifelse(.up > 0, "The arguments passed to your internal function must have the exact same name as in the user-level function.\n If you really want to change the name of the argument in your internal function, a workaround is to use 'check_value' in combination with the argument '.arg_name' which gives the original name the argument refers to.", "")
+        stop_up("The argument", enumerate_items(arg_pblm, "s.quote.isn't"), " valid: ", ifsingle(arg_pblm, "it is not an argument", "they are not arguments"), " of function '", deparse_long(mc_origin[[1]]), "'. It's a big problem! ", msg)
+      }
+
+    }
+
 
   } else {
     #
@@ -239,7 +271,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
 
     type = .type
 
-    if(missing(.x)){
+    if(!".x" %in% names(mc)){
       stop_up(up = 1, "The argument '.x' is required. Problem: it is currently missing.")
     }
 
