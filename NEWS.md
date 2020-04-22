@@ -3,23 +3,39 @@
 
 #### New functions
 
-`fill_symbol`: formatting function for strings. Fills a character string up to the required length. Helps to form nice messages.
+ - `fill_symbol`: formatting function for strings. Fills a character string up to the required length. Helps to form nice messages.
 
-`set_up`: sets the argument `up` semi-globally (i.e. throughout all calls within a function).
+ - `set_up`: sets the argument `up` semi-globally (i.e. throughout all calls within a function).
+
+#### New features
+
+ - When devising your own message (with argument `.message`), you can use the special character `__ARG__`. If found, it will be replaced by the appropriate argument name.
+ 
+#### User visible changes
+
+ - Message informing NA tolerance in the types is prompted only when the error comes from NA values.
+ 
+ - The developer mode catches more errors and provide more suggestions.
+ 
+ - `check_value` now doesn't throw an error for missing `.x`.
 
 #### Change in argument names
 
-`.call_up` becomes `.up` -- retro-compatibility is ensured.
+ - `.call_up` becomes `.up` -- retro-compatibility is ensured.
 
 #### Bug correction
 
- . Small bug that could occur for the types "integer scalar na ok" with the argument equal to NA.
+ - Small bug that could occur for the types `"integer scalar na ok"` with the argument equal to `NA`.
  
- . Important bug when using features requiring evaluations in the environment. Now the default environment is set up appropriately.
+ - Important bug when using features requiring evaluations in the environment. Now the default environment is set up appropriately.
  
- . Bug when using `var(data,env)` in a `formula` class with missing `data`.
+ - Bug when using `var(data,env)` in a `formula` class with missing `data`.
  
- . Very sneaky bug when badly forming a call to \code{check_arg} to check "\code{...}" in nested functions in now caught.
+ - Very sneaky bug when badly forming a call to `check_arg` to check `...` in nested functions is now caught.
+ 
+ - In `enumerate_items`, when there were many elements, `quote = TRUE` led to quote the `XX others` that shouldn't be quoted. Now corrected.
+ 
+ - In the `formula` class, if a variable was passed as a `Formula` (notice the capital F), this caused an error if one-sidedness or two-sidedness were to be checked.
 
 
 ## First version: 1.0.0 (2020-04-12)

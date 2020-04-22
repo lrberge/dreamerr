@@ -371,7 +371,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
         if(all_main_types_ok[i]){
           is_ROW = TRUE
           end_msg = ifelse(missing(.data), " which is missing", paste0(" (", NROW(.data), " row", plural(NROW(.data)), " and ", NCOL(.data), " column", plural(NCOL(.data)), ")"))
-          msg = paste0("with the same dimensions as argument '", deparse(mc[[".data"]]), "'", end_msg)
+          msg = paste0("with the same dimensions as argument '", deparse_long(mc[[".data"]]), "'", end_msg)
           req_type = paste0(req_type, " ", msg)
         } else {
           is_ROW = FALSE
@@ -799,10 +799,10 @@ message_in_between = function(n_expected, code, .value, .data){
 
 
         if(code == "len"){
-          res = paste0("of the same length as argument '", deparse(mc[[".data"]]), "' (which is missing)")
+          res = paste0("of the same length as argument '", deparse_long(mc[[".data"]]), "' (which is missing)")
         } else {
           row_col = switch(code, ncol = "column", nrow = "row")
-          res = paste0("with the same number of ", row_col, "s as argument '", deparse(mc[[".data"]]), "' (which is missing)")
+          res = paste0("with the same number of ", row_col, "s as argument '", deparse_long(mc[[".data"]]), "' (which is missing)")
         }
 
         return(res)
@@ -817,15 +817,15 @@ message_in_between = function(n_expected, code, .value, .data){
       # The message
       if(code == "len"){
         if(is.null(dim(.data))){
-          res = paste0("of the same length as argument '", deparse(mc[[".data"]]), "' (", n_expected, ")")
+          res = paste0("of the same length as argument '", deparse_long(mc[[".data"]]), "' (", n_expected, ")")
         } else {
-          res = paste0("of the same number of observations as argument '", deparse(mc[[".data"]]), "' (", n_expected, ")")
+          res = paste0("of the same number of observations as argument '", deparse_long(mc[[".data"]]), "' (", n_expected, ")")
         }
 
       } else if(code %in% c("nrow", "ncol")){
         row_col = switch(code, nrow = "row", ncol = "column")
 
-        res = paste0("with the same number of ", row_col, "s as argument '", deparse(mc[[".data"]]), "' (", n_expected, ")")
+        res = paste0("with the same number of ", row_col, "s as argument '", deparse_long(mc[[".data"]]), "' (", n_expected, ")")
 
       }
 
@@ -1128,6 +1128,22 @@ arg_name_header = function(x_name, problem = FALSE, nullable = FALSE){
   }
 
   res
+}
+
+error_catcher = function(expr){
+  tryCatch(expr, error = function(e) structure(conditionMessage(e), class = "try-error"))
+}
+
+deparse_long = function(x){
+  dp = deparse(x, width.cutoff = 500L)
+  if(length(dp) > 1) dp = paste(dp, collapse = "")
+  dp
+}
+
+deparse_short = function(x){
+  dp = deparse(x)[1]
+  if(nchar(dp) > 12) dp = paste0(substr(dp, 1, 9), "..")
+  dp
 }
 
 
@@ -2578,10 +2594,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       x_dots = list()
       if("..." %in% names(mc)){
-        x_dots = try(list(...), silent = TRUE)
+        x_dots = error_catcher(list(...))
 
-        if("try-error" %in% class(x_dots)){
-          reason = gsub("^.+:( \n )? |\n$", "", as.character(x_dots))
+        if(class(x_dots)[1] == "try-error"){
+          reason = as.character(x_dots)
           stop_up("In argument '...', ", ifsingle(dots_origin, "the element", "some elements"), " could not be evaluated. Problem: ", reason, up = .up + 2)
         }
 
@@ -2624,17 +2640,17 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         x_all_tmp = list()
         for(i in seq_along(args)){
-          x = switch(args[i], ".x" = try(.x, silent = TRUE), ".type" = try(.type, silent = TRUE), ".x1" = try(.x1, silent = TRUE), ".x2" = try(.x2, silent = TRUE), ".x3" = try(.x3, silent = TRUE), ".x4" = try(.x4, silent = TRUE), ".x5" = try(.x5, silent = TRUE), ".x6" = try(.x6, silent = TRUE), ".x7" = try(.x7, silent = TRUE), ".x8" = try(.x8, silent = TRUE), ".x9" = try(.x9, silent = TRUE))
+          x = switch(args[i], ".x" = error_catcher(.x), ".type" = error_catcher(.type), ".x1" = error_catcher(.x1), ".x2" = error_catcher(.x2), ".x3" = error_catcher(.x3), ".x4" = error_catcher(.x4), ".x5" = error_catcher(.x5), ".x6" = error_catcher(.x6), ".x7" = error_catcher(.x7), ".x8" = error_catcher(.x8), ".x9" = error_catcher(.x9))
 
           # If error => it's an undefined evaluation => we're out
           if(any(class(x) == "try-error")){
-            reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
+            reason = as.character(x)
 
             if(grepl("^argument \".+\" is missing, with no default", reason)){
               # Developer side error
               arg_name = gsub("^[^\"]+\"|\"[^\"]+$", "", reason)
-              fun_name = deparse(sys.call(sys.parent(2))[[1]])
-              stop_up("Problem in the call to the internal function '", fun_name, "'. The argument '", arg_name, "' has been mistakenly passed in '...'.")
+              fun_name = deparse_long(sys.call(sys.parent(2))[[1]])
+              stop_up("(Developer-side error.) Problem in the call to the internal function '", fun_name, "'. The argument '", arg_name, "' has been mistakenly passed in '...'.")
             } else {
               stop_up("In argument '...', the ", n_th(naked_order[i - rm_adj]), " element could not be evaluated. Problem: ", reason, up = .up + 2)
             }
@@ -2702,7 +2718,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           if(grepl("null", type_low, fixed = TRUE)){
 
             if(grepl("safe", type_low, fixed = TRUE)){
-              value_dp = deparse(mc_origin[[x_names[i]]])
+              value_dp = deparse_long(mc_origin[[x_names[i]]])
               if(grepl("$", value_dp, fixed = TRUE)){
                 msg = paste0("it is NULL (fine) but you entered '", value_dp, "'. If you really want it to be NULL, please use NULL directly or a variable containing NULL")
                 send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
@@ -2781,7 +2797,17 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     }
 
     if(missing(.x)){
-      stop_up("You must provide the argument '.x'. Problem: it is currently missing.")
+      # Two possibilities:
+      # 1) .x has been provided but its associated value is missing
+      # 2) .x has not been provided
+      #
+      # 2) is a big error; 1) is legit
+      if(!".x" %in% names(mc)){
+        stop_up("You must provide the argument '.x'. Problem: it is currently missing.")
+      } else {
+        return(NULL)
+      }
+
     }
 
     type = .type
@@ -2801,7 +2827,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       IS_LIST = FALSE
       if(!is.name(mc[[".x"]])){
         mc_x = mc[[".x"]]
-        is_list = is.call(mc_x) && grepl("^[\\.[:alpha:]][[:alnum:]\\._]*\\$", deparse(mc_x))
+        is_list = is.call(mc_x) && grepl("^[\\.[:alpha:]][[:alnum:]\\._]*\\$", deparse_long(mc_x))
         if(is_list){
           IS_LIST = TRUE
         } else {
@@ -2820,7 +2846,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     if(is.name(mc[[".x"]])){
       x_names = as.character(mc[[".x"]])
     } else {
-      x_names = deparse(mc[[".x"]])
+      x_names = deparse_long(mc[[".x"]])
     }
 
     if(!missing(.arg_name) && missing(.message)) .message = paste0("__arg_name__(", .arg_name, ")")
@@ -2874,19 +2900,17 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           .env = parent.frame(.up + 3)
         }
 
-        value_dp = deparse(mc_origin[[x_names[i]]])
+        value_dp = deparse_long(mc_origin[[x_names[i]]])
         if(missing(.data)){
-          x = try(eval(parse(text = value_dp), .env), silent = TRUE)
+          x = error_catcher(eval(parse(text = value_dp), .env))
         } else {
-          x = try(eval(parse(text = value_dp), .data, .env), silent = TRUE)
+          x = error_catcher(eval(parse(text = value_dp), .data, .env))
         }
-
 
         # We try to extract some precise information if error
         if(any(class(x) == "try-error")){
-          .message = paste0("Argument '", x_names[i], "' (equal to '", value_dp, "') could not be evaluated.")
 
-          reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
+          reason = as.character(x)
           if(length(.data) > 0 && !is.null(names(.data))){
             x_vars = all.vars(parse(text = value_dp))
             if(length(x_vars) > 0){
@@ -2896,16 +2920,32 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 if(!exists(v, envir = .env)) x_real_pblm = c(x_real_pblm, v)
               }
               if(length(x_real_pblm) > 0){
-                reason = paste0("The variable", enumerate_items(x_real_pblm, "s.is.quote"), " not in the data set (given in argument '", deparse(mc[[".data"]]), "') nor in the environment")
+                reason = paste0("The variable", enumerate_items(x_real_pblm, "s.is.quote"), " not in the data set (given in argument '", deparse_short(mc[[".data"]]), "') nor in the environment")
               }
             }
+          }
+
+          if(IS_VALUE){
+            if(missing(.message)){
+              # if in value => it's an internal error (developer side, big error: this should NEVER happen)
+              stop_up("(Developer-side error.) The value '", x_names[i], "' could not be evaluated and arguments '.arg_name' and '.message' are both missing. This should never happen. Please revise the code accordingly so that the value passed to check_value", ifelse(IS_PLUS, "_plus", ""), " always exists. OR provide one of the arguments '.arg_name' or '.message'.")
+            }
+
+            if(!missing(.arg_name)){
+              .message = paste0("Argument '", .arg_name, "' could not be evaluated.")
+            } else {
+              .message = paste0(.message, " The argument could not be evaluated.")
+            }
+
+          } else {
+            .message = paste0("Argument '", x_names[i], "' (equal to '", deparse_short(mc_origin[[x_names[i]]]), "') could not be evaluated.")
           }
 
           send_error(reason, x_name = x_names[i], type = type, message = .message, up = .up, .value = .value, .data = .data)
 
         }
 
-        # No real benefit to dealy assignment:
+        # No real benefit to delay assignment:
         # - if type is OK => we will assign anyway
         # - if type not OK => it's longer but since it will lead to an error, that's fine
         #
@@ -2920,21 +2960,42 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         }
 
       } else {
-        x = switch(args[i], ".x" = try(.x, silent = TRUE), ".type" = try(.type, silent = TRUE), ".x1" = try(.x1, silent = TRUE), ".x2" = try(.x2, silent = TRUE), ".x3" = try(.x3, silent = TRUE), ".x4" = try(.x4, silent = TRUE), ".x5" = try(.x5, silent = TRUE), ".x6" = try(.x6, silent = TRUE), ".x7" = try(.x7, silent = TRUE), ".x8" = try(.x8, silent = TRUE), ".x9" = try(.x9, silent = TRUE))
+        x = switch(args[i], ".x" = error_catcher(.x), ".type" = error_catcher(.type), ".x1" = error_catcher(.x1), ".x2" = error_catcher(.x2), ".x3" = error_catcher(.x3), ".x4" = error_catcher(.x4), ".x5" = error_catcher(.x5), ".x6" = error_catcher(.x6), ".x7" = error_catcher(.x7), ".x8" = error_catcher(.x8), ".x9" = error_catcher(.x9))
+
 
         # If error => it's an undefined evaluation => we're out
-        if(any(class(x) == "try-error")){
+        if(class(x)[1] == "try-error"){
+
+          # In internal functions with .up = 0, we need to check if the argument is actually missing
+          if(grepl("missing", x, fixed = TRUE)){
+            current_arg_missing = switch(args[i], ".x" = missing(.x), ".type" = missing(.type), ".x1" = missing(.x1), ".x2" = missing(.x2), ".x3" = missing(.x3), ".x4" = missing(.x4), ".x5" = missing(.x5), ".x6" = missing(.x6), ".x7" = missing(.x7), ".x8" = missing(.x8), ".x9" = missing(.x9))
+
+            if(current_arg_missing){
+              # OK, fine
+              is_done[i] = TRUE
+              next
+            }
+          }
 
           if(IS_VALUE){
-            # if in value => it's an internal error (developer side, big error: this should NEVER happen)
-            stop_up("The value '", x_names[i], "' could not be evaluated. This should never happen, please revise the code accordingly so that the value passed to check_value", ifelse(IS_PLUS, "_plus", ""), " always exists.")
+            if(missing(.message)){
+              # if in value => it's an internal error (developer side, big error: this should NEVER happen)
+              stop_up("(Developer-side error.) The value '", x_names[i], "' could not be evaluated and arguments '.arg_name' and '.message' are both missing. This should never happen, please revise the code accordingly so that the value passed to check_value", ifelse(IS_PLUS, "_plus", ""), " always exists. OR provide one of the arguments '.arg_name' or '.message'.")
+            }
+
+            if(!missing(.arg_name)){
+              .message = paste0("Argument '", .arg_name, "' could not be evaluated.")
+            } else {
+              .message = paste0(.message, " The argument could not be evaluated.")
+            }
 
           } else {
-            .message = paste0("Argument '", x_names[i], "' (equal to '", deparse(mc_origin[[x_names[i]]]), "') could not be evaluated.")
-            reason = gsub("^.+:( \n )? |\n$", "", as.character(x))
-
-            send_error(reason, x_name = x_names[i], type = type, message = .message, up = .up, .value = .value, .data = .data)
+            .message = paste0("Argument '", x_names[i], "' (equal to '", deparse_short(mc_origin[[x_names[i]]]), "') could not be evaluated.")
           }
+
+          reason = as.character(x)
+          send_error(reason, x_name = x_names[i], type = type, message = .message, up = .up, .value = .value, .data = .data)
+
 
         }
 
@@ -2944,7 +3005,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         if(grepl("null", type_low, fixed = TRUE)){
 
           if(grepl("safe", type_low, fixed = TRUE)){
-            value_dp = deparse(mc_origin[[x_names[i]]])
+            value_dp = deparse_long(mc_origin[[x_names[i]]])
             if(grepl("$", value_dp, fixed = TRUE)){
               msg = paste0("it is NULL (fine) but you entered '", value_dp, "'. If you really want it to be NULL, please use NULL directly or a variable containing NULL")
               send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
@@ -3323,10 +3384,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           next
         } else {
           all_main_types[[k]][i] = "it is a formula but "
-          if(grepl("os", my_type, fixed = TRUE) && length(x_all[[k]]) == 3){
+          if(grepl("os", my_type, fixed = TRUE) && length(formula(x_all[[k]])) == 3){
             all_reasons[[k]][i] = "it is currently two-sided"
             next
-          } else if(grepl("ts", my_type, fixed = TRUE) && length(x_all[[k]]) == 2){
+          } else if(grepl("ts", my_type, fixed = TRUE) && length(formula(x_all[[k]])) == 2){
             all_reasons[[k]][i] = "it is currently only one-sided"
             next
           }
@@ -3377,7 +3438,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               if(length(where) == 1){
 
                 if(missing(.data) || length(.data) == 0){
-                  data_dp = deparse(mc[[".data"]])
+                  data_dp = deparse_long(mc[[".data"]])
 
                   if(missing(.data) || data_dp == "NULL"){
                     stop_up("You cannot use the type 'var(data)' (in '.type = ", my_type_raw, "') when the argument '.data' is missing. Please provide the argument '.data'.")
@@ -3390,13 +3451,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 } else if(is.null(names(.data))){
                   info_arg = arg_name_header(x_names[i])
                   msg = ifelse(is.list(.data), "is a list but has no names attribute.", "is not a data.frame nor a list.")
-                  stop_up(info_arg, " is a formula that must contain variables from the data set given in argument '", deparse(mc[[".data"]]), "'. Problem: this data set ", msg, up = .up + 2)
+                  stop_up(info_arg, " is a formula that must contain variables from the data set given in argument '", deparse_long(mc[[".data"]]), "'. Problem: this data set ", msg, up = .up + 2)
 
                 } else {
                   x_pblm = setdiff(x_vars, names(.data))
                   if(length(x_pblm) > 0){
                     info_arg = arg_name_header(x_names[i])
-                    stop_up(info_arg, " is a formula whose variables must be in the data set given in argument '", deparse(mc[[".data"]]), "'. Problem: the variable", enumerate_items(x_pblm, "s.is.quote"), " not in the data.", up = .up + 2)
+                    stop_up(info_arg, " is a formula whose variables must be in the data set given in argument '", deparse_long(mc[[".data"]]), "'. Problem: the variable", enumerate_items(x_pblm, "s.is.quote"), " not in the data.", up = .up + 2)
                   }
                 }
               } else if(!missing(.data) && !is.null(names(.data))){
@@ -3416,7 +3477,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
                 if("data" %in% where){
 
-                  data_dp = deparse(mc[[".data"]])
+                  data_dp = deparse_long(mc[[".data"]])
 
                   if(length(.data) == 0){
                     if(data_dp == "NULL"){
