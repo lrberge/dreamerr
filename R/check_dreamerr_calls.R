@@ -237,7 +237,6 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
 
     if(!IS_DOTS){
       x_names = sapply(mc_arg, deparse_long)
-      browser()
 
       args_origin = names(formals(sys.function(sysOrigin)))
       if(is.null(args_origin)){

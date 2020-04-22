@@ -1080,7 +1080,106 @@ fill_symbol = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor){
 
 
 
+#' Provides package statistics
+#'
+#' Summary statistics of a packages: number of lines, number of functions, etc...
+#'
+#' @details
+#' This function looks for files in the R/ and src/ folders and give some stats. If there is no R/ folder directly accessible from the working directory, there will be no stats displayed.
+#'
+#' Why this function? Well, it's just some goodies for package developers trying to be user-friendly!
+#'
+#' @return
+#' Doesn't return anything, just a prompt in the console.
+#'
+#' @examples
+#'
+#' package_stats()
+#'
+package_stats = function(){
+  r_files = list.files("./R", full.names = TRUE)
+  r_files = r_files[!grepl("Rcpp", r_files)]
 
+  n_r = length(r_files)
+
+  if(n_r == 0){
+    message("Your project doesn't look like a package... Sorry, no stats!")
+    return(invisible(NULL))
+  }
+
+  my_file = c()
+  for(i in 1:n_r){
+    my_file = c(my_file, readLines(r_files[i]))
+  }
+
+  head_3 = function(x) if(length(x) <= 3) return(x) else return(x[1:3])
+
+  # some stats
+  n_r_lines = length(my_file)
+
+  qui_code = !grepl("^( |\t)*#", my_file) & grepl("[[:alnum:]]", my_file)
+  all_code = my_file[qui_code]
+  all_assign = all_code[grepl("^( |\t)*[[:alpha:]][[:alnum:]\\._]* *(=|<-)", all_code)]
+
+  vars = gsub("^( |\t)*| *(=|<-).*", "", all_assign)
+  tvars = head_3(sort(table(vars), decreasing = TRUE))
+  fav_var = paste0(names(tvars), " [", tvars, "]")
+
+  n_r_code = sum(qui_code)
+  n_r_comment = sum(grepl("^( |\t)*#[^']", my_file))
+
+  qui_doc = grepl("^#'", my_file)
+  all_doc = my_file[qui_doc & grepl("[[:alpha:]]", my_file)]
+  n_doc_words = sum(lengths(strsplit(all_doc, "( |\\(|\\{)[[:alpha:]]")) - 1)
+  n_r_doc = sum(qui_doc)
+  n_r_funs = sum(grepl("^[\\.[:alnum:]][\\.[:alnum:]_]* *(=|<-) *function", my_file))
+
+
+  c_files = list.files("./src", full.names = TRUE)
+  c_files = c_files[!grepl("Rcpp", c_files) & grepl("\\.c(pp)?$", c_files)]
+
+  n_c = length(c_files)
+  if(n_c > 0){
+    my_c_file = c()
+    for(i in 1:n_c){
+      my_c_file = c(my_c_file, readLines(c_files[i]))
+    }
+
+    n_c_lines = length(my_c_file)
+    n_c_code = sum(!grepl("^( |\t)*//", my_c_file) & grepl("[[:alnum:]]", my_c_file))
+    n_c_comment = sum(grepl("^( |\t)*//", my_c_file))
+    n_c_funs = sum(grepl("^[\\.[:alnum:]_]* [\\.[:alnum:]_]*\\(", my_c_file))
+    n_c_fun_c_export = sum(grepl("^// \\[\\[Rcpp", my_c_file))
+  }
+
+  cat("-----------------------
+|| Package Statistics ||
+------------------------
+
+R code:",
+      "\n# Lines: ", signif_plus(n_r_lines),
+      "\n.......code: ", signif_plus(n_r_code), " (fav. vars: ", enumerate_items(fav_var), ")",
+      "\n...comments: ", signif_plus(n_r_comment),
+      "\n........doc: ", signif_plus(n_r_doc), " (", signif_plus(n_doc_words), " words)",
+      "\n# Functions: ", signif_plus(n_r_funs), sep = "")
+
+
+  if(n_c > 0){
+    # Rcpp specific
+    line_export = ifelse(n_c_fun_c_export > 0, paste0("\n# Functions (exported): ", signif_plus(n_c_fun_c_export)), "")
+    cat("\n\nC++ code:",
+        "\n# Lines: ", signif_plus(n_c_lines),
+        "\n.......code: ", signif_plus(n_c_code),
+        "\n...comments: ", signif_plus(n_c_comment),
+        "\n# Functions: ", signif_plus(n_c_funs),
+        line_export, sep = "")
+
+    cat("\n\nTOTAL:",
+        "\n# Lines: ", signif_plus(sum(n_c_lines) + sum(n_r_lines)),
+        "\n# Code: ", signif_plus(sum(n_c_code) + sum(n_r_code)),
+        "\n# Functions: ", signif_plus(sum(n_c_funs) + sum(n_r_funs)), sep = "")
+  }
+}
 
 
 

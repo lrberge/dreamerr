@@ -1,5 +1,5 @@
 
-## Version 1.xx.xx 
+## Version 1.1.0
 
 #### New functions
 

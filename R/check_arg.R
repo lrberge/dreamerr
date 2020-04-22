@@ -2739,7 +2739,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         # DO NOT EDIT BY HAND! => edit in CHUNK(L0)
         # START::COPY(L0)
-      if(length(x) == 0){
+      n = length(x)
+      if(length(n) == 1 && n == 0){
         if(grepl("l0", type_low, fixed = TRUE)){
 
           if(is.list(x)){
@@ -3062,7 +3063,9 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       }
 
       # START::CHUNK(L0)
-      if(length(x) == 0){
+      x_len = length(x)
+      if(length(x_len) == 1 && x_len == 0){
+        # I do that, only to handle Formulas..... damn! I'm not happy with that
         if(grepl("l0", type_low, fixed = TRUE)){
 
           if(is.list(x)){
@@ -3177,7 +3180,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         class_ok = intersect(tolower(class(x_all[[k]])), all_classes)
 
         if(length(class_ok) == 0){
-          all_reasons[[k]][i] = paste0("the object is not of the appropriate class (instead it is of class ", enumerate_items(x_all[[k]]), ")")
+          all_reasons[[k]][i] = paste0("the object is not of the appropriate class (instead it is of class ", enumerate_items(class(x_all[[k]])), ")")
           is_done_or_fail[k] = TRUE
           next
         }
@@ -3384,10 +3387,19 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           next
         } else {
           all_main_types[[k]][i] = "it is a formula but "
-          if(grepl("os", my_type, fixed = TRUE) && length(formula(x_all[[k]])) == 3){
+
+          fml_len = length(x_all[[k]])
+          if(length(fml_len) > 1) {
+            # This means it is a Formula (note the capital F)
+            is_os = fml_len[1] == 0
+          } else {
+            is_os = fml_len == 2
+          }
+
+          if(grepl("os", my_type, fixed = TRUE) && !is_os){
             all_reasons[[k]][i] = "it is currently two-sided"
             next
-          } else if(grepl("ts", my_type, fixed = TRUE) && length(formula(x_all[[k]])) == 2){
+          } else if(grepl("ts", my_type, fixed = TRUE) && is_os){
             all_reasons[[k]][i] = "it is currently only one-sided"
             next
           }

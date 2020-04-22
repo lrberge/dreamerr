@@ -17,6 +17,9 @@ export(fill_symbol)
 export(setDreamerr_check, setDreamerr_dev.mode)
 export(set_up)
 
+# Goodies
+export(package_stats)
+
 
 #
 # IMPORTS
