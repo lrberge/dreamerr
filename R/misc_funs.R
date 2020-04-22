@@ -167,9 +167,9 @@ set_up = function(.up = 1){
 #'
 #' @param valid_args A character vector, default is missing. Arguments that are not in the definition of the function but which are considered as valid. Typically internal arguments that should not be directly accessed by the user.
 #' @param suggest_args A character vector, default is missing. If the user provides invalid arguments, he might not be aware of the main arguments of the function. Use this argument to inform the user of these main arguments.
-#' @param stop Logical, default is \code{FALSE}. If \code{TRUE}, when the user provides invalid arguments, the function will call \code{\link[base]{stop}} instead of only prompting a message (default).
-#' @param warn Logical, default is \code{FALSE}. If \code{TRUE}, when the user provides invalid arguments, the function will call \code{\link[base]{warning}} instead of only prompting a message (default).
-#' @param message Logical, default is \code{TRUE}. If \code{FALSE} (and so are the other arguments \code{stop} and \code{warn}), then no message is prompted to the user, rather it is the only output of the function.
+#' @param stop Logical, default is \code{FALSE}. If \code{TRUE}, when the user provides invalid arguments, the function will call \code{\link[base]{stop}} instead of prompting a warning (default).
+#' @param warn Logical, default is \code{TRUE}. If \code{TRUE}, when the user provides invalid arguments, the function will call \code{\link[base]{warning}} (default). If \code{FALSE} (and so are the other arguments \code{stop} and \code{message}), then no message is prompted to the user, rather it is the only output of the function.
+#' @param message Logical, default is \code{FALSE}. If \code{TRUE}, a standard message is prompted to the user (instead of a warning).
 #' @param call. Logical, default is \code{FALSE}. If \code{TRUE}, when the user provides invalid arguments, then the message will also contain the call to the initial function (by default, only the function name is shown).
 #' @param immediate. Logical, default is \code{FALSE}. Can be only used with the argument \code{warn = TRUE}: whether the warning is immediately displayed or not.
 #'
@@ -201,11 +201,11 @@ set_up = function(.up = 1){
 #' # Now let's :
 #' #   i) inform the user that argument arg_one is the main argument
 #' #  ii) consider 'info' as a valid argument (but not shown to the user)
-#' # iii) show a warning instead of a message
+#' # iii) show a message instead of a warning
 #'
 #' summary.my_class = function(object, arg_one, arg_two, ...){
 #'
-#'   validate_dots(valid_args = "info", suggest_args = "arg_one", warn = TRUE)
+#'   validate_dots(valid_args = "info", suggest_args = "arg_one", message = TRUE)
 #'   # CODE of summary.my_class
 #'   invisible(NULL)
 #' }
@@ -216,7 +216,7 @@ set_up = function(.up = 1){
 #'
 #'
 #'
-validate_dots = function(valid_args = c(), suggest_args = c(), message = TRUE, warn = FALSE, stop = FALSE, call. = FALSE, immediate. = TRUE){
+validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, stop, call. = FALSE, immediate. = TRUE){
   # Function to catch the arguments passing in ...
   # we suggest some principal arguments
 
@@ -231,6 +231,10 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message = TRUE, w
   res = NULL
   if(length(args_invalid) > 0){
 
+    # Default values
+    if(missing(message)) message = FALSE
+    if(missing(stop)) stop = FALSE
+    if(missing(warn)) warn = !isTRUE(message) & !isTRUE(stop)
 
     if(stop == FALSE && warn == FALSE){
       if(call.){
