@@ -109,7 +109,48 @@ setDreamerr_dev.mode = function(dev.mode = FALSE){
 }
 
 
-#' Sets semi-globally the 'up' argument of dreamerr's functions
+
+#' Sets argument checking on/off "semi-globally"
+#'
+#' You can allow your users to turn off argument checking within your function by using \code{set_check}. Only the functions \code{\link[dreamerr]{check_arg}} nd \code{\link[dreamerr]{check_value}} can be turned off that way.
+#'
+#' @param x A logical scalar, no default.
+#'
+#' @details
+#' This function can be useful if you develop a function that may be used in large range loops (>100K). In such situations, it may be good to still check all arguments, but to offer the user to turn this checking off with an extra argument (named \code{arg.check} for instance). Doing so you would achieve the feat of i) having a user-friendly function thanks to argument checking and, ii) still achieve high performance in large loops (although the computational footprint of argument checking is quite low [around 30 micro seconds for missing arguments to 80 micro seconds for non-missing arguments of simple type]).
+#'
+#' @examples
+#'
+#' # Let's give an example
+#' test_check = function(x, y, arg.check = TRUE){
+#'   set_check(arg.check)
+#'   check_arg(x, y, "numeric scalar")
+#'   x + y
+#' }
+#'
+#' # Works: argument checking on
+#' test_check(1, 2)
+#'
+#' # If mistake, nice error msg
+#' try(test_check(1, "a"))
+#'
+#' # Now argument checking turned off
+#' test_check(1, 2, FALSE)
+#' # But if mistake: "not nice" error message
+#' try(test_check(1, "a", FALSE))
+#'
+#'
+#'
+set_check = function(x){
+
+  if(isFALSE(x)){
+    assign("DREAMERR_CHECK", FALSE, parent.frame())
+  }
+
+}
+
+
+#' Sets "semi-globally" the 'up' argument of dreamerr's functions
 #'
 #' When \code{\link[dreamerr]{check_arg}} (or \code{\link[dreamerr]{stop_up}}) is used in non user-level functions, the argument \code{.up} is used to provide an appropriate error message referencing the right function.
 #'
@@ -984,9 +1025,9 @@ fit_screen = function(msg){
 }
 
 
-#' Fills a character vector with a symbol
+#' Fills a string vector with a symbol
 #'
-#' Fills a character vector with a user-provided symbol, up to the required length.
+#' Fills a string vector with a user-provided symbol, up to the required length.
 #'
 #' @param x A character vector.
 #' @param n A positive integer giving the total expected length of each character string. Can be NULL (default). If \code{NULL}, then \code{n} is set to the maximum number of characters in \code{x} (i.e. \code{max(nchar(x))}).
@@ -1001,19 +1042,19 @@ fit_screen = function(msg){
 #'
 #' # Some self-explaining examples
 #' x = c("hello", "I", "am", "No-one")
-#' cat(sep = "\n", fill_symbol(x))
-#' cat(sep = "\n", fill_symbol(x, symbol = "."))
-#' cat(sep = "\n", fill_symbol(x, symbol = ".", n = 15))
-#' cat(sep = "\n", fill_symbol(x, symbol = ".", right = TRUE))
+#' cat(sep = "\n", sfill(x))
+#' cat(sep = "\n", sfill(x, symbol = "."))
+#' cat(sep = "\n", sfill(x, symbol = ".", n = 15))
+#' cat(sep = "\n", sfill(x, symbol = ".", right = TRUE))
 #'
-#' cat(sep = "\n", paste(fill_symbol(x, symbol = ".", right = TRUE), ":", 1:4))
+#' cat(sep = "\n", paste(sfill(x, symbol = ".", right = TRUE), ":", 1:4))
 #'
 #' # Argument 'anchor' can be useful when using numeric vectors
 #' x = c(-15.5, 1253, 32.52, 665.542)
-#' cat(sep = "\n", fill_symbol(x))
-#' cat(sep = "\n", fill_symbol(x, anchor = "."))
+#' cat(sep = "\n", sfill(x))
+#' cat(sep = "\n", sfill(x, anchor = "."))
 #'
-fill_symbol = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor){
+sfill = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor){
   # Character vectors starting with " " are not well taken care of
 
   check_arg_plus(x, "character vector conv")
@@ -1085,9 +1126,15 @@ fill_symbol = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor){
 #' Summary statistics of a packages: number of lines, number of functions, etc...
 #'
 #' @details
-#' This function looks for files in the R/ and src/ folders and give some stats. If there is no R/ folder directly accessible from the working directory, there will be no stats displayed.
+#' This function looks for files in the \code{R/} and \code{src/} folders and gives some stats. If there is no \code{R/} folder directly accessible from the working directory, there will be no stats displayed.
 #'
 #' Why this function? Well, it's just some goodies for package developers trying to be user-friendly!
+#'
+#' The number of documentation lines (and number of words) corresponds to the number of non-empty roxygen documentation lines. So if you don't document your code with roxygen, well, this stat won't prompt.
+#'
+#' Code lines correspond to non-commented, non-empty lines (by non empty: at least one letter must appear).
+#'
+#' Comment lines are non-empty comments.
 #'
 #' @return
 #' Doesn't return anything, just a prompt in the console.
@@ -1152,6 +1199,8 @@ package_stats = function(){
     n_c_fun_c_export = sum(grepl("^// \\[\\[Rcpp", my_c_file))
   }
 
+  line_doc = ifelse(n_doc_words > 0, paste0("\n........doc: ", signif_plus(n_r_doc), " (", signif_plus(n_doc_words), " words)"), "")
+
   cat("-----------------------
 || Package Statistics ||
 ------------------------
@@ -1160,14 +1209,20 @@ R code:",
       "\n# Lines: ", signif_plus(n_r_lines),
       "\n.......code: ", signif_plus(n_r_code), " (fav. vars: ", enumerate_items(fav_var), ")",
       "\n...comments: ", signif_plus(n_r_comment),
-      "\n........doc: ", signif_plus(n_r_doc), " (", signif_plus(n_doc_words), " words)",
+      line_doc,
       "\n# Functions: ", signif_plus(n_r_funs), sep = "")
 
 
   if(n_c > 0){
     # Rcpp specific
-    line_export = ifelse(n_c_fun_c_export > 0, paste0("\n# Functions (exported): ", signif_plus(n_c_fun_c_export)), "")
-    cat("\n\nC++ code:",
+    line_export = ifelse(n_c_fun_c_export > 0, paste0("\n# Functions (Rcpp exports): ", signif_plus(n_c_fun_c_export)), "")
+    intro = "C++ code:"
+    if(!any(grepl("\\.cpp$", c_files))){
+      intro = "C code:"
+    } else if(any(grepl("\\.c$", c_files))){
+      intro = "C/C++ code:"
+    }
+    cat("\n\n", intro,
         "\n# Lines: ", signif_plus(n_c_lines),
         "\n.......code: ", signif_plus(n_c_code),
         "\n...comments: ", signif_plus(n_c_comment),

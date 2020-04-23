@@ -11,11 +11,11 @@ export(stop_up, warn_up)
 export(n_letter, n_th, n_times)
 export(signif_plus)
 export(ifsingle, ifunit, plural, plural_len, enumerate_items)
-export(fill_symbol)
+export(sfill)
 
 # Setter/Getter
 export(setDreamerr_check, setDreamerr_dev.mode)
-export(set_up)
+export(set_up, set_check)
 
 # Goodies
 export(package_stats)

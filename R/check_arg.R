@@ -2163,7 +2163,7 @@ deparse_short = function(x){
 #'
 check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
 
-  if(!getOption("dreamerr_check")) return(NULL)
+  if(!getOption("dreamerr_check") || exists("DREAMERR_CHECK", parent.frame(), inherits = FALSE)) return(NULL)
 
   mc = match.call(expand.dots = FALSE)
 
@@ -2211,7 +2211,7 @@ check_arg_plus = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 #' @describeIn check_arg Checks if a (single) value is of the appropriate type
 check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
 
-  if(!getOption("dreamerr_check")) return(NULL)
+  if(!getOption("dreamerr_check") || exists("DREAMERR_CHECK", parent.frame(), inherits = FALSE)) return(NULL)
 
   mc = match.call(expand.dots = FALSE)
 
