@@ -2597,8 +2597,41 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         x_dots = error_catcher(list(...))
 
         if(class(x_dots)[1] == "try-error"){
+
           reason = as.character(x_dots)
-          stop_up("In argument '...', ", ifsingle(dots_origin, "the element", "some elements"), " could not be evaluated. Problem: ", reason, up = .up + 2)
+
+          # It's an error, so we have the time to find out the exact cause
+
+          # # I can't do that, because there's an ugly warning I can't get rid of...
+          #
+          # for(i in 1:...length()){
+          #   # x_i = error_catcher(...elt(i))
+          #   # x_i = error_catcher(1+"mm") # => works
+          #   # x_i <- error_catcher(...elt(i))
+          #   x_i <- try(eval.parent(...elt(i)), silent = TRUE)
+          #   # x_i = try(...elt(i))
+          #   if(class(x_i)[1] == "try-error"){
+          #     reason = as.character(x_i)
+          #     break
+          #   }
+          # }
+          #
+          # mc_dots = mc[["..."]]
+          # if(!is.null(names(mc_dots))){
+          #   arg_pblm = names(mc_dots)[i]
+          #   if(nchar(arg_pblm) > 0){
+          #     msg = paste0("element '", arg_pblm, "'")
+          #   } else {
+          #     msg = "an element"
+          #   }
+          #
+          # } else {
+          #   msg = paste0("the ", n_th(10 + i), " element")
+          # }
+
+          msg = "an element"
+
+          stop_up("In argument '...', ", msg, " could not be evaluated. Problem: ", reason, up = .up + 2)
         }
 
       }
@@ -2911,6 +2944,15 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         # We try to extract some precise information if error
         if(any(class(x) == "try-error")){
 
+          # In internal functions with .up = 0, we need to check if the argument is actually missing
+          current_arg_missing = switch(args[i], ".x" = missing(.x), ".type" = missing(.type), ".x1" = missing(.x1), ".x2" = missing(.x2), ".x3" = missing(.x3), ".x4" = missing(.x4), ".x5" = missing(.x5), ".x6" = missing(.x6), ".x7" = missing(.x7), ".x8" = missing(.x8), ".x9" = missing(.x9))
+
+          if(current_arg_missing){
+            # OK, fine
+            is_done[i] = TRUE
+            next
+          }
+
           reason = as.character(x)
           if(length(.data) > 0 && !is.null(names(.data))){
             x_vars = all.vars(parse(text = value_dp))
@@ -2968,14 +3010,12 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         if(class(x)[1] == "try-error"){
 
           # In internal functions with .up = 0, we need to check if the argument is actually missing
-          if(grepl("missing", x, fixed = TRUE)){
-            current_arg_missing = switch(args[i], ".x" = missing(.x), ".type" = missing(.type), ".x1" = missing(.x1), ".x2" = missing(.x2), ".x3" = missing(.x3), ".x4" = missing(.x4), ".x5" = missing(.x5), ".x6" = missing(.x6), ".x7" = missing(.x7), ".x8" = missing(.x8), ".x9" = missing(.x9))
+          current_arg_missing = switch(args[i], ".x" = missing(.x), ".type" = missing(.type), ".x1" = missing(.x1), ".x2" = missing(.x2), ".x3" = missing(.x3), ".x4" = missing(.x4), ".x5" = missing(.x5), ".x6" = missing(.x6), ".x7" = missing(.x7), ".x8" = missing(.x8), ".x9" = missing(.x9))
 
-            if(current_arg_missing){
-              # OK, fine
-              is_done[i] = TRUE
-              next
-            }
+          if(current_arg_missing){
+            # OK, fine
+            is_done[i] = TRUE
+            next
           }
 
           if(IS_VALUE){
