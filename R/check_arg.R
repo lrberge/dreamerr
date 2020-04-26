@@ -3245,7 +3245,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           is_done_or_fail[k] = TRUE
           next
         } else if(length(x) != 1){
-          all_reasons[[k]][i] = paste0("it is not of length 1 (currenlty: ", length(x), ")")
+          all_reasons[[k]][i] = paste0("it is not of length 1 (currently: ", length(x), ")")
           is_done_or_fail[k] = TRUE
           next
         }
@@ -3598,7 +3598,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           is_done_or_fail[k] = TRUE
           next
         } else if(is_multi == FALSE && length(x) > 1){
-          all_reasons[[k]][i] = paste0("it is not of length 1 (currenlty: ", length(x), ")")
+          all_reasons[[k]][i] = paste0("it is not of length 1 (currently: ", length(x), ")")
           is_done_or_fail[k] = TRUE
           next
         } else if(anyNA(x)){
@@ -3690,7 +3690,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           is_done_or_fail[k] = TRUE
           next
         } else if(is_multi == FALSE && length(x) > 1){
-          all_reasons[[k]][i] = paste0("it is not of length 1 (currenlty: ", length(x), ")")
+          all_reasons[[k]][i] = paste0("it is not of length 1 (currently: ", length(x), ")")
           is_done_or_fail[k] = TRUE
           next
         } else if(anyNA(x)){
@@ -3847,7 +3847,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         x = x_all[[k]]
 
         if(length(x) > 1){
-          all_reasons[[k]][i] = paste0("it is not of length 1 (currenlty: ", length(x), ")")
+          all_reasons[[k]][i] = paste0("it is not of length 1 (currently: ", length(x), ")")
           is_done_or_fail[k] = TRUE
           next
         }
