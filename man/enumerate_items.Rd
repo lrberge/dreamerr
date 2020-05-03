@@ -4,9 +4,19 @@
 \alias{enumerate_items}
 \title{Enumerates the elements of a vector}
 \usage{
-enumerate_items(x, type, verb = FALSE, s = FALSE, past = FALSE,
-  or = FALSE, start_verb = FALSE, quote = FALSE, enum = FALSE,
-  other = "", nmax = 7)
+enumerate_items(
+  x,
+  type,
+  verb = FALSE,
+  s = FALSE,
+  past = FALSE,
+  or = FALSE,
+  start_verb = FALSE,
+  quote = FALSE,
+  enum = FALSE,
+  other = "",
+  nmax = 7
+)
 }
 \arguments{
 \item{x}{A vector.}

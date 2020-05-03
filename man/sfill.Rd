@@ -27,16 +27,16 @@ Fills a string vector with a user-provided symbol, up to the required length.
 
 # Some self-explaining examples
 x = c("hello", "I", "am", "No-one")
-cat(sep = "\\n", sfill(x))
-cat(sep = "\\n", sfill(x, symbol = "."))
-cat(sep = "\\n", sfill(x, symbol = ".", n = 15))
-cat(sep = "\\n", sfill(x, symbol = ".", right = TRUE))
+cat(sep = "\n", sfill(x))
+cat(sep = "\n", sfill(x, symbol = "."))
+cat(sep = "\n", sfill(x, symbol = ".", n = 15))
+cat(sep = "\n", sfill(x, symbol = ".", right = TRUE))
 
-cat(sep = "\\n", paste(sfill(x, symbol = ".", right = TRUE), ":", 1:4))
+cat(sep = "\n", paste(sfill(x, symbol = ".", right = TRUE), ":", 1:4))
 
 # Argument 'anchor' can be useful when using numeric vectors
 x = c(-15.5, 1253, 32.52, 665.542)
-cat(sep = "\\n", sfill(x))
-cat(sep = "\\n", sfill(x, anchor = "."))
+cat(sep = "\n", sfill(x))
+cat(sep = "\n", sfill(x, anchor = "."))
 
 }

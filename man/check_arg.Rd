@@ -7,19 +7,71 @@
 \alias{check_value_plus}
 \title{Checks arguments and informs the user appropriately}
 \usage{
-check_arg(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...,
-  .message, .choices = NULL, .data = list(), .value, .env, .up = 0,
-  .call_up = 0)
+check_arg(
+  .x,
+  .type,
+  .x1,
+  .x2,
+  .x3,
+  .x4,
+  .x5,
+  .x6,
+  .x7,
+  .x8,
+  .x9,
+  ...,
+  .message,
+  .choices = NULL,
+  .data = list(),
+  .value,
+  .env,
+  .up = 0
+)
 
-check_arg_plus(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...,
-  .message, .choices = NULL, .data = list(), .value, .env, .up = 0,
-  .call_up = 0)
+check_arg_plus(
+  .x,
+  .type,
+  .x1,
+  .x2,
+  .x3,
+  .x4,
+  .x5,
+  .x6,
+  .x7,
+  .x8,
+  .x9,
+  ...,
+  .message,
+  .choices = NULL,
+  .data = list(),
+  .value,
+  .env,
+  .up = 0
+)
 
-check_value(.x, .type, .message, .arg_name, .choices = NULL,
-  .data = list(), .value, .env, .up = 0, .call_up = 0)
+check_value(
+  .x,
+  .type,
+  .message,
+  .arg_name,
+  .choices = NULL,
+  .data = list(),
+  .value,
+  .env,
+  .up = 0
+)
 
-check_value_plus(.x, .type, .message, .arg_name, .choices = NULL,
-  .data = list(), .value, .env, .up = 0, .call_up = 0)
+check_value_plus(
+  .x,
+  .type,
+  .message,
+  .arg_name,
+  .choices = NULL,
+  .data = list(),
+  .value,
+  .env,
+  .up = 0
+)
 }
 \arguments{
 \item{.x}{An argument to be checked. Must be an argument name. Can also be the type, see details/examples.}
@@ -58,8 +110,6 @@ You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object sho
 \item{.env}{An environment defaults to the frame where the user called the original function. Only used in two situations. 1) if the global keywords \code{eval} or \code{evalset} are present: the argument will also be evaluated in this environment. 2) if the argument is expected to be a formula and \code{var(env)} is included in the type: then the formula will be expected to contain variables existing in \code{.env}.}
 
 \item{.up}{Integer, default is 0. If the user provides a wrong argument, the error message will integrate the call of the function from which \code{check_arg} has been called. If \code{check_arg} is  called in a non-user level sub function of a main user-level function, then use \code{.up = 1} to make the error message look like it occured in the main function (and not in the sub function). Of course you can have values higher than 1.}
-
-\item{.call_up}{Deprecated, only kept for retro-compatibility. Use argument \code{.up} instead.}
 
 \item{.arg_name}{A character scalar. If \code{.message} is not provided, an automatic error message will be generated using \code{.arg_name} as the argument name.}
 }
@@ -373,12 +423,12 @@ test_eval = function(x1, x2, data = list(), i = c()){
 
  # We show the variables
  if(1 \%in\% i){
-   cat("x1:\\n")
+   cat("x1:\n")
    print(as.character(try(x1, silent = TRUE)))
  }
 
  if(2 \%in\% i){
-   cat("x2:\\n")
+   cat("x2:\n")
    print(as.character(try(x2, silent = TRUE)))
  }
 
@@ -423,7 +473,7 @@ test_match = function(x1 = c("bonjour", "Au revoir"), x2, x3 = "test"){
   # 3) choices set with the parentheses
   check_arg_plus(x3, "multi match(Orange, Juice, Good)")
 
-  cat("x1:", x1, "\\nx2:", ifelse(missing(x2), "[missing]", x2), "\\nx3:", x3, "\\n")
+  cat("x1:", x1, "\nx2:", tryCatch(x2, error = function(e) "[missing]"), "\nx3:", x3, "\n")
 }
 
 # Everything below is OK
@@ -455,7 +505,7 @@ test_match_multi = function(x1 = c("bonjour", "Au revoir"), x2 = c("Sarah", "San
   # multiple arguments at once
   check_arg_plus(x1, x2, x3, "match")
 
-  cat("x1:", x1, "\\nx2:", x2, "\\nx3:", x3, "\\n")
+  cat("x1:", x1, "\nx2:", x2, "\nx3:", x3, "\n")
 }
 
 test_match_multi()
@@ -475,7 +525,7 @@ test_charin = function(x1 = "bonjour", x2  = "Sarah"){
   # 2) set the choices with the parentheses
   check_arg(x2, "multi charin(Sarah, Santa, Santa Fe)")
 
-  cat("x1:", x1, "\\nx2:", x2, "\\n")
+  cat("x1:", x1, "\nx2:", x2, "\n")
 }
 
 # Now we need the exact values
@@ -985,17 +1035,17 @@ setDreamerr_dev.mode(TRUE)
 
 # Creating some 'wrong' calls => the problem is pinpointed
 
-test = function(x) check_arg(x, "integer scalar", "numeric vector")
-try(test())
+test_err1 = function(x) check_arg(x, "integer scalar", "numeric vector")
+try(test_err1())
 
-test = function(...) check_arg("numeric vector", ...)
-try(test())
+test_err2 = function(...) check_arg("numeric vector", ...)
+try(test_err2())
 
-test = function(x) check_arg(x$a, "numeric vector")
-try(test())
+test_err3 = function(x) check_arg(x$a, "numeric vector")
+try(test_err3())
 
-test = function(x) check_arg(x, "numeric vector integer")
-try(test())
+test_err4 = function(x) check_arg(x, "numeric vector integer")
+try(test_err4())
 
 # Setting the developer mode off:
 setDreamerr_dev.mode(FALSE)

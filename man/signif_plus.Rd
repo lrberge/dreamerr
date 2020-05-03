@@ -34,7 +34,7 @@ tell_na(x)
 # Some differences with signif:
 show_diff = function(x, d = 2) cat("signif(x, ", d, ") -> ", signif(x, d),
                                    " vs signif_plus(x, ", d, ") -> ",
-                                   signif_plus(x, d), "\\n", sep = "")
+                                   signif_plus(x, d), "\n", sep = "")
 
 # Main difference is for large numbers
 show_diff(95123.125)

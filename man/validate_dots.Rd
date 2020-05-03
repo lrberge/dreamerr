@@ -4,8 +4,15 @@
 \alias{validate_dots}
 \title{Checks the arguments in dots from methods}
 \usage{
-validate_dots(valid_args = c(), suggest_args = c(), message, warn,
-  stop, call. = FALSE, immediate. = TRUE)
+validate_dots(
+  valid_args = c(),
+  suggest_args = c(),
+  message,
+  warn,
+  stop,
+  call. = FALSE,
+  immediate. = TRUE
+)
 }
 \arguments{
 \item{valid_args}{A character vector, default is missing. Arguments that are not in the definition of the function but which are considered as valid. Typically internal arguments that should not be directly accessed by the user.}
