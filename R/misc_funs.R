@@ -844,6 +844,8 @@ plural_core = function(PLURAL, type, s, verb = FALSE, past = FALSE){
 #'
 n_times = function(n){
 
+  if(length(n) == 0) return("")
+
   dict = c("once", "twice", "three times", "four times")
 
   res = as.character(n)
@@ -860,6 +862,8 @@ n_times = function(n){
 
 #' @describeIn n_times Transforms the integer \code{n} to \code{nth} appropiately.
 n_th = function(n){
+
+  if(length(n) == 0) return("")
 
   dict = c("first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "nineth", "tenth", "eleventh", "twelfth", "thirteenth")
 
@@ -883,11 +887,13 @@ n_th = function(n){
 #' @describeIn n_times Transforms small integers to words.
 n_letter = function(n){
 
+  if(length(n) == 0) return("")
+
   dict = strsplit("one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve.thirtheen.fourteen.fifteen.sixteen.seventeen.eighteen.nineteen", "\\.")[[1]]
 
   res = as.character(n)
 
-  qui = n <= length(dict)
+  qui = n <= length(dict) & n > 0
   res[qui] = dict[n[qui]]
 
   res
@@ -995,7 +1001,7 @@ fit_screen = function(msg){
 
   # Note that \t are NOT handled
 
-  MAX_WIDTH = getOption("width")
+  MAX_WIDTH = getOption("width") * 0.9
 
   res = c()
 
