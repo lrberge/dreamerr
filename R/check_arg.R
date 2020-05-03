@@ -1171,7 +1171,6 @@ deparse_short = function(x){
 #' @param .arg_name A character scalar. If \code{.message} is not provided, an automatic error message will be generated using \code{.arg_name} as the argument name.
 #' @param .env An environment defaults to the frame where the user called the original function. Only used in two situations. 1) if the global keywords \code{eval} or \code{evalset} are present: the argument will also be evaluated in this environment. 2) if the argument is expected to be a formula and \code{var(env)} is included in the type: then the formula will be expected to contain variables existing in \code{.env}.
 #' @param .up Integer, default is 0. If the user provides a wrong argument, the error message will integrate the call of the function from which \code{check_arg} has been called. If \code{check_arg} is  called in a non-user level sub function of a main user-level function, then use \code{.up = 1} to make the error message look like it occured in the main function (and not in the sub function). Of course you can have values higher than 1.
-#' @param .call_up Deprecated, only kept for retro-compatibility. Use argument \code{.up} instead.
 #'
 #' @section How to form a type:
 #'
@@ -1522,7 +1521,7 @@ deparse_short = function(x){
 #'   # 3) choices set with the parentheses
 #'   check_arg_plus(x3, "multi match(Orange, Juice, Good)")
 #'
-#'   cat("x1:", x1, "\nx2:", ifelse(missing(x2), "[missing]", x2), "\nx3:", x3, "\n")
+#'   cat("x1:", x1, "\nx2:", tryCatch(x2, error = function(e) "[missing]"), "\nx3:", x3, "\n")
 #' }
 #'
 #' # Everything below is OK
@@ -2084,17 +2083,17 @@ deparse_short = function(x){
 #'
 #' # Creating some 'wrong' calls => the problem is pinpointed
 #'
-#' test = function(x) check_arg(x, "integer scalar", "numeric vector")
-#' try(test())
+#' test_err1 = function(x) check_arg(x, "integer scalar", "numeric vector")
+#' try(test_err1())
 #'
-#' test = function(...) check_arg("numeric vector", ...)
-#' try(test())
+#' test_err2 = function(...) check_arg("numeric vector", ...)
+#' try(test_err2())
 #'
-#' test = function(x) check_arg(x$a, "numeric vector")
-#' try(test())
+#' test_err3 = function(x) check_arg(x$a, "numeric vector")
+#' try(test_err3())
 #'
-#' test = function(x) check_arg(x, "numeric vector integer")
-#' try(test())
+#' test_err4 = function(x) check_arg(x, "numeric vector integer")
+#' try(test_err4())
 #'
 #' # Setting the developer mode off:
 #' setDreamerr_dev.mode(FALSE)
@@ -2161,96 +2160,87 @@ deparse_short = function(x){
 #'
 #'
 #'
-check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
+check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   if(!getOption("dreamerr_check") || exists("DREAMERR_CHECK", parent.frame(), inherits = FALSE)) return(NULL)
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
+    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::CHUNK(set_up)
-  # Retro compatibility .call_up (dammit!) + set_up
   # It's faster to write it here than in check_arg_core (where we would need call evaluation)
-  if(!missing(.call_up)){
-    .up = .call_up
-  } else if(missing(.up)){
+  if(missing(.up)){
     up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
     .up = up_value[[1]]
   }
   # END::CHUNK(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = FALSE, .is_value = FALSE)
+  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = FALSE, .is_value = FALSE)
 
 }
 
 #' @describeIn check_arg Same as \code{check_arg}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
-check_arg_plus = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
+check_arg_plus = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
+    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::COPY(set_up)
-  if(!missing(.call_up)){
-    .up = .call_up
-  } else if(missing(.up)){
+  if(missing(.up)){
     up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
     .up = up_value[[1]]
   }
   # END::COPY(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = TRUE, .is_value = FALSE)
+  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = TRUE, .is_value = FALSE)
 
 }
 
 #' @describeIn check_arg Checks if a (single) value is of the appropriate type
-check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
+check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   if(!getOption("dreamerr_check") || exists("DREAMERR_CHECK", parent.frame(), inherits = FALSE)) return(NULL)
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::COPY(set_up)
-  if(!missing(.call_up)){
-    .up = .call_up
-  } else if(missing(.up)){
+  if(missing(.up)){
     up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
     .up = up_value[[1]]
   }
   # END::COPY(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
+  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
 
 }
 
 #' @describeIn check_arg Same as \code{check_value}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
-check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0){
+check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up)
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::COPY(set_up)
-  if(!missing(.call_up)){
-    .up = .call_up
-  } else if(missing(.up)){
+  if(missing(.up)){
     up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
     .up = up_value[[1]]
   }
   # END::COPY(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .call_up = .call_up, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
+  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
 
 }
 
@@ -2263,7 +2253,7 @@ check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .da
 #### CORE FUNCTION ####
 ####
 
-check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .call_up = 0, .arg_name, .mc, .is_plus = FALSE, .is_value = FALSE){
+check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .arg_name, .mc, .is_plus = FALSE, .is_value = FALSE){
 
   # NOTA: the price to pay to using a core function called by user-level functions is about 4us. I think that's fair for the
   # clarity it adds to the code (and I hate duplication anyway).
@@ -2772,8 +2762,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         # DO NOT EDIT BY HAND! => edit in CHUNK(L0)
         # START::COPY(L0)
-      n = length(x)
-      if(length(n) == 1 && n == 0){
+      x_len = length(x)
+      if(length(x_len) == 1 && x_len == 0){
         if(grepl("l0", type_low, fixed = TRUE)){
 
           if(is.list(x)){
