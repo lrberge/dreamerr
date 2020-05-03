@@ -3,7 +3,7 @@
 
 #### New functions
 
- - `fill_symbol`: formatting function for strings. Fills a character string up to the required length. Helps to form nice messages.
+ - `sfill`: formatting function for strings. Fills a character string up to the required length. Helps to form nice messages.
 
  - `set_up`: sets the argument `up` semi-globally (i.e. throughout all calls within a function).
 
@@ -13,7 +13,7 @@
  
 #### User visible changes
 
- - Message informing NA tolerance in the types is prompted only when the error comes from NA values.
+ - Message informing no NA tolerance in the types is prompted only when the error comes from NA values.
  
  - The developer mode catches more errors and provide more suggestions.
  
@@ -21,7 +21,7 @@
 
 #### Change in argument names
 
- - `.call_up` becomes `.up` -- retro-compatibility is ensured.
+ - `.call_up` becomes `.up` -- retro-compatibility is NOT ensured.
 
 #### Bug correction
 
@@ -36,6 +36,8 @@
  - In `enumerate_items`, when there were many elements, `quote = TRUE` led to quote the `XX others` that shouldn't be quoted. Now corrected.
  
  - In the `formula` class, if a variable was passed as a `Formula` (notice the capital F), this caused an error if one-sidedness or two-sidedness were to be checked.
+ 
+ - Bug when in `n_letter` when negative numbers are in. This bug propagated into `check_arg`.
 
 
 ## First version: 1.0.0 (2020-04-12)

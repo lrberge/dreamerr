@@ -12,4 +12,4 @@ Encoding: UTF-8
 VignetteBuilder: knitr
 BugReports: https://github.com/lrberge/dreamerr/issues
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
