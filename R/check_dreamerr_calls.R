@@ -6,7 +6,7 @@
 
 
 
-check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up, .call_up, .arg_name){
+check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up, .arg_name){
   # This internal function tries to fully check the call to check_arg
   # in particular errors/warnings will pop when the types are ill-formed
 
@@ -56,10 +56,6 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
   }
 
   # .up: integer scalar
-  if(not_missing(.call_up)){
-    warn_up("Argument '.call_up' is deprecated, please use '.up' instead ('.call_up' will be removed in the future).")
-    .up = .call_up
-  }
 
   if(not_missing(.up)){
     if(length(.up) != 1){
@@ -245,8 +241,25 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
 
       arg_pblm = setdiff(x_names, args_origin)
       if(length(arg_pblm) > 0){
-        msg = ifelse(.up > 0, "The arguments passed to your internal function must have the exact same name as in the user-level function.\n If you really want to change the name of the argument in your internal function, a workaround is to use 'check_value' in combination with the argument '.arg_name' which gives the original name the argument refers to.", "")
-        stop_up("The argument", enumerate_items(arg_pblm, "s.quote.isn't"), " valid: ", ifsingle(arg_pblm, "it is not an argument", "they are not arguments"), " of function '", deparse_long(mc_origin[[1]]), "'. It's a big problem! ", msg)
+
+        is_list = FALSE
+        if(any(grepl("$", arg_pblm, fixed = TRUE))){
+          new_args = gsub("\\$.+", "", arg_pblm)
+          arg_pblm = setdiff(new_args, args_origin)
+          is_list = length(arg_pblm) == 0
+        } else if(any(grepl("\\[\\[", arg_pblm, fixed = TRUE))){
+          stop_up("To check elements of arguments that are lists, you must use the dollar sign: arg$element.")
+        }
+
+        if(is_list){
+          if(!IS_PLUS){
+            stop_up("To check elements of arguments that are lists, you must use check_arg_plus (and not check_arg).")
+          }
+        } else {
+          msg = ifelse(.up > 0, "The arguments passed to your internal function must have the exact same name as in the user-level function.\n If you really want to change the name of the argument in your internal function, a workaround is to use 'check_value' in combination with the argument '.arg_name' which gives the original name the argument refers to.", "")
+          stop_up("The argument", enumerate_items(arg_pblm, "s.quote.isn't"), " valid: ", ifsingle(arg_pblm, "it is not an argument", "they are not arguments"), " of function '", deparse_long(mc_origin[[1]]), "'. It's a big problem! ", msg)
+        }
+
       }
 
     }
