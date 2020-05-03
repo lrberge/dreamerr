@@ -1,8 +1,14 @@
 
-## dreamerr: Error Handling Made Easy
 
 
-This package is addressed to developers or anyone writing functions (therefore almost everyone!).
+# dreamerr: Error Handling Made Easy
+
+<a href="https://cran.r-project.org/web/checks/check_results_dreamerr.html"><img src="https://cranchecks.info/badges/flavor/release/dreamerr" alt="CRAN status"></a>
+<a href="https://cran.r-project.org/package=dreamerr"><img src="http://www.r-pkg.org/badges/version/dreamerr" alt="Version"> </a>
+<a href="https://ipub.com/dev-corner/apps/r-package-downloads/"> <img src="https://cranlogs.r-pkg.org/badges/dreamerr" alt = "Downloads"> </a>
+
+
+This package is addressed to developers or anyone writing functions (therefore almost everyone).
 
 It intends to increase R's user-friendliness and has two main objectives: 
 
@@ -16,6 +22,8 @@ This package aims to be the end of R's sometimes cryptic error messages, like th
 ```
 Error in xj[i] : invalid subscript type 'closure'
 ```
+
+Below is a motivating example, for more details see the [introduction](https://CRAN.R-project.org/package=dreamerr/vignettes/dreamerr_introduction.html).
 
 ## Motivating example
 
