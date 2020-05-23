@@ -447,7 +447,17 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
 
             } else if(is_there("logical")){
               my_type = clean_kw("logical")
-              my_type = clean_kw("strict")
+              if(is_there("strict")){
+                # We apply this warning only to current users! We don't trigger it when a sub-function uses dreamerr
+                current_fun = deparse(sys.call(sys.parent(.up + 3))[[1]])
+                where_fun = find(current_fun, mode = "function")
+                if(!any(grepl("package", where_fun))){
+                  warn_up(up = 2, "The type 'strict logical' has been deprecated. Now by default, 'logical' is strict, but you have the new keyword 'loose' to get the old behavior back.")
+                }
+
+                my_type = clean_kw("strict")
+              }
+              my_type = clean_kw("loose")
 
             } else if(is_there("character")){
               my_type = clean_kw("character")

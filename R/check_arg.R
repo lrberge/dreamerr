@@ -704,13 +704,14 @@ extract_type = function(x){
     return("factor")
 
   } else if(grepl("logical", x, fixed = TRUE)){
-    if(grepl("loose", x, fixed = TRUE)){
-      return("logical")
-    } else if(!grepl("strict", x, fixed = TRUE)){
-      return("logical")
-    } else {
-      return("strict_logical")
-    }
+    return("logical")
+    # if(grepl("loose", x, fixed = TRUE)){
+    #   return("logical")
+    # } else if(!grepl("strict", x, fixed = TRUE)){
+    #   return("logical")
+    # } else {
+    #   return("strict_logical")
+    # }
   }
   return(NULL)
 }
@@ -1210,7 +1211,7 @@ deparse_short = function(x){
 #'
 #' You can further add restrictions. There are roughly six types of restrictions. Here what they do and the types to which they are associated:
 #' \itemize{
-#' \item sub-type restriction: For atomic types (\code{scalar}, \code{vector}, \code{matrix} or \code{vmatrix}), you can restrict the underlying data to be of a specific sub-type. The simple sub-types are: i) \code{integer} (numeric without decimals and logicals), i') \code{strict integer} (numeric that can be converted to integer with \code{as.integer}, and not logicals), ii) \code{numeric}, iii) \code{factor}, iv) \code{logical} (a logical or a numeric equal to 0 or 1) and iv') \code{strict logical} (a logical only). Simply add the sub-type in the type string (e.g. \code{"integer scalar"}), or if you allow multiple types, put them in parentheses rigth after the main class: e.g. \code{"scalar(character, integer)"}. See Section XI) in the examples. See also the section below for more information on the sub-types. Some types (\code{character}, \code{integer}, \code{numeric}, \code{logical} and \code{factor}) also support the keyword \code{"conv"} in \code{check_arg_plus}.
+#' \item sub-type restriction: For atomic types (\code{scalar}, \code{vector}, \code{matrix} or \code{vmatrix}), you can restrict the underlying data to be of a specific sub-type. The simple sub-types are: i) \code{integer} (numeric without decimals and logicals), i') \code{strict integer} (numeric that can be converted to integer with \code{as.integer}, and not logicals), ii) \code{numeric}, iii) \code{factor}, iv) \code{logical} and iv') \code{loose logical} (0/1 are also OK). Simply add the sub-type in the type string (e.g. \code{"integer scalar"}), or if you allow multiple types, put them in parentheses rigth after the main class: e.g. \code{"scalar(character, integer)"}. See Section XI) in the examples. See also the section below for more information on the sub-types. Some types (\code{character}, \code{integer}, \code{numeric}, \code{logical} and \code{factor}) also support the keyword \code{"conv"} in \code{check_arg_plus}.
 #' \item \code{GE}/\code{GT}/\code{LE}/\code{LT}: For atomic types with numeric data, you can check the values in the object. The GE/GT/LE/LT mean respectively greater or equal/greater than/lower or equal/lower than. The syntax is \code{GE{expr}}, with expr any expression. See Section IV) in the examples.
 #' \item \code{len(a, b)}: You can restrict the length of objects with \code{len(a, b)} (with \code{a} and \code{b} integers). Available for \code{vector} and \code{list}. Then the length must be in between \code{a} and \code{b}. Either \code{a} or \code{b} can be missing which means absence of restriction. If \code{len(a)}, this means must be equal to \code{a}. You can also use the keywords len(data) which ensures that the length is the same as the length of the object given in the argument \code{.data}, or \code{len(value)} which ensures the length is equal to the value given in \code{.value}. See Section IV) in the examples.
 #' \item \code{nrow(a, b)}, \code{ncol(a, b)}: To restrict the number of rows and columns. Available for \code{matrix}, \code{vmatrix}, \code{data.frame}, \code{vdata.frame}. Tolerates the \code{data} and \code{value} keywords (see in \code{len}). See Section IV) in the examples.
@@ -1279,7 +1280,7 @@ deparse_short = function(x){
 #'
 #' @section Checking multiple arguments:
 #'
-#' You can check multiple arguments at once provided they are of the same type. Say variables \code{x1} to \code{x5} should be single logicals. Just use: \code{check_arg(x1, x2, x3, x4, x5, "logical scalar")}. It is always more efficient to check multiple arguments of the same type \emph{at once}.
+#' You can check multiple arguments at once provided they are of the same type. Say variables \code{x1} to \code{x5} should be logical scalars. Just use: \code{check_arg(x1, x2, x3, x4, x5, "logical scalar")}. It is always more efficient to check multiple arguments of the same type \emph{at once}.
 #'
 #' It is important to note that in case of multiple arguments, you can place the type anywhere you want provided it is a character literal (and not in a variable!). This means that \code{check_arg("logical scalar", x1, x2, x3, x4, x5)} would also work.
 #'
@@ -1385,7 +1386,6 @@ deparse_short = function(x){
 #' # Following should be OK
 #' test_scalar()
 #' test_scalar(xlog = FALSE, xnum = 55, xint = 5, xnumlt = 0.11, xdate = Sys.Date())
-#' test_scalar(xlog = 1) # OK
 #'
 #' #
 #' # Now errors, all the following are wrong arguments, leading to errors
@@ -1640,9 +1640,9 @@ deparse_short = function(x){
 #' try(test_vmat(xvec = 5.5))
 #'
 #' # Matrix checks:
-#' try(test_vmat(xmat = matrix(1, 3, 4)))
+#' try(test_vmat(xmat = matrix(TRUE, 3, 4)))
 #' try(test_vmat(xmat = matrix(2, 3, 3)))
-#' try(test_vmat(xmat = matrix(1, 1, 3)))
+#' try(test_vmat(xmat = matrix(FALSE, 1, 3)))
 #' try(test_vmat(xmat = iris))
 #'
 #' try(test_vmat(xvmat = iris))
@@ -1880,8 +1880,8 @@ deparse_short = function(x){
 #' # - integer
 #' # - numeric
 #' # - factor
-#' # - logical (of type logical or a numeric equal to 0 or 1)
-#' # - strict logical (of type logical only)
+#' # - logical
+#' # - loose logical: either TRUE/FALSE, either 0/1
 #' #
 #' # If you require that the data is of one sub-type only:
 #' # - a) if it's one of the simple sub-types: add the keyword directly in the type
@@ -1897,7 +1897,7 @@ deparse_short = function(x){
 #' # Again, the parentheses MUST follow the main class directly.
 #' # Examples:
 #' # "vector(character, factor)"
-#' # "scalar(integer, strict logical)"
+#' # "scalar(integer, logical)"
 #' # "matrix(Date, integer, logical)"
 #' #
 #' # In check_arg_plus, you can use the keyword "conv" to convert to the
@@ -1905,7 +1905,7 @@ deparse_short = function(x){
 #' #
 #'
 #' test_multi_subtypes = function(x, y){
-#'   check_arg(x, "scalar(integer, strict logical)")
+#'   check_arg(x, "scalar(integer, logical)")
 #'   check_arg(y, "vector(character, factor, Date)")
 #'   invisible(NULL)
 #' }
@@ -4249,7 +4249,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               if(is.logical(x)){
                 ok_subtypes = TRUE
                 break
-              } else if(!grepl("strict", my_subtype, fixed = TRUE) && (is_num && all(x_omit[[k]] %in% c(0, 1)))){
+              } else if(grepl("loose", my_subtype, fixed = TRUE) && (is_num && all(x_omit[[k]] %in% c(0, 1)))){
                 ok_subtypes = TRUE
 
                 if(IS_PLUS && grepl("conv", my_subtype, fixed = TRUE)){
@@ -4410,7 +4410,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
           } else if(grepl("logical", my_type, fixed = TRUE) && !is.logical(x)){
 
-            if(grepl("strict", my_type, fixed = TRUE)){
+            if(!grepl("loose", my_type, fixed = TRUE)){
               all_reasons[[k]][i] = paste0("it is not of type logical (instead it is of type ", enumerate_items(class(x[1]), quote = TRUE), ")")
               is_done_or_fail[k] = TRUE
               next
