@@ -600,7 +600,8 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
   #
 
   # The original call
-  my_call = deparse(sys.calls()[[sys.nframe()-(up + 3)]])[1] # call can have svl lines
+  my_frame = ifelse(sys.nframe() <= up + 3, 1, sys.nframe()-(up + 3))
+  my_call = deparse(sys.calls()[[my_frame]])[1] # call can have svl lines
   nmax = 40
   if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax-1), "...")
 
