@@ -3803,16 +3803,18 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           next
         } else {
 
+          x[] = res
+
           if(IS_LIST[k]){
             # we get the list, assign the value to the list, reassign back in the parent frame
             l_name = gsub("\\$.+", "", x_names[k])
             my_list = get(l_name, parent.frame(2))
             var_name = gsub(".+\\$", "", x_names[k])
-            my_list[[var_name]] = res
+            my_list[[var_name]] = x
             assign(l_name, my_list, parent.frame(2))
 
           } else {
-            assign(x_names[k], res, parent.frame(2))
+            assign(x_names[k], x, parent.frame(2))
           }
 
           is_done[k] = TRUE
