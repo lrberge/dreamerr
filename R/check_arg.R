@@ -4044,35 +4044,71 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       }
 
-      if(check_typeof && (grepl("integer", my_type, fixed = TRUE) || grepl("logical", my_type, fixed = TRUE))){
-        # We set x_omit => needed to check the integer/logical type
+      if(check_typeof || check_equality){
 
-        for(k in which(!is_done_or_fail)){
+        if(grepl("integer", my_type, fixed = TRUE) ||
+           (grepl("logical", my_type, fixed = TRUE) && grepl("loose", my_type, fixed = TRUE))){
 
-          if(!x_omit_done[k]){
-            x = x_all[[k]]
+          # 1) we create x_omit + take care of only NA vectors
 
-            if(!any_NA_done[k]){
-              any_NA[k] = anyNA(x)
-              any_NA_done[k] = TRUE
-            }
+          for(k in which(!is_done_or_fail)){
 
-            if(any_NA[k]){
-              x_omit[[k]] = as.vector(x)[!is.na(as.vector(x))]
-              if(length(x_omit[[k]]) == 0){
-                is_done[k] = is_done_or_fail[k] = TRUE
-                next
+            if(!x_omit_done[k]){
+              x = x_all[[k]]
+
+              if(!any_NA_done[k]){
+                any_NA[k] = anyNA(x)
+                any_NA_done[k] = TRUE
               }
-            } else {
-              x_omit[[k]] = x
+
+              if(any_NA[k]){
+                x_omit[[k]] = as.vector(x)[!is.na(as.vector(x))]
+                if(length(x_omit[[k]]) == 0){
+                  is_done[k] = is_done_or_fail[k] = TRUE
+                  next
+                }
+              } else {
+                x_omit[[k]] = x
+              }
+              x_omit_done[k] = TRUE
+
             }
-            x_omit_done[k] = TRUE
-
           }
-        }
 
-        if(all(is_done)) return(NULL)
-        if(all(is_done_or_fail)) next
+          if(all(is_done)) return(NULL)
+          if(all(is_done_or_fail)) next
+
+        } else {
+          # 2) We take care of only NA vectors
+          # On en profite pour creer x_omit
+
+          for(k in which(!is_done_or_fail)){
+
+            if(!x_omit_done[k]){
+              x = x_all[[k]]
+
+              # The usual case: vectors are NOT full NA
+              # so we perform is.na on full vector only if first value is NA
+              if(is.na(x[1])){
+                any_NA[k] = TRUE
+                any_NA_done[k] = TRUE
+
+                qui_NA = is.na(as.vector(x))
+                if(all(qui_NA)){
+                  is_done[k] = is_done_or_fail[k] = TRUE
+                  next
+                } else if(is.numeric(x) || is.logical(x)){
+                  x_omit[[k]] = as.vector(x)[!qui_NA]
+                }
+                x_omit_done[k] = TRUE
+              }
+
+            }
+          }
+
+          if(all(is_done)) return(NULL)
+          if(all(is_done_or_fail)) next
+        }
 
       }
 
