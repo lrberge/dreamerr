@@ -159,7 +159,7 @@ set_check = function(x){
 #' @param .up An integer greater or equal to 0.
 #'
 #' @details
-#' The function \code{set_up} does not set the argument \code{up} globally.
+#' The function \code{set_up} does not set the argument \code{up} globally, but only for all calls to \code{check_arg} and \code{check_value} within the same function.
 #'
 #'
 #' @examples
@@ -179,7 +179,7 @@ set_check = function(x){
 #'   check_arg(x, y, "numeric scalar mbt")
 #'
 #'   # Identical to calling
-#'   # check_arg(x, y, "numeric scalar mbt", .call_up = 1)
+#'   # check_arg(x, y, "numeric scalar mbt", .up = 1)
 #'
 #'   if(sum) return(x + y)
 #'   return(x - y)

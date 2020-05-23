@@ -1109,7 +1109,6 @@ try(plot_fml(Sepal.Length ~ Species, iris))
 try(plot_fml(Sepal.Length ~ Petal.Length, iris, xlab = iris))
 try(plot_fml(Sepal.Length ~ Petal.Length, iris, xlab = iris$Species))
 
-plot(1:10)
 
 
 }

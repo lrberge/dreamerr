@@ -16,7 +16,7 @@ When \code{\link[dreamerr]{check_arg}} (or \code{\link[dreamerr]{stop_up}}) is u
 To avoid repeating the argument \code{.up} in each \code{check_arg} call, you can set it (kind of) "globally" with \code{set_up}.
 
 
-The function \code{set_up} does not set the argument \code{up} globally.
+The function \code{set_up} does not set the argument \code{up} globally, but only for all calls to \code{check_arg} and \code{check_value} within the same function.
 }
 \examples{
 
@@ -35,7 +35,7 @@ my_internal = function(x, y, sum){
   check_arg(x, y, "numeric scalar mbt")
 
   # Identical to calling
-  # check_arg(x, y, "numeric scalar mbt", .call_up = 1)
+  # check_arg(x, y, "numeric scalar mbt", .up = 1)
 
   if(sum) return(x + y)
   return(x - y)
