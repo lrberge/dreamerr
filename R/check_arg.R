@@ -2662,7 +2662,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         rm_adj = 0
 
-        x_all_tmp = list()
+        # x_all_tmp = list()
+        x_all_tmp = vector("list", length(args))
         for(i in seq_along(args)){
           x = switch(args[i], ".x" = error_catcher(.x), ".type" = error_catcher(.type), ".x1" = error_catcher(.x1), ".x2" = error_catcher(.x2), ".x3" = error_catcher(.x3), ".x4" = error_catcher(.x4), ".x5" = error_catcher(.x5), ".x6" = error_catcher(.x6), ".x7" = error_catcher(.x7), ".x8" = error_catcher(.x8), ".x9" = error_catcher(.x9))
 
@@ -2685,16 +2686,32 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           if(RM_TYPE && identical(x, type)){
             rm_adj = 1
             RM_TYPE = FALSE
-          } else {
-            x_all_tmp[[length(x_all_tmp) + 1]] = x
+            x_all_tmp[[length(args)]] = NULL
+          # } else if(is.null(x)){
+          #   # stop_up("In argument '...', the ", n_th(naked_order[i - rm_adj]), " element is NULL. This is not allowed.", up = .up + 2)
+          #   x_all_tmp[[length(x_all_tmp) + 1]] = "__NULL__"
+          } else if(!is.null(x)){
+            # x_all_tmp[[length(x_all_tmp) + 1]] = x
+            # x_all_tmp[[paste("arg__", length(x_all_tmp) + 1)]] = x
+            x_all_tmp[[i - rm_adj]] = x
           }
         }
 
         # We put everything in the proper order
-        x_all = list()
-        x_all[1:n_dots] = NA
+        # x_all = list()
+        # x_all[1:n_dots] = NA
+        x_all = vector("list", n_dots)
 
         x_all[naked_order[1:length(x_all_tmp)]] = x_all_tmp
+        # for(i in 1:length(x_all_tmp)){
+        #   if(identical("__NULL__", x_all_tmp[[i]])){
+        #     x_all[[naked_order[i]]] = NULL
+        #   } else {
+        #     x_all[[naked_order[i]]] = x_all_tmp[[i]]
+        #   }
+        # }
+
+
         if(n_dots > length(x_all_tmp)){
           x_all[-naked_order[1:length(x_all_tmp)]] = x_dots
         }
