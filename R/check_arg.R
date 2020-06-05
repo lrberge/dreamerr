@@ -1165,7 +1165,7 @@ deparse_short = function(x){
 #'
 #' @param .x An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param .type A character string representing the requested type(s) of the arguments. This is a bit long so please look at the details section or the vignette for explanations. Each type is composed of one main class and restrictions (optional). Types can be separated with pipes (\code{|}). The main classes are: i) \code{"scalar"} for scalars, i.e. vectors of length one, ii) \code{"vector"}, iii) \code{"matrix"}, iv) \code{"data.frame"}, v) \code{"list"}, vi) \code{formula}, vii) \code{function}, viii) \code{charin}, i.e. a character string in a set of choices, viii) \code{"match"}, i.e. a character scalar that should partially match a vector of choices, x) \code{"class(my_class1, my_class2)"}, i.e. an object whose class is any of the ones in parentheses, xi) \code{"NA"}, something identical to \code{NA}.
-#' You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object should be of length between \code{a} and \code{b} (you can leave \code{a} or \code{b} missing, \code{len(a)} means length *equal* to \code{a}), \code{len(data)} and \code{len(value)} are also possible (see details), 2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the number of arguments, 4) \code{"na ok"} to allow the object to have NAs (for "scalar", "vector", "matrix" types), or \code{"no na"} to restrict the object to have no NA (for "data.frame" only), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}: for numeric scalars/vectors/matrices, \code{GE{expr}} restrics the object to have only values striclty greater than (greater or equal/strictly lower than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)}, for scalars/vectors/matrices you can restrict the type of the object by adding the expected type in parentheses: should it be numeric, logical, etc.
+#' You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object should be of length between \code{a} and \code{b} (you can leave \code{a} or \code{b} missing, \code{len(a)} means length *equal* to \code{a}), \code{len(data)} and \code{len(value)} are also possible (see details), 2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the number of arguments, 4) \code{"na ok"} to allow the object to have NAs (for "scalar" types), or \code{"no na"} to restrict the object to have no NA (for "data.frame", "vector", and "matrix" types), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}: for numeric scalars/vectors/matrices, \code{GE{expr}} restrics the object to have only values striclty greater than (greater or equal/strictly lower than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)}, for scalars/vectors/matrices you can restrict the type of the object by adding the expected type in parentheses: should it be numeric, logical, etc.
 #' @param .x1 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param .x2 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param .x3 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
@@ -1191,7 +1191,7 @@ deparse_short = function(x){
 #'
 #' The syntax is: \code{"main_class option(s) restriction(s)"}
 #'
-#' A type MUST have at least one main class. For example: in the type \code{"logical vector len(,2) NA OK"}, \code{vector} is the main class, \code{NA OK} is the option, and \code{logical} and \code{len(,2)} are restrictions
+#' A type MUST have at least one main class. For example: in the type \code{"logical vector len(,2) no na"}, \code{vector} is the main class, \code{no na} is the option, and \code{logical} and \code{len(,2)} are restrictions
 #'
 #' There are 13 main classes that can be checked. On the left the keyword, on the right what is expected from the argument, and in square brackets the related section in the examples:
 #' \itemize{
@@ -1212,8 +1212,8 @@ deparse_short = function(x){
 #'
 #' There are seven type options, they are not available for each types. Here what they do and the types to which they are associated:
 #' \itemize{
-#' \item \code{NA OK} (or \code{NAOK}): Tolerates the presence of NA values. Available for \code{scalar}, \code{vector}, \code{matrix}, \code{vmatrix}.
-#' \item \code{NO NA} (or \code{NONA}): Throws an error if NAs are present. Available for \code{data.frame}, \code{vdata.frame}.
+#' \item \code{NA OK} (or \code{NAOK}): Tolerates the presence of NA values. Available for \code{scalar}.
+#' \item \code{NO NA} (or \code{NONA}): Throws an error if NAs are present. Available for \code{vector}, \code{matrix}, \code{vmatrix}, \code{data.frame}, and \code{vdata.frame}.
 #' \item \code{square}: Enforces the matrix to be square. Available for \code{matrix}, \code{vmatrix}.
 #' \item \code{named}: Enforces the object to have names. Available for \code{vector}, \code{list}.
 #' \item \code{multi}: Allows multiple matches. Available for \code{charin}, \code{match}.
@@ -1617,8 +1617,8 @@ deparse_short = function(x){
 #' # The syntax is GE{expr}, with expr any expression
 #' # Of course, it only works for numeric values
 #' #
-#' # You can tolerate NA values (default is no tolerance in vector/matrices)
-#' # with the keyword 'NAOK' or 'NA OK'
+#' # By default NAs are tolerated in vector, matrix and data.frame.
+#' # You can refuse NAs using the keyword: 'no na' or 'nona'
 #' #
 #'
 #' test_vmat = function(xvec, xmat, xvmat, xstmat, xnamed){
@@ -1629,12 +1629,12 @@ deparse_short = function(x){
 #'   check_arg(xmat, "logicalMatrix NROW(2,) NCOL(3)")
 #'
 #'   # vector or matrix (vmatrix) of integers or character strings
-#'   # with at most 3 observations, NAs are OK
-#'   check_arg(xvmat, "vmatrix(character, integer) nrow(,3) naok")
+#'   # with at most 3 observations
+#'   # NAs are not allowed
+#'   check_arg(xvmat, "vmatrix(character, integer) nrow(,3) no na")
 #'
-#'   # square matrix of logicals, the values must be TRUE/FALSE,
-#'   # i.e. values equal to 0 or 1 are not OK
-#'   check_arg(xstmat, "strict Logical square Matrix")
+#'   # square matrix of integers, logicals reports errors
+#'   check_arg(xstmat, "strict integer square Matrix")
 #'
 #'   # A vector with names of length 2
 #'   check_arg(xnamed, "named Vector len(2)")
@@ -1642,11 +1642,10 @@ deparse_short = function(x){
 #' }
 #'
 #' # OK
-#' test_vmat(xvec = 5:20, xmat = matrix(TRUE, 3, 3), xvmat = c(NA, 4, 3),
-#'           xstmat = matrix(FALSE, 2, 2), xnamed = c(bon=1, jour=2))
+#' test_vmat(xvec = 5:20, xmat = matrix(TRUE, 3, 3), xvmat = c("abc", 4, 3),
+#'           xstmat = matrix(1:4, 2, 2), xnamed = c(bon=1, jour=2))
 #'
 #' # Vector checks:
-#' try(test_vmat(xvec = c(NA, 2:5)))
 #' try(test_vmat(xvec = 2))
 #' try(test_vmat(xvec = 21))
 #' try(test_vmat(xvec = 5.5))
@@ -1658,9 +1657,9 @@ deparse_short = function(x){
 #' try(test_vmat(xmat = iris))
 #'
 #' try(test_vmat(xvmat = iris))
+#' try(test_vmat(xvmat = c(NA, 5)))
 #'
 #' try(test_vmat(xstmat = matrix(1, 1, 3)))
-#' try(test_vmat(xstmat = matrix(1, 3, 3)))
 #' try(test_vmat(xstmat = matrix(c(TRUE, FALSE, NA), 3, 3)))
 #'
 #' # Named vector checks:
@@ -2884,7 +2883,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         if(is_list){
           IS_LIST = TRUE
         } else {
-          stop_up("In check_value_plus(), the argument '.x' must be a variable name or a list-element of the form x$element. Currently it is neither.")
+          # stop_up("In check_value_plus(), the argument '.x' must be a variable name or a list-element of the form x$element. Currently it is neither.")
         }
       }
 
@@ -2924,7 +2923,9 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
   }
 
-
+  # RES: what will be returned by the function
+  # Only if IS_VALUE && IS_PLUS
+  RES = NULL
 
   if(!IS_DOTS){
     # IS_DOTS has been already evaluated
@@ -3331,7 +3332,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         check_typeof = nchar(my_type) >= 11
       }
 
-      check_len = check_equality = check_NAOK = TRUE
+      check_len = check_equality = check_NONA = TRUE
     } else if(grepl("list", my_type, fixed = TRUE)){
       #
       # __LIST ####
@@ -3441,7 +3442,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         check_typeof = nchar(my_type) >= 11
       }
 
-      check_dim = check_equality = check_NAOK = TRUE
+      check_dim = check_equality = check_NONA = TRUE
     } else if(grepl("formula", my_type, fixed = TRUE)){
       #
       # __FORMULAS ####
@@ -4052,7 +4053,38 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     #
 
     if(check_NAOK){
+      # ONLY scalar is concerned => x MUST be a scalar
+
       if(!(grepl("na ok", my_type, fixed = TRUE) || grepl("naok", my_type, fixed = TRUE))){
+
+        for(k in which(!is_done_or_fail)){
+
+          if(is.na(x_all[[k]])){
+            all_reasons[[k]][i] = "it is equal to NA while it should be NA-free"
+            is_done_or_fail[k] = TRUE
+          }
+
+        }
+
+        if(all(is_done_or_fail)) next
+
+      } else {
+        # NA tolerance: means that we check whether x == NA since x is a scalar
+
+        for(k in which(!is_done_or_fail)){
+          if(is.na(x_all[[k]])){
+            is_done[k] = is_done_or_fail[k] = TRUE
+          }
+        }
+
+        if(all(is_done)) return(NULL)
+        if(all(is_done_or_fail)) next
+
+      }
+
+    } else if(check_NONA){
+
+      if(grepl("no na", my_type, fixed = TRUE) || grepl("nona", my_type, fixed = TRUE)){
 
         for(k in which(!is_done_or_fail)){
 
@@ -4064,7 +4096,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
 
           if(any_NA[k]){
-            if(length(all_types) == 1 && length(x) > 1){
+            if(length(all_types) == 1 && !is.data.frame(x)){
               n_na = sum(is.na(x))
               all_reasons[[k]][i] = paste0("it contains ", signif_plus(n_na), " NA", plural(n_na), " while it should be NA-free")
             } else {
@@ -4079,9 +4111,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         if(all(is_done_or_fail)) next
 
-      }
+      } else if(check_typeof || check_equality){
+        # CONCERNS only matrix or vector
+        # Here: if only NA => stop now
 
-      if(check_typeof || check_equality){
+        # The difference betweenthe two if sections:
+        # - in the first: always create x_omit (means we also always perform is.na)
+        # - in the 2nd: we create x_omit iff first and last values of x are NA
 
         if(grepl("integer", my_type, fixed = TRUE) ||
            (grepl("logical", my_type, fixed = TRUE) && grepl("loose", my_type, fixed = TRUE))){
@@ -4125,8 +4161,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               x = x_all[[k]]
 
               # The usual case: vectors are NOT full NA
-              # so we perform is.na on full vector only if first value is NA
-              if(is.na(x[1])){
+              # so we perform is.na on full vector only if first and last values are NA
+              if(is.na(x[1]) && is.na(x[length(x)])){
                 any_NA[k] = TRUE
                 any_NA_done[k] = TRUE
 
@@ -4146,32 +4182,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           if(all(is_done)) return(NULL)
           if(all(is_done_or_fail)) next
         }
-
-      }
-
-    } else if(check_NONA){
-
-      if(grepl("no na", my_type, fixed = TRUE) || grepl("nona", my_type, fixed = TRUE)){
-
-        for(k in which(!is_done_or_fail)){
-
-          x = x_all[[k]]
-
-          if(!any_NA_done[k]){
-            any_NA[k] = anyNA(x)
-            any_NA_done[k] = TRUE
-          }
-
-          if(any_NA[k]){
-            all_reasons[[k]][i] = "it contains NAs while it should be NA-free"
-            is_done_or_fail[k] = TRUE
-            next
-          }
-
-        }
-
-        if(all(is_done_or_fail)) next
-
       }
     }
 

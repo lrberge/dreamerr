@@ -1069,6 +1069,8 @@ sfill = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor){
   check_arg(right, "logical scalar")
   check_arg(anchor, "character scalar")
 
+  x[is.na(x)] = "NA"
+
   if(nchar(symbol) != 1) stop("Argument 'symbol' must be a single character (currenlty it is of length ", nchar(symbol), ").")
 
   IS_ANCHOR = FALSE

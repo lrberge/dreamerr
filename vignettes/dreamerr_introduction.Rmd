@@ -86,11 +86,11 @@ The meaning of the classes is as follows:
 
  - **scalar**: an atomic vector of length 1, no tolerance for NAs. Option `NA OK` allows NA values.
  
- - **vector**: an atomic vector (vector of list do not fall in this class), no tolerance for NAs. Option `NA OK` allows NA values, `named` requires the vector to have names.
+ - **vector**: an atomic vector (vector of list do not fall in this class), tolerance for NAs. Option `NO NA` throws an error if it contains NAs, `named` requires the vector to have names.
  
- - **matrix**: a matrix, no tolerance for NAs. Option `NA OK` allows NA values, `square` requires the matrix to be square.
+ - **matrix**: a matrix, tolerance for NAs. Option `NO NA` throws an error if it contains NAs, `square` requires the matrix to be square.
  
- - **vmatrix**: a matrix or vector, no tolerance for NAs. Option `NA OK` allows NA values, `square` requires the matrix to be square (if a vector, then it must be of length 1).
+ - **vmatrix**: a matrix or vector, tolerance for NAs. Option `NO NA` throws an error if it contains NAs, `square` requires the matrix to be square (if a vector, then it must be of length 1).
  
  - **data.frame**: an object that inherits from `data.frame`, tolerates NAs. Option `No NA` throws an error if it contains NAs.
  
@@ -217,7 +217,7 @@ lm_check = function(formula, data, subset, weights, na.action, method = "qr", mo
   # subset:
   # - either a logical or an integer vector
   # - can be a variable of the data set (eval)
-  check_arg(subset, "eval vector(strict logical, strict integer)", .data = data)
+  check_arg(subset, "eval vector(logical, strict integer)", .data = data)
   
   # weights:
   # - vector of positive integers
