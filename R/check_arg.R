@@ -13,6 +13,9 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
 
   all_types = strsplit(type, "|", fixed = TRUE)[[1]]
 
+  # msg_start will be set up later
+  msg_start = NULL
+
   if(grepl("(?i)match|charin", type)){
     sysOrigin = sys.parent(up + 3)
     choices = extract_choices(x_name, type, choices, sysOrigin)
@@ -26,12 +29,18 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
     text_problem = " Problem: "
   }
 
-  if(!missing(message) && grepl("__arg_name__", message, fixed = TRUE)){
-    x_name = extract_par(message, "__arg_name__")
-    message = NULL
+  if(!missing(message)){
+    if(grepl("__arg_name__", message, fixed = TRUE)){
+      x_name = extract_par(message, "__arg_name__")
+      message = NULL
+    } else if(grepl("__prefix__", message, fixed = TRUE)){
+      msg_start = paste0(gsub(" *$", " ", extract_par(message, "__prefix__")), "must be ")
+      x_name = ""
+      message = NULL
+    }
   }
 
-  if(!missing(message) && grepl("__ARG__", message, fixed = TRUE)){
+  if(!missing(message) && !is.null(message) && grepl("__ARG__", message, fixed = TRUE)){
     message = gsub("__ARG__", x_name, message)
   }
 
@@ -517,28 +526,29 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
 
   if(missing(message) || is.null(message)){
 
-    add_null = ifelse(grepl("(?i)null", type), "(nullable) ", "")
-    if(IS_DOTS){
-      msg_start = paste0(" In argument '...', each ", add_null, "element must be ")
-    } else if(grepl("$", x_name, fixed = TRUE)){
-      # This means it is a list element
-      l_name = gsub("\\$.+", "", x_name)
-      element = gsub(".+\\$", "", x_name)
+    if(is.null(msg_start)){
+      add_null = ifelse(grepl("(?i)null", type), "(nullable) ", "")
+      if(IS_DOTS){
+        msg_start = paste0(" In argument '...', each ", add_null, "element must be ")
+      } else if(grepl("$", x_name, fixed = TRUE)){
+        # This means it is a list element
+        l_name = gsub("\\$.+", "", x_name)
+        element = gsub(".+\\$", "", x_name)
 
-      IS_VALUE = get("IS_VALUE", parent.frame())
+        IS_VALUE = get("IS_VALUE", parent.frame())
 
-      if(IS_VALUE && l_name == "dots"){
-        msg_start = paste0("In '...', if provided, the argument '", element, "' must be ")
+        if(IS_VALUE && l_name == "dots"){
+          msg_start = paste0("In '...', if provided, the argument '", element, "' must be ")
+        } else {
+          msg_start = paste0("In the list argument '", l_name, "', the ", add_null, "element '", element, "' must be ")
+        }
+
+        x_name = ""
       } else {
-        msg_start = paste0("In the list argument '", l_name, "', the ", add_null, "element '", element, "' must be ")
+        the_null_argument = ifelse(nchar(add_null) > 0, " The (nullable) argument", " Argument")
+        msg_start = paste0(the_null_argument, " '", x_name, "' must be ")
       }
-
-      x_name = ""
-    } else {
-      the_null_argument = ifelse(nchar(add_null) > 0, " The (nullable) argument", " Argument")
-      msg_start = paste0(the_null_argument, " '", x_name, "' must be ")
     }
-
 
     # dropping the invalid types
     all_types = all_types[all_requested_types != "invalid"]
@@ -1170,7 +1180,8 @@ deparse_short = function(x){
 #' @param .choices Only if one of the types (in argument \code{type}) is \code{"match"}. The values the argument can take. Note that even if the \code{type} is \code{"match"}, this argument is optional since you have other ways to declare the choices.
 #' @param .data Must be a data.frame, a list or a vector. Used in three situations. 1) if the global keywords \code{eval} or \code{evalset} are present: the argument will also be evaluated in the data (i.e. the argument can be a variable name of the data set). 2) if the argument is expected to be a formula and \code{var(data)} is included in the type: then the formula will be expected to contain variables from \code{.data}. 3) if the keywords \code{len(data)}, \code{nrow(data)} or \code{ncol(data)} are requested, then the required length, number of rows/columns, will be based on the data provided in \code{.data}.
 #' @param .value An integer scalar or a named list of integers scalars. Used when the keyword \code{value} is present (like for instance in \code{len(value)}). If several values are to be provided, then it must be a named list with names equal to the codes: for instance if \code{nrow(value)} and \code{ncol(value)} are both present in the type, you can use (numbers are an example) \code{.value = list(nrow = 5, ncol = 6)}. See Section IV) in the examples.
-#' @param .arg_name A character scalar. If \code{.message} is not provided, an automatic error message will be generated using \code{.arg_name} as the argument name.
+#' @param .arg_name A character scalar. If \code{.message} is not provided, an automatic error message will be generated using \code{.arg_name} as the argument name. The structure of the message will be \code{"Argument '[.arg_name]' must be [requested type]. Problem: [detail of the problem]"}.
+#' @param .prefix A character scalar. If \code{.message} is not provided, an automatic error message will be generated. The structure of the message will be \code{"[.prefix] must be [requested type]. Problem: [detail of the problem]"}.
 #' @param .env An environment defaults to the frame where the user called the original function. Only used in two situations. 1) if the global keywords \code{eval} or \code{evalset} are present: the argument will also be evaluated in this environment. 2) if the argument is expected to be a formula and \code{var(env)} is included in the type: then the formula will be expected to contain variables existing in \code{.env}.
 #' @param .up Integer, default is 0. If the user provides a wrong argument, the error message will integrate the call of the function from which \code{check_arg} has been called. If \code{check_arg} is  called in a non-user level sub function of a main user-level function, then use \code{.up = 1} to make the error message look like it occured in the main function (and not in the sub function). Of course you can have values higher than 1.
 #'
@@ -2204,14 +2215,14 @@ check_arg_plus = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 }
 
 #' @describeIn check_arg Checks if a (single) value is of the appropriate type
-check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .up = 0){
+check_value = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   if(!getOption("dreamerr_check") || exists("DREAMERR_CHECK", parent.frame(), inherits = FALSE)) return(NULL)
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .prefix = .prefix, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::COPY(set_up)
@@ -2221,17 +2232,17 @@ check_value = function(.x, .type, .message, .arg_name, .choices = NULL, .data = 
   }
   # END::COPY(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
+  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .prefix = .prefix, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
 
 }
 
 #' @describeIn check_arg Same as \code{check_value}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
-check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .data = list(), .value, .env, .up = 0){
+check_value_plus = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .prefix = .prefix, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::COPY(set_up)
@@ -2241,7 +2252,7 @@ check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .da
   }
   # END::COPY(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
+  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .prefix = .prefix, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
 
 }
 
@@ -2254,7 +2265,7 @@ check_value_plus = function(.x, .type, .message, .arg_name, .choices = NULL, .da
 #### CORE FUNCTION ####
 ####
 
-check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .arg_name, .mc, .is_plus = FALSE, .is_value = FALSE){
+check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .arg_name, .prefix, .mc, .is_plus = FALSE, .is_value = FALSE){
 
   # NOTA: the price to pay to using a core function called by user-level functions is about 4us. I think that's fair for the
   # clarity it adds to the code (and I hate duplication anyway).
@@ -2891,7 +2902,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       x_names = deparse_long(mc[[".x"]])
     }
 
-    if(!missing(.arg_name) && missing(.message)) .message = paste0("__arg_name__(", .arg_name, ")")
+    if(missing(.message)){
+      if(!missing(.arg_name)){
+        .message = paste0("__arg_name__(", .arg_name, ")")
+      } else if(!missing(.prefix)){
+        .message = paste0("__prefix__(", .prefix, ")")
+      }
+    }
 
     IS_EVAL = grepl("eval", type_low, fixed = TRUE)
 
@@ -2979,11 +2996,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           if(IS_VALUE){
             if(missing(.message)){
               # if in value => it's an internal error (developer side, big error: this should NEVER happen)
-              stop_up("(Developer-side error.) The value '", x_names[i], "' could not be evaluated and arguments '.arg_name' and '.message' are both missing. This should never happen. Please revise the code accordingly so that the value passed to check_value", ifelse(IS_PLUS, "_plus", ""), " always exists. OR provide one of the arguments '.arg_name' or '.message'.")
+              stop_up("(Developer-side error.) The value '", x_names[i], "' could not be evaluated and arguments '.arg_name', '.prefix' and '.message' are all missing. This should never happen. Please revise the code accordingly so that the value passed to check_value", ifelse(IS_PLUS, "_plus", ""), " always exists. OR provide one of the arguments '.arg_name', '.prefix' or '.message'.")
             }
 
             if(!missing(.arg_name)){
               .message = paste0("Argument '", .arg_name, "' could not be evaluated.")
+            } else if(!missing(.prefix)){
+              .message = paste0(.prefix, " could not be evaluated.")
             } else {
               .message = paste0(.message, " The argument could not be evaluated.")
             }

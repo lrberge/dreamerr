@@ -116,10 +116,11 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
     # Error if dots arguments provided
     #
 
-    if("..." %in% names(mc) && !is.null(names(mc[["..."]]))){
-      arg_pblm = names(mc[["..."]])
-      stop_up("Argument", enumerate_items(arg_pblm, "s.is"), " not valid. If it was an argument to be checked, please use only .x, .x1 to .x9 and .type.")
-    }
+    # Does not work well => sends an error when there's none
+    # if("..." %in% names(mc) && !is.null(names(mc[["..."]]))){
+    #   arg_pblm = names(mc[["..."]])
+    #   stop_up("Argument", enumerate_items(arg_pblm, "s.is"), " not valid. If it was an argument to be checked, please use only .x, .x1 to .x9 and .type.")
+    # }
 
     #
     # Finding the type

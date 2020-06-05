@@ -54,6 +54,7 @@ check_value(
   .type,
   .message,
   .arg_name,
+  .prefix,
   .choices = NULL,
   .data = list(),
   .value,
@@ -66,6 +67,7 @@ check_value_plus(
   .type,
   .message,
   .arg_name,
+  .prefix,
   .choices = NULL,
   .data = list(),
   .value,
@@ -111,7 +113,9 @@ You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object sho
 
 \item{.up}{Integer, default is 0. If the user provides a wrong argument, the error message will integrate the call of the function from which \code{check_arg} has been called. If \code{check_arg} is  called in a non-user level sub function of a main user-level function, then use \code{.up = 1} to make the error message look like it occured in the main function (and not in the sub function). Of course you can have values higher than 1.}
 
-\item{.arg_name}{A character scalar. If \code{.message} is not provided, an automatic error message will be generated using \code{.arg_name} as the argument name.}
+\item{.arg_name}{A character scalar. If \code{.message} is not provided, an automatic error message will be generated using \code{.arg_name} as the argument name. The structure of the message will be \code{"Argument '[.arg_name]' must be [requested type]. Problem: [detail of the problem]"}.}
+
+\item{.prefix}{A character scalar. If \code{.message} is not provided, an automatic error message will be generated. The structure of the message will be \code{"[.prefix] must be [requested type]. Problem: [detail of the problem]"}.}
 }
 \value{
 In case the \code{type} is \code{"match"}, it returns the matched value. In any other case, \code{NULL} is returned.
