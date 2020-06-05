@@ -10,6 +10,11 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
   # This internal function tries to fully check the call to check_arg
   # in particular errors/warnings will pop when the types are ill-formed
 
+  # If the call to check_arg is within a function contained in a package that uses dreamerr => we skip checking
+  current_fun = deparse(sys.call(sys.parent(.up + 2))[[1]])
+  where_fun = find(current_fun, mode = "function")
+  if(any(grepl("package", where_fun, fixed = TRUE))) return(NULL)
+
   #
   # The calls
   #
