@@ -16,6 +16,8 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
   # msg_start will be set up later
   msg_start = NULL
 
+  IS_VALUE = get("IS_VALUE", parent.frame())
+
   if(grepl("(?i)match|charin", type)){
     sysOrigin = sys.parent(up + 3)
     choices = extract_choices(x_name, type, choices, sysOrigin)
@@ -29,10 +31,13 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
     text_problem = " Problem: "
   }
 
+  # start_with_value: specific to check_value // whether x refers to an argument or just a value
+  start_with_value = TRUE
   if(!missing(message)){
     if(grepl("__arg_name__", message, fixed = TRUE)){
       x_name = extract_par(message, "__arg_name__")
       message = NULL
+      start_with_value = FALSE
     } else if(grepl("__prefix__", message, fixed = TRUE)){
       msg_start = paste0(gsub(" *$", " ", extract_par(message, "__prefix__")), "must be ")
       x_name = ""
@@ -535,8 +540,6 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
         l_name = gsub("\\$.+", "", x_name)
         element = gsub(".+\\$", "", x_name)
 
-        IS_VALUE = get("IS_VALUE", parent.frame())
-
         if(IS_VALUE && l_name == "dots"){
           msg_start = paste0("In '...', if provided, the argument '", element, "' must be ")
         } else {
@@ -545,7 +548,12 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
 
         x_name = ""
       } else {
-        the_null_argument = ifelse(nchar(add_null) > 0, " The (nullable) argument", " Argument")
+        if(IS_VALUE && start_with_value){
+          the_null_argument = ifelse(nchar(add_null) > 0, " The (nullable) value", " Value")
+        } else {
+          the_null_argument = ifelse(nchar(add_null) > 0, " The (nullable) argument", " Argument")
+        }
+
         msg_start = paste0(the_null_argument, " '", x_name, "' must be ")
       }
     }
@@ -2290,6 +2298,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
   # Of course only the code in the main chunk is to be modified.
   #
 
+  # NOTE on the return of this function:
+  # when use return(x): means that the last exaluated x_all is returned. It's of use mostly for check_value_plus.
+  # x is guaranteed to exist.
+
   # Arg plus types:
   # - match
   # - NULL{default}
@@ -2385,9 +2397,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       }
 
       type_low = tolower(type)
-      # if(IS_PLUS && !getOption("dreamerr_check") && !grepl("null{", type_low, fixed = TRUE) && !grepl("match", type_low, fixed = TRUE)) return(NULL)
-
-      # if(FLAG == "setup") return(NULL)
 
       #
       # Missing ####
@@ -2537,8 +2546,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       }
 
       if(all(is_done)) return(NULL)
-
-      # if(FLAG == "mbt") return(NULL)
 
     } else {
       #
@@ -2995,18 +3002,18 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
 
           if(IS_VALUE){
-            if(missing(.message)){
-              # if in value => it's an internal error (developer side, big error: this should NEVER happen)
-              stop_up("(Developer-side error.) The value '", x_names[i], "' could not be evaluated and arguments '.arg_name', '.prefix' and '.message' are all missing. This should never happen. Please revise the code accordingly so that the value passed to check_value", ifelse(IS_PLUS, "_plus", ""), " always exists. OR provide one of the arguments '.arg_name', '.prefix' or '.message'.")
-            }
 
-            if(!missing(.arg_name)){
+            if(!missing(.message)){
+              .message = paste0(.message, " The argument could not be evaluated.")
+            } else if(!missing(.arg_name)){
               .message = paste0("Argument '", .arg_name, "' could not be evaluated.")
             } else if(!missing(.prefix)){
               .message = paste0(.prefix, " could not be evaluated.")
             } else {
-              .message = paste0(.message, " The argument could not be evaluated.")
+              .message = paste0("Value '", x_names[i], "' could not be evaluated.")
             }
+
+
 
           } else {
             .message = paste0("Argument '", x_names[i], "' (equal to '", deparse_short(mc_origin[[x_names[i]]]), "') could not be evaluated.")
@@ -3027,7 +3034,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             stop_up("The type evalset is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
           }
 
-          assign(x_names[i], x, parent.frame(2))
+          if(!IS_VALUE || is.name(mc[[".x"]])){
+            assign(x_names[i], x, parent.frame(2))
+          }
+
         }
 
       } else {
@@ -3187,9 +3197,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
   }
 
-  if(all(is_done)) return(NULL)
-
-  # if(FLAG == "null") return(NULL)
+  if(all(is_done)) return(x)
 
   #
   # Longer checks ####
@@ -3584,7 +3592,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       }
 
-      if(all(is_done)) return(NULL)
+      if(all(is_done)) return(x)
 
       # We don't check further with formula
       next
@@ -3649,7 +3657,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       }
 
-      if(all(is_done)) return(NULL)
+      if(all(is_done)) return(x)
 
       next
 
@@ -3851,16 +3859,19 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             my_list[[var_name]] = x
             assign(l_name, my_list, parent.frame(2))
 
-          } else {
+          } else if(!IS_VALUE || is.name(mc[[".x"]])){
+            # if IS_VALUE here => then for re-assignment to apply, we enforce that .x is a variable name
             assign(x_names[k], x, parent.frame(2))
           }
+
+          if(IS_VALUE) return(x)
 
           is_done[k] = TRUE
           next
         }
       }
 
-      if(all(is_done)) return(NULL)
+      if(all(is_done)) return(x)
 
       next
 
@@ -3893,7 +3904,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         }
       }
 
-      if(all(is_done)) return(NULL)
+      if(all(is_done)) return(x)
 
       next
     } else if(grepl("function", my_type, fixed = TRUE)){
@@ -3933,7 +3944,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       }
 
-      if(all(is_done)) return(NULL)
+      if(all(is_done)) return(x)
 
       next
 
@@ -4077,7 +4088,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
         }
 
-        if(all(is_done)) return(NULL)
+        if(all(is_done)) return(x)
         if(all(is_done_or_fail)) next
 
       }
@@ -4148,7 +4159,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
           }
 
-          if(all(is_done)) return(NULL)
+          if(all(is_done)) return(x)
           if(all(is_done_or_fail)) next
 
         } else {
@@ -4179,7 +4190,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
           }
 
-          if(all(is_done)) return(NULL)
+          if(all(is_done)) return(x)
           if(all(is_done_or_fail)) next
         }
       }
@@ -4217,7 +4228,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
                   # END::CHUNK(conv_assign)
@@ -4269,7 +4280,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
                     # END::COPY(conv_assign)
@@ -4296,7 +4307,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
                 # END::COPY(conv_assign)
@@ -4320,7 +4331,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
                 # END::COPY(conv_assign)
@@ -4346,7 +4357,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
                   # END::COPY(conv_assign)
@@ -4393,7 +4404,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
               # END::COPY(conv_assign)
@@ -4460,7 +4471,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
               # END::COPY(conv_assign)
@@ -4479,7 +4490,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
               # END::COPY(conv_assign)
@@ -4523,7 +4534,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
               # END::COPY(conv_assign)
@@ -4542,7 +4553,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     var_name = gsub(".+\\$", "", x_names[k])
                     my_list[[var_name]] = x
                     assign(l_name, my_list, parent.frame(2))
-                  } else {
+                  } else if(!IS_VALUE || is.name(mc[[".x"]])){
                     assign(x_names[k], x, parent.frame(2))
                   }
               # END::COPY(conv_assign)
@@ -4559,7 +4570,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       }
 
-      if(all(is_done)) return(NULL)
+      if(all(is_done)) return(x)
       if(all(is_done_or_fail)) next
     }
 
@@ -4602,14 +4613,14 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         # GE
         if(grepl("ge{", my_type, fixed = TRUE)){
-          # return(NULL)
+
           value = extract_curly(my_type_raw, "ge")
 
           if(is.na(value)){
             stop_up("Problem in the evaluation of ge{expr} in ", my_type_raw, ". The expression in ge{} is ill-formed.")
           }
 
-          # return(NULL)
+
           if(any(x_omit[[k]] < value)){
             all_reasons[[k]][i] = paste0(msg, "strictly lower than ", signif_plus(value, 5, commas = FALSE))
             is_done_or_fail[k] = TRUE
@@ -4674,7 +4685,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     # If we're here, this means that's fine!
     is_done[!is_done_or_fail] = TRUE
     # Out of the loop
-    if(all(is_done)) return(NULL)
+    if(all(is_done)) return(x)
 
   }
 
