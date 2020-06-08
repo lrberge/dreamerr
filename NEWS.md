@@ -1,11 +1,82 @@
 
-## Version 1.1.0
+
+## Version 1.2.0 
+
+#### Important changes (no retro compatibility)
+
+ - IMPORTANT CHANGE: Now by default, there is `NA` tolerance for the main classes `vector` and `matrix` (opposite to the previous behavior). The new keywords `NO NA` replace the former keywords `NA OK` for these classes.
+```
+test = function(x){
+  check_arg(x, "numeric vector")
+}
+# Before (version <= 1.1.0)
+test(c(5, NA)) # => Error
+# Now (version >= 1.2.0)
+test(c(5, NA)) # => is OK
+```
+
+ - IMPORTANT CHANGE: values of 0 or 1 are not valid by default anymore when the `logical` type is requested. 
+```
+test = function(x){
+    check_arg(x, "logical scalar")
+}
+# Before (version <= 1.1.0)
+test(0) # => is OK
+# Now (version >= 1.2.0)
+test(0) # => Error, must be logical
+```
+  The new behavior is equivalent to the previous behavior when the type was `strict logical`. Now strict logical has been removed and `loose logical` has been introduced which accepts 0 and 1. Why this change? I remarked that when you allow arguments of very different types, one of which was a logical scalar, it was really useful to distinguish between them safely using `isTRUE` or `is.logical`. With the previous default behavior you could have a 0 or 1 that would prevent you from doing that. Of course you could use `strict logical` to trigger that behavior but it was non-intuitive. 
+
+#### New features
+
+ - In `check_value`: you can use the new argument `.prefix` to design the error message. 
+ 
+ - Function `check_value_plus` now returns the value of the element it has checked and possibly modified. 
+```
+x = "t"
+y = check_value_plus(x, "match(This, Is, Raw)")
+y # => "This"
+fml = ~head(Petal.Length)
+z = check_value_plus(fml[[2]], "evalset numeric vector", .data = iris)
+z
+```
+ 
+ - `sfill` now accepts NAs.
+ 
+#### Other changes
+
+ - Error messages in `check_value` have been improved.
+ 
+ - `enumerate_items` now returns the empty string when 0-length vectors are in input.
+  
+#### Bug correction
+
+ - The main class `match` could lead the argument to lose its attributes (like names), now corrected.
+ 
+ - Vectors containing only NAs when NAs are tolerated could lead to a wrong error message, now corrected.
+ 
+ - Bug when `check_value_plus` was called from the global environment and an error was triggered.
+ 
+ - Bug when `check_value` was called and `.arg_name` was provided.
+ 
+ - Bug when the "`...`" argument contained `NULL` values.
+ 
+ - The developer mode now never applies to functions from packages using dreamerr
+ 
+ - Behavior of argument `nmax` in `enumerate_items` is fixed.
+ 
+ - Type conversion of matrices returned a vector, now corrected.
+
+
+## Version 1.1.0 (2020-05-03)
 
 #### New functions
 
  - `sfill`: formatting function for strings. Fills a character string up to the required length. Helps to form nice messages.
 
  - `set_up`: sets the argument `up` semi-globally (i.e. throughout all calls within a function).
+ 
+ - `set_check`: turns on/off argument checking semi-globally (i.e. throughout all calls within a function).
 
 #### New features
 

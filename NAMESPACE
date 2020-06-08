@@ -26,5 +26,6 @@ export(package_stats)
 #
 
 importFrom(Formula, Formula)
+importFrom(utils, find)
 
 
