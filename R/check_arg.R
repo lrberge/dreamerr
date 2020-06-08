@@ -428,16 +428,16 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
 
       # greater
       if(grepl("ge{", my_type, fixed = TRUE)){
-        value_ge = extract_curly(my_type_raw, "ge", as.string = TRUE)
+        value_ge = signif_plus(extract_curly(my_type_raw, "ge"), 5)
       } else if(grepl("gt{", my_type, fixed = TRUE)){
-        value_gt = extract_curly(my_type_raw, "gt", as.string = TRUE)
+        value_gt = signif_plus(extract_curly(my_type_raw, "gt"), 5)
       }
 
       # lower
       if(grepl("le{", my_type, fixed = TRUE)){
-        value_le = extract_curly(my_type_raw, "le", as.string = TRUE)
+        value_le = signif_plus(extract_curly(my_type_raw, "le"), 5)
       } else if(grepl("lt{", my_type, fixed = TRUE)){
-        value_lt = extract_curly(my_type_raw, "lt", as.string = TRUE)
+        value_lt = signif_plus(extract_curly(my_type_raw, "lt"), 5)
       }
 
       if(!is.null(value_ge) || !is.null(value_gt) || !is.null(value_le) || !is.null(value_lt)){
@@ -1403,7 +1403,7 @@ deparse_short = function(x){
 #'   invisible(NULL)
 #' }
 #'
-#' # Following should be OK
+#' # Following is OK
 #' test_scalar()
 #' test_scalar(xlog = FALSE, xnum = 55, xint = 5, xnumlt = 0.11, xdate = Sys.Date())
 #'
@@ -1415,7 +1415,6 @@ deparse_short = function(x){
 #' try(test_scalar(xlog = NA))
 #' try(test_scalar(xlog = 2))
 #' try(test_scalar(xlog = sum))
-#' try(test_scalar(xlog = pi))
 #' try(test_scalar(xlog = faefeaf5))
 #' try(test_scalar(xlog = c(TRUE, FALSE)))
 #' try(test_scalar(xlog = c()))
@@ -1461,10 +1460,10 @@ deparse_short = function(x){
 #' try(test_globals())
 #'
 #' # NULL{expr} sets the value of xnum to expr if xnum = NULL
-#' # Here NULL{1} sets it to 1
+#' # Here NULL{1} sets xnum to 1
 #' test_globals(xnum = NULL)
 #'
-#' # NULL (not NULL{expr}) does not reassign
+#' # NULL (not NULL{expr}) does not reassign: xlog remains NULL
 #' test_globals(xnum = NULL, xlog = NULL)
 #'
 #' # safe NULL: doesn't accept NULL from data.frame (DF) subselection
@@ -1988,9 +1987,9 @@ deparse_short = function(x){
 #'
 #' # Let's throw some errors
 #' try(sum_fun(5))
-#' try(sum_fun(5, 1:5))
+#' try(diff_fun(5, 1:5))
 #'
-#' # The errors are at the level of sum_fun although
+#' # The errors are at the level of sum_fun/diff_fun although
 #' # the arguments have been checked in my_internal.
 #' # => much easier for the user to understand the problem
 #'
