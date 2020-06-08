@@ -3056,15 +3056,15 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
 
           if(IS_VALUE){
-            if(missing(.message)){
-              # if in value => it's an internal error (developer side, big error: this should NEVER happen)
-              stop_up("(Developer-side error.) The value '", x_names[i], "' could not be evaluated and arguments '.arg_name' and '.message' are both missing. This should never happen, please revise the code accordingly so that the value passed to check_value", ifelse(IS_PLUS, "_plus", ""), " always exists. OR provide one of the arguments '.arg_name' or '.message'.")
-            }
 
-            if(!missing(.arg_name)){
-              .message = paste0("Argument '", .arg_name, "' could not be evaluated.")
-            } else {
+            if(!missing(.message)){
               .message = paste0(.message, " The argument could not be evaluated.")
+            } else if(!missing(.arg_name)){
+              .message = paste0("Argument '", .arg_name, "' could not be evaluated.")
+            } else if(!missing(.prefix)){
+              .message = paste0(.prefix, " could not be evaluated.")
+            } else {
+              .message = paste0("Value '", x_names[i], "' could not be evaluated.")
             }
 
           } else {
@@ -4072,6 +4072,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           if(is.na(x_all[[k]])){
             all_reasons[[k]][i] = "it is equal to NA while it should be NA-free"
             is_done_or_fail[k] = TRUE
+          } else {
+            x_omit[[k]] = x
           }
 
         }
@@ -4082,9 +4084,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         # NA tolerance: means that we check whether x == NA since x is a scalar
 
         for(k in which(!is_done_or_fail)){
+
           if(is.na(x_all[[k]])){
             is_done[k] = is_done_or_fail[k] = TRUE
+          } else {
+            x_omit[[k]] = x
           }
+
         }
 
         if(all(is_done)) return(x)
@@ -4217,7 +4223,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
                 if(IS_PLUS && (is.logical(x) || is.integer(x)) && grepl("conv", my_subtype, fixed = TRUE)){
                   # we coerce logical and integers into numeric
-                  x = as.numeric(x)
+                  storage.mode(x) = "double"
 
                   # START::CHUNK(conv_assign)
                   if(IS_LIST[k]){
@@ -4270,7 +4276,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                       stop_up("In the type '", my_type, "', for the sub-type integer, the keyword 'large' is not compatible with the keyword 'conv' (since large integers cannot be converted with as.integer(x)).")
                     }
 
-                    x = as.integer(x)
+                    storage.mode(x) = "integer"
 
                     # START::COPY(conv_assign)
                   if(IS_LIST[k]){
@@ -4296,7 +4302,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
               } else if(IS_PLUS && grepl("conv", my_subtype, fixed = TRUE)){
                 # Anything atomic CAN be converted
-                x = as.character(x)
+                storage.mode(x) = "character"
                 is_done[k] = TRUE
 
                 # START::COPY(conv_assign)
@@ -4347,7 +4353,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
                 if(IS_PLUS && grepl("conv", my_subtype, fixed = TRUE)){
                   # we coerce logical and integers into numeric
-                  x = as.logical(x)
+                  storage.mode(x) = "logical"
 
                   # START::COPY(conv_assign)
                   if(IS_LIST[k]){
@@ -4395,7 +4401,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
 
             if(IS_PLUS && (is.integer(x) || is.logical(x)) && grepl("conv", my_type, fixed = TRUE)){
-              x = as.numeric(x)
+              storage.mode(x) = "double"
               # START::COPY(conv_assign)
                   if(IS_LIST[k]){
                     l_name = gsub("\\$.+", "", x_names[k])
@@ -4461,7 +4467,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 stop_up("In the type '", my_type, "', for the sub-type integer, the keyword 'large' is not compatible with the keyword 'conv' (since large integers cannot be converted to 32bit integers with as.integer(x)).")
               }
 
-              x = as.integer(x)
+              storage.mode(x) = "integer"
 
               # START::COPY(conv_assign)
                   if(IS_LIST[k]){
@@ -4479,7 +4485,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           } else if(grepl("character", my_type, fixed = TRUE)){
             if(IS_PLUS && grepl("conv", my_type, fixed = TRUE)){
               # Every atomic element can be converted to character
-              x = as.character(x)
+              storage.mode(x) = "character"
               is_done[k] = TRUE
 
               # START::COPY(conv_assign)
@@ -4524,7 +4530,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
             # if here => fine
             if(IS_PLUS && grepl("conv", my_type, fixed = TRUE)){
-              x = as.logical(x)
+              storage.mode(x) = "logical"
 
               # START::COPY(conv_assign)
                   if(IS_LIST[k]){
