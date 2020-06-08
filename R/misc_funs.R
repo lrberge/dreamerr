@@ -483,6 +483,8 @@ enumerate_items = function (x, type, verb = FALSE, s = FALSE, past = FALSE, or =
   # function that enumerates items and add verbs
   # in argument type, you can have a mix of the different arguments, all separated with a "."
 
+  if(length(x) == 0) return("");
+
   if(!missing(type)){
     args = strsplit(type, "\\.")[[1]]
     s = "s" %in% args
@@ -538,17 +540,19 @@ enumerate_items = function (x, type, verb = FALSE, s = FALSE, past = FALSE, or =
   # Ensuring it's not too long
   if(n > nmax){
 
+    nmax = nmax - 1
+
     other = trimws(other)
     if(nchar(other) > 0){
-      other = paste0(other, " ", n - 5, " others")
+      other = paste0(other, " ", n - nmax, " others")
     } else {
-      other = paste0(n - 5, " others")
+      other = paste0(n - nmax, " others")
     }
 
     if(quote){
-      x = c(paste0("'", x[1:5], "'"), other)
+      x = c(paste0("'", x[1:nmax], "'"), other)
     } else {
-      x = c(x[1:5], other)
+      x = c(x[1:nmax], other)
     }
 
     n = length(x)

@@ -79,7 +79,7 @@ check_value_plus(
 \item{.x}{An argument to be checked. Must be an argument name. Can also be the type, see details/examples.}
 
 \item{.type}{A character string representing the requested type(s) of the arguments. This is a bit long so please look at the details section or the vignette for explanations. Each type is composed of one main class and restrictions (optional). Types can be separated with pipes (\code{|}). The main classes are: i) \code{"scalar"} for scalars, i.e. vectors of length one, ii) \code{"vector"}, iii) \code{"matrix"}, iv) \code{"data.frame"}, v) \code{"list"}, vi) \code{formula}, vii) \code{function}, viii) \code{charin}, i.e. a character string in a set of choices, viii) \code{"match"}, i.e. a character scalar that should partially match a vector of choices, x) \code{"class(my_class1, my_class2)"}, i.e. an object whose class is any of the ones in parentheses, xi) \code{"NA"}, something identical to \code{NA}.
-You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object should be of length between \code{a} and \code{b} (you can leave \code{a} or \code{b} missing, \code{len(a)} means length *equal* to \code{a}), \code{len(data)} and \code{len(value)} are also possible (see details), 2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the number of arguments, 4) \code{"na ok"} to allow the object to have NAs (for "scalar", "vector", "matrix" types), or \code{"no na"} to restrict the object to have no NA (for "data.frame" only), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}: for numeric scalars/vectors/matrices, \code{GE{expr}} restrics the object to have only values striclty greater than (greater or equal/strictly lower than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)}, for scalars/vectors/matrices you can restrict the type of the object by adding the}
+You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object should be of length between \code{a} and \code{b} (you can leave \code{a} or \code{b} missing, \code{len(a)} means length *equal* to \code{a}), \code{len(data)} and \code{len(value)} are also possible (see details), 2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the number of arguments, 4) \code{"na ok"} to allow the object to have NAs (for "scalar" types), or \code{"no na"} to restrict the object to have no NA (for "data.frame", "vector", and "matrix" types), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}: for numeric scalars/vectors/matrices, \code{GE{expr}} restrics the object to have only values striclty greater than (greater or equal/strictly lower than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)}, for scalars/vectors/matrices you can restrict the type of the object by addin}
 
 \item{.x1}{An argument to be checked. Must be an argument name. Can also be the type, see details/examples.}
 
@@ -139,7 +139,7 @@ To write the expected type of an argument, you need to write the main class in c
 
 The syntax is: \code{"main_class option(s) restriction(s)"}
 
-A type MUST have at least one main class. For example: in the type \code{"logical vector len(,2) NA OK"}, \code{vector} is the main class, \code{NA OK} is the option, and \code{logical} and \code{len(,2)} are restrictions
+A type MUST have at least one main class. For example: in the type \code{"logical vector len(,2) no na"}, \code{vector} is the main class, \code{no na} is the option, and \code{logical} and \code{len(,2)} are restrictions
 
 There are 13 main classes that can be checked. On the left the keyword, on the right what is expected from the argument, and in square brackets the related section in the examples:
 \itemize{
@@ -160,8 +160,8 @@ There are 13 main classes that can be checked. On the left the keyword, on the r
 
 There are seven type options, they are not available for each types. Here what they do and the types to which they are associated:
 \itemize{
-\item \code{NA OK} (or \code{NAOK}): Tolerates the presence of NA values. Available for \code{scalar}, \code{vector}, \code{matrix}, \code{vmatrix}.
-\item \code{NO NA} (or \code{NONA}): Throws an error if NAs are present. Available for \code{data.frame}, \code{vdata.frame}.
+\item \code{NA OK} (or \code{NAOK}): Tolerates the presence of NA values. Available for \code{scalar}.
+\item \code{NO NA} (or \code{NONA}): Throws an error if NAs are present. Available for \code{vector}, \code{matrix}, \code{vmatrix}, \code{data.frame}, and \code{vdata.frame}.
 \item \code{square}: Enforces the matrix to be square. Available for \code{matrix}, \code{vmatrix}.
 \item \code{named}: Enforces the object to have names. Available for \code{vector}, \code{list}.
 \item \code{multi}: Allows multiple matches. Available for \code{charin}, \code{match}.
@@ -338,7 +338,7 @@ test_scalar = function(xlog, xnum, xint, xnumlt, xdate){
   invisible(NULL)
 }
 
-# Following should be OK
+# Following is OK
 test_scalar()
 test_scalar(xlog = FALSE, xnum = 55, xint = 5, xnumlt = 0.11, xdate = Sys.Date())
 
@@ -350,7 +350,6 @@ test_scalar(xlog = FALSE, xnum = 55, xint = 5, xnumlt = 0.11, xdate = Sys.Date()
 try(test_scalar(xlog = NA))
 try(test_scalar(xlog = 2))
 try(test_scalar(xlog = sum))
-try(test_scalar(xlog = pi))
 try(test_scalar(xlog = faefeaf5))
 try(test_scalar(xlog = c(TRUE, FALSE)))
 try(test_scalar(xlog = c()))
@@ -396,10 +395,10 @@ test_globals = function(xnum, xlog = TRUE, xint){
 try(test_globals())
 
 # NULL{expr} sets the value of xnum to expr if xnum = NULL
-# Here NULL{1} sets it to 1
+# Here NULL{1} sets xnum to 1
 test_globals(xnum = NULL)
 
-# NULL (not NULL{expr}) does not reassign
+# NULL (not NULL{expr}) does not reassign: xlog remains NULL
 test_globals(xnum = NULL, xlog = NULL)
 
 # safe NULL: doesn't accept NULL from data.frame (DF) subselection
@@ -560,8 +559,8 @@ try(test_charin("au re"))
 # The syntax is GE{expr}, with expr any expression
 # Of course, it only works for numeric values
 #
-# You can tolerate NA values (default is no tolerance in vector/matrices)
-# with the keyword 'NAOK' or 'NA OK'
+# By default NAs are tolerated in vector, matrix and data.frame.
+# You can refuse NAs using the keyword: 'no na' or 'nona'
 #
 
 test_vmat = function(xvec, xmat, xvmat, xstmat, xnamed){
@@ -572,12 +571,12 @@ test_vmat = function(xvec, xmat, xvmat, xstmat, xnamed){
   check_arg(xmat, "logicalMatrix NROW(2,) NCOL(3)")
 
   # vector or matrix (vmatrix) of integers or character strings
-  # with at most 3 observations, NAs are OK
-  check_arg(xvmat, "vmatrix(character, integer) nrow(,3) naok")
+  # with at most 3 observations
+  # NAs are not allowed
+  check_arg(xvmat, "vmatrix(character, integer) nrow(,3) no na")
 
-  # square matrix of logicals, the values must be TRUE/FALSE,
-  # i.e. values equal to 0 or 1 are not OK
-  check_arg(xstmat, "strict Logical square Matrix")
+  # square matrix of integers, logicals reports errors
+  check_arg(xstmat, "strict integer square Matrix")
 
   # A vector with names of length 2
   check_arg(xnamed, "named Vector len(2)")
@@ -585,11 +584,10 @@ test_vmat = function(xvec, xmat, xvmat, xstmat, xnamed){
 }
 
 # OK
-test_vmat(xvec = 5:20, xmat = matrix(TRUE, 3, 3), xvmat = c(NA, 4, 3),
-          xstmat = matrix(FALSE, 2, 2), xnamed = c(bon=1, jour=2))
+test_vmat(xvec = 5:20, xmat = matrix(TRUE, 3, 3), xvmat = c("abc", 4, 3),
+          xstmat = matrix(1:4, 2, 2), xnamed = c(bon=1, jour=2))
 
 # Vector checks:
-try(test_vmat(xvec = c(NA, 2:5)))
 try(test_vmat(xvec = 2))
 try(test_vmat(xvec = 21))
 try(test_vmat(xvec = 5.5))
@@ -601,9 +599,9 @@ try(test_vmat(xmat = matrix(FALSE, 1, 3)))
 try(test_vmat(xmat = iris))
 
 try(test_vmat(xvmat = iris))
+try(test_vmat(xvmat = c(NA, 5)))
 
 try(test_vmat(xstmat = matrix(1, 1, 3)))
-try(test_vmat(xstmat = matrix(1, 3, 3)))
 try(test_vmat(xstmat = matrix(c(TRUE, FALSE, NA), 3, 3)))
 
 # Named vector checks:
@@ -924,9 +922,9 @@ diff_fun(5, 6)
 
 # Let's throw some errors
 try(sum_fun(5))
-try(sum_fun(5, 1:5))
+try(diff_fun(5, 1:5))
 
-# The errors are at the level of sum_fun although
+# The errors are at the level of sum_fun/diff_fun although
 # the arguments have been checked in my_internal.
 # => much easier for the user to understand the problem
 
