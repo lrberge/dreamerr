@@ -277,17 +277,14 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, st
     if(missing(stop)) stop = FALSE
     if(missing(warn)) warn = !isTRUE(message) & !isTRUE(stop)
 
+    my_call = ""
     if(stop == FALSE && warn == FALSE){
       if(call.){
         my_call = deparse(sys.calls()[[sys.nframe() - 1]])[1] # call can have svl lines
         nmax = 70
         if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax-1), "...")
         my_call = paste0(my_call, "\n")
-      } else {
-        my_call = paste0("In function ", fun_name, ": ")
       }
-    } else {
-      my_call = ""
     }
 
 
@@ -305,7 +302,7 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, st
       suggest = "."
     }
 
-    res = paste0("The argument", enumerate_items(args_invalid, "s.is.quote"), " not valid", suggest)
+    res = paste0(enumerate_items(args_invalid, "is.quote"), " not", ifsingle(args_invalid, " a", ""), " valid argument", plural_len(args_invalid), " of function ", fun_name, suggest)
 
     my_call = fit_screen(my_call)
 

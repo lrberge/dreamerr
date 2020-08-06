@@ -1,6 +1,18 @@
+# NEWS for `dreamerr`
 
+## Version 1.2.1
 
-## Version 1.2.0 
+#### Bug fixes
+
+ - Bug when using commas or parentheses in arguments `.prefix` or `.argname` of `check_value`.
+ - Bug in the error message in `check_value` when the argument could not be evaluated.
+ 
+ 
+#### User visible changes
+
+  - `validate_dots`: nicer messages.
+
+## Version 1.2.0 (08-06-2020)
 
 #### Important changes (no retro compatibility)
 
