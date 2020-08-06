@@ -35,11 +35,11 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
   start_with_value = TRUE
   if(!missing(message)){
     if(grepl("__arg_name__", message, fixed = TRUE)){
-      x_name = extract_par(message, "__arg_name__")
+      x_name = extract_curly(message, "__arg_name__", as.string = TRUE)
       message = NULL
       start_with_value = FALSE
     } else if(grepl("__prefix__", message, fixed = TRUE)){
-      msg_start = paste0(gsub(" *$", " ", extract_par(message, "__prefix__")), "must be ")
+      msg_start = paste0(gsub(" *$", " ", extract_curly(message, "__prefix__", as.string = TRUE)), "must be ")
       x_name = ""
       message = NULL
     }
@@ -2909,9 +2909,9 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
     if(missing(.message)){
       if(!missing(.arg_name)){
-        .message = paste0("__arg_name__(", .arg_name, ")")
+        .message = paste0("__arg_name__{", .arg_name, "}")
       } else if(!missing(.prefix)){
-        .message = paste0("__prefix__(", .prefix, ")")
+        .message = paste0("__prefix__{", .prefix, "}")
       }
     }
 
@@ -3002,17 +3002,15 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
           if(IS_VALUE){
 
-            if(!missing(.message)){
-              .message = paste0(.message, " The argument could not be evaluated.")
-            } else if(!missing(.arg_name)){
+            if(!missing(.arg_name)){
               .message = paste0("Argument '", .arg_name, "' could not be evaluated.")
             } else if(!missing(.prefix)){
               .message = paste0(.prefix, " could not be evaluated.")
+            } else if(!missing(.message)){
+              .message = paste0(.message, " The argument could not be evaluated.")
             } else {
               .message = paste0("Value '", x_names[i], "' could not be evaluated.")
             }
-
-
 
           } else {
             .message = paste0("Argument '", x_names[i], "' (equal to '", deparse_short(mc_origin[[x_names[i]]]), "') could not be evaluated.")
@@ -3057,12 +3055,12 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
           if(IS_VALUE){
 
-            if(!missing(.message)){
-              .message = paste0(.message, " The argument could not be evaluated.")
-            } else if(!missing(.arg_name)){
+            if(!missing(.arg_name)){
               .message = paste0("Argument '", .arg_name, "' could not be evaluated.")
             } else if(!missing(.prefix)){
               .message = paste0(.prefix, " could not be evaluated.")
+            } else if(!missing(.message)){
+              .message = paste0(.message, " The argument could not be evaluated.")
             } else {
               .message = paste0("Value '", x_names[i], "' could not be evaluated.")
             }
