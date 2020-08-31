@@ -6,6 +6,7 @@
 
  - Bug when using commas or parentheses in arguments `.prefix` or `.argname` of `check_value`.
  - Bug in the error message in `check_value` when the argument could not be evaluated.
+ - Bug introduced in the previous version, when checking types or equality with the option "no na"
  
  
 #### User visible changes
