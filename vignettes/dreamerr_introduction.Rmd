@@ -296,7 +296,7 @@ Using argument checking when writing functions also shows you precisely what you
 
 # References
 
-Zeileis A, Croissant Y (2010). "Extended Model Formulas in R: Multiple Parts and Multiple Responses." *Journal of Statistical Software*, 34(1), 1–13. URL [](http://www.jstatsoft.org/v34/i01/).
+Zeileis A, Croissant Y (2010). "Extended Model Formulas in R: Multiple Parts and Multiple Responses." *Journal of Statistical Software*, 34(1), 1–13. URL [](https://www.jstatsoft.org/v34/i01/).
 
 
 
