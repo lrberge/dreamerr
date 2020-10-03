@@ -2292,7 +2292,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
   # To avoid code duplication (and to avoid creating new sub functions), I created chunks of
   #  code that are a pattern replicated where appropriate.
   # The chunk is defined by # START :: CHUNK(chunk_name) // # END :: CHUNK(chunk_name)
-  #  code that are a pattern replicated where appropriate.
   # The copies are defined by # START :: COPY(chunk_name) // # END :: COPY(chunk_name)
   # Of course only the code in the main chunk is to be modified.
   #
@@ -3194,7 +3193,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
   }
 
-  if(all(is_done)) return(x)
+  if(all(is_done)) return(invisible(x))
 
   #
   # Longer checks ####
@@ -3589,7 +3588,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       }
 
-      if(all(is_done)) return(x)
+      if(all(is_done)) return(invisible(x))
 
       # We don't check further with formula
       next
@@ -3654,7 +3653,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       }
 
-      if(all(is_done)) return(x)
+      if(all(is_done)) return(invisible(x))
 
       next
 
@@ -3861,14 +3860,14 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             assign(x_names[k], x, parent.frame(2))
           }
 
-          if(IS_VALUE) return(x)
+          if(IS_VALUE) return(invisible(x))
 
           is_done[k] = TRUE
           next
         }
       }
 
-      if(all(is_done)) return(x)
+      if(all(is_done)) return(invisible(x))
 
       next
 
@@ -3901,7 +3900,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         }
       }
 
-      if(all(is_done)) return(x)
+      if(all(is_done)) return(invisible(x))
 
       next
     } else if(grepl("function", my_type, fixed = TRUE)){
@@ -3941,7 +3940,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       }
 
-      if(all(is_done)) return(x)
+      if(all(is_done)) return(invisible(x))
 
       next
 
@@ -4091,7 +4090,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         }
 
-        if(all(is_done)) return(x)
+        if(all(is_done)) return(invisible(x))
         if(all(is_done_or_fail)) next
 
       }
@@ -4166,7 +4165,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
           }
 
-          if(all(is_done)) return(x)
+          if(all(is_done)) return(invisible(x))
           if(all(is_done_or_fail)) next
 
         } else {
@@ -4197,7 +4196,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
           }
 
-          if(all(is_done)) return(x)
+          if(all(is_done)) return(invisible(x))
           if(all(is_done_or_fail)) next
         }
       }
@@ -4577,7 +4576,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       }
 
-      if(all(is_done)) return(x)
+      if(all(is_done)) return(invisible(x))
       if(all(is_done_or_fail)) next
     }
 
@@ -4692,7 +4691,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     # If we're here, this means that's fine!
     is_done[!is_done_or_fail] = TRUE
     # Out of the loop
-    if(all(is_done)) return(x)
+    if(all(is_done)) return(invisible(x))
 
   }
 

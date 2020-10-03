@@ -1,6 +1,12 @@
 # NEWS for `dreamerr`
 
-## Version 1.2.1
+## Version 1.2.2
+
+#### User visible changes
+
+ - `check_`family: objects are now returned invisibly.
+
+## Version 1.2.1 (31-08-2020)
 
 #### Bug fixes
 
