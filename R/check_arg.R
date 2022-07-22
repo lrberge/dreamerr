@@ -1213,7 +1213,7 @@ deparse_short = function(x){
 #' \item \code{formula}: a formula [Section VIII)]
 #' \item \code{function}: a function [Section V)]
 #' \item \code{charin}: a character vector with values in a vector of choices [Section III)]
-#' \item \code{match}: a character vector with values in a vector of choices, partial matching enabled and only available in \code{check_arg_plus} [Section III)]
+#' \item \code{match}: a character vector with values in a vector of choices, partial matching enabled and only available in \code{check_set_arg} [Section III)]
 #' \item \code{class}: a custom class [Section VI)]
 #' \item \code{NA}: a vector of length 1 equal to NA--does not support options nor restrictions, usually combined with other main classes (see Section on combining multiple types) [Section VI)]
 #' }
@@ -1231,7 +1231,7 @@ deparse_short = function(x){
 #'
 #' You can further add restrictions. There are roughly six types of restrictions. Here what they do and the types to which they are associated:
 #' \itemize{
-#' \item sub-type restriction: For atomic types (\code{scalar}, \code{vector}, \code{matrix} or \code{vmatrix}), you can restrict the underlying data to be of a specific sub-type. The simple sub-types are: i) \code{integer} (numeric without decimals and logicals), i') \code{strict integer} (numeric that can be converted to integer with \code{as.integer}, and not logicals), ii) \code{numeric}, iii) \code{factor}, iv) \code{logical} and iv') \code{loose logical} (0/1 are also OK). Simply add the sub-type in the type string (e.g. \code{"integer scalar"}), or if you allow multiple types, put them in parentheses rigth after the main class: e.g. \code{"scalar(character, integer)"}. See Section XI) in the examples. See also the section below for more information on the sub-types. Some types (\code{character}, \code{integer}, \code{numeric}, \code{logical} and \code{factor}) also support the keyword \code{"conv"} in \code{check_arg_plus}.
+#' \item sub-type restriction: For atomic types (\code{scalar}, \code{vector}, \code{matrix} or \code{vmatrix}), you can restrict the underlying data to be of a specific sub-type. The simple sub-types are: i) \code{integer} (numeric without decimals and logicals), i') \code{strict integer} (numeric that can be converted to integer with \code{as.integer}, and not logicals), ii) \code{numeric}, iii) \code{factor}, iv) \code{logical} and iv') \code{loose logical} (0/1 are also OK). Simply add the sub-type in the type string (e.g. \code{"integer scalar"}), or if you allow multiple types, put them in parentheses rigth after the main class: e.g. \code{"scalar(character, integer)"}. See Section XI) in the examples. See also the section below for more information on the sub-types. Some types (\code{character}, \code{integer}, \code{numeric}, \code{logical} and \code{factor}) also support the keyword \code{"conv"} in \code{check_set_arg}.
 #' \item \code{GE}/\code{GT}/\code{LE}/\code{LT}: For atomic types with numeric data, you can check the values in the object. The GE/GT/LE/LT mean respectively greater or equal/greater than/lower or equal/lower than. The syntax is \code{GE{expr}}, with expr any expression. See Section IV) in the examples.
 #' \item \code{len(a, b)}: You can restrict the length of objects with \code{len(a, b)} (with \code{a} and \code{b} integers). Available for \code{vector} and \code{list}. Then the length must be in between \code{a} and \code{b}. Either \code{a} or \code{b} can be missing which means absence of restriction. If \code{len(a)}, this means must be equal to \code{a}. You can also use the keywords len(data) which ensures that the length is the same as the length of the object given in the argument \code{.data}, or \code{len(value)} which ensures the length is equal to the value given in \code{.value}. See Section IV) in the examples.
 #' \item \code{nrow(a, b)}, \code{ncol(a, b)}: To restrict the number of rows and columns. Available for \code{matrix}, \code{vmatrix}, \code{data.frame}, \code{vdata.frame}. Tolerates the \code{data} and \code{value} keywords (see in \code{len}). See Section IV) in the examples.
@@ -1252,7 +1252,7 @@ deparse_short = function(x){
 #' \item \code{MBT}: (means "must be there") an error is thrown if the argument is not provided by the user.
 #' \item \code{L0}: allows 0-length vectors--overrides the default which requires that any argument should have a positive length
 #' \item \code{eval}: used in combination with the extra argument \code{.data}. Evaluates the value of the argument both in the data set and in the environment (this means the argument can be a variable name).
-#' \item \code{evalset}: like \code{eval}, but after evaluation, assigns the obtained value to the argument. Only available in \code{check_arg_plus}.
+#' \item \code{evalset}: like \code{eval}, but after evaluation, assigns the obtained value to the argument. Only available in \code{check_set_arg}.
 #' \item \code{dotnames}: only when checking \code{'...'} argument (see the related section below). Enforces that each object in \code{'...'} has a name.
 #' }
 #'
@@ -1272,9 +1272,9 @@ deparse_short = function(x){
 #' }
 #'
 #' When the user doesn't provide the argument, the default is set to the first choice.
-#' Since the main class \code{match} performs a re-assignment of the variable, it is only available in \code{check_arg_plus}.
+#' Since the main class \code{match} performs a re-assignment of the variable, it is only available in \code{check_set_arg}.
 #'
-#' The main class \code{charin} is similar to \code{match} in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) [that's the main difference between \code{check_arg} and \code{check_arg_plus}].
+#' The main class \code{charin} is similar to \code{match} in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) [that's the main difference between \code{check_arg} and \code{check_set_arg}].
 #'
 #'
 #'
@@ -1328,9 +1328,9 @@ deparse_short = function(x){
 #'
 #'
 #'
-#' @section What's the difference between \code{check_arg} and \code{check_arg_plus}?:
+#' @section What's the difference between \code{check_arg} and \code{check_set_arg}?:
 #'
-#' The function \code{check_arg_plus} extends \code{check_arg} in several ways. First it offers new keywords:
+#' The function \code{check_set_arg} extends \code{check_arg} in several ways. First it offers new keywords:
 #' \itemize{
 #' \item \code{evalset}: evaluates the argument in a data set (i.e. the argument can be variables names of a data set), then re-assigns back its value.
 #' \item \code{NULL{default}}: if the argument is \code{NULL}, then the value in curly brackets is assigned to the argument.
@@ -1338,17 +1338,17 @@ deparse_short = function(x){
 #' \item \code{conv}: in atomic main classes (\code{scalar}, \code{vector} and \code{matrix}), the data can be converted to a given sub-type (currently \code{integer}, \code{numeric}, \code{logical}, \code{character} and \code{factor}), then assigned back to the argument.
 #' }
 #'
-#' As you can see, it's all about assignment: these special keywords of \code{check_arg_plus} will modify the arguments \emph{in place}. You have such examples in Section II), III) and XI) of the examples.
+#' As you can see, it's all about assignment: these special keywords of \code{check_set_arg} will modify the arguments \emph{in place}. You have such examples in Section II), III) and XI) of the examples.
 #'
-#' Second, it allows to check arguments that are themselves list of arguments (note that \code{conv} also works in that case). For example, one argument of your function is \code{plot.opts}, a list of arguments to be passed to plot. You can check the elements of \code{plot.opts} (e.g. \code{plot.opts$main}) with \code{check_arg_plus}. It also re-assigns the values of the list given the special keywords just described. List element checking is described in Section XIII) of the examples.
+#' Second, it allows to check arguments that are themselves list of arguments (note that \code{conv} also works in that case). For example, one argument of your function is \code{plot.opts}, a list of arguments to be passed to plot. You can check the elements of \code{plot.opts} (e.g. \code{plot.opts$main}) with \code{check_set_arg}. It also re-assigns the values of the list given the special keywords just described. List element checking is described in Section XIII) of the examples.
 #'
-#' Then why creating two functions? If the user runs a function in which the arguments were checked with \code{check_arg} and it works, then argument checking can be safely disabled, and it would also work. On the other hand, since \code{check_arg_plus} does value re-assignment, it cannot be safely turned-off--therefore cannot be disabled with \code{\link[dreamerr]{setDreamerr_check}}. Distinguishing between the two allows the user to disable argument checking and gain (although very modest) perfomance in large loops. Therefore, when you create functions, I suggest to use always \code{check_arg}, unless you need the extra features of \code{check_arg_plus}.
+#' Then why creating two functions? If the user runs a function in which the arguments were checked with \code{check_arg} and it works, then argument checking can be safely disabled, and it would also work. On the other hand, since \code{check_set_arg} does value re-assignment, it cannot be safely turned-off--therefore cannot be disabled with \code{\link[dreamerr]{setDreamerr_check}}. Distinguishing between the two allows the user to disable argument checking and gain (although very modest) perfomance in large loops. Therefore, when you create functions, I suggest to use always \code{check_arg}, unless you need the extra features of \code{check_set_arg}.
 #'
 #'
 #'
 #' @section \code{check_value}:
 #'
-#' The functions \code{check_value} and \code{check_value_plus} are almost identical to the respective functions \code{check_arg} and \code{check_arg_plus}. The key differences are as follows:
+#' The functions \code{check_value} and \code{check_set_value} are almost identical to the respective functions \code{check_arg} and \code{check_set_arg}. The key differences are as follows:
 #'
 #' \itemize{
 #' \item They can check values instead of arguments. Indeed, if you try to check a value with \code{check_arg}, nothing will happen (provided the name of the value is not an argument). Why? Because it will consider it as a missing argument. Therefore, you are can check anything with \code{check_value}.
@@ -1364,7 +1364,7 @@ deparse_short = function(x){
 #'
 #' Although the argument checking offered by \code{check_arg} is highly optimized and fast (it depends on the type [and your computer], but it is roughly of the order of 80 micro seconds for non-missing arguments, 20 micro seconds for missing arguments), you may want to disable it for small functions in large loops (>100K iterations although this practice is not really common in R). If so, just use the function \code{\link[dreamerr]{setDreamerr_check}}, by typing \code{setDreamerr_check(FALSE)}. This will disable any call to \code{check_arg}.
 #'
-#' Note that the argument checking of \code{check_arg_plus} cannot be disabled because the special types it allows perform reassignment in the upper frame. That's the main difference with \code{check_arg}.
+#' Note that the argument checking of \code{check_set_arg} cannot be disabled because the special types it allows perform reassignment in the upper frame. That's the main difference with \code{check_arg}.
 #'
 #'
 #'
@@ -1443,9 +1443,9 @@ deparse_short = function(x){
 #'
 #' test_globals = function(xnum, xlog = TRUE, xint){
 #'
-#'   # Default setting with NULL is only available in check_arg_plus
+#'   # Default setting with NULL is only available in check_set_arg
 #'   # MBT (must be there) throws an error if the user doesn't provide the argument
-#'   check_arg_plus(xnum, "numeric vector NULL{1} MBT")
+#'   check_set_arg(xnum, "numeric vector NULL{1} MBT")
 #'
 #'   # NULL allows NULL values
 #'   check_arg(xlog, "logical scalar safe NULL")
@@ -1485,8 +1485,8 @@ deparse_short = function(x){
 #' test_eval = function(x1, x2, data = list(), i = c()){
 #'   check_arg(x1, "eval numeric vector", .data = data)
 #'
-#'   # evalset is in check_arg_plus
-#'   check_arg_plus(x2, "evalset numeric vector", .data = data)
+#'   # evalset is in check_set_arg
+#'   check_set_arg(x2, "evalset numeric vector", .data = data)
 #'
 #'  # We show the variables
 #'  if(1 %in% i){
@@ -1517,7 +1517,7 @@ deparse_short = function(x){
 #' # III) Match and charin
 #' #
 #'
-#' # match  => does partial matching, only available in check_arg_plus
+#' # match  => does partial matching, only available in check_set_arg
 #' # charin => no partial matching, exact values required, but in check_arg
 #'
 #' #
@@ -1532,13 +1532,13 @@ deparse_short = function(x){
 #'
 #' test_match = function(x1 = c("bonjour", "Au revoir"), x2, x3 = "test"){
 #'   # 1) choices set thanks to the argument default (like in match.arg)
-#'   check_arg_plus(x1, "strict match")
+#'   check_set_arg(x1, "strict match")
 #'
 #'   # 2) choices set with the argument .choices
-#'   check_arg_plus(x2, "match", .choices = c("Sarah", "Santa", "Santa Fe", "SANTA"))
+#'   check_set_arg(x2, "match", .choices = c("Sarah", "Santa", "Santa Fe", "SANTA"))
 #'
 #'   # 3) choices set with the parentheses
-#'   check_arg_plus(x3, "multi match(Orange, Juice, Good)")
+#'   check_set_arg(x3, "multi match(Orange, Juice, Good)")
 #'
 #'   cat("x1:", x1, "\nx2:", tryCatch(x2, error = function(e) "[missing]"), "\nx3:", x3, "\n")
 #' }
@@ -1570,7 +1570,7 @@ deparse_short = function(x){
 #'                             x3 = c("Orange", "Juice", "Good")){
 #'
 #'   # multiple arguments at once
-#'   check_arg_plus(x1, x2, x3, "match")
+#'   check_set_arg(x1, x2, x3, "match")
 #'
 #'   cat("x1:", x1, "\nx2:", x2, "\nx3:", x3, "\n")
 #' }
@@ -1918,7 +1918,7 @@ deparse_short = function(x){
 #' # "scalar(integer, logical)"
 #' # "matrix(Date, integer, logical)"
 #' #
-#' # In check_arg_plus, you can use the keyword "conv" to convert to the
+#' # In check_set_arg, you can use the keyword "conv" to convert to the
 #' # desired type
 #' #
 #'
@@ -1940,7 +1940,7 @@ deparse_short = function(x){
 #' # Testing the "conv" keyword:
 #'
 #' test_conv = function(x, type){
-#'   check_arg_plus(x, .type = type)
+#'   check_set_arg(x, .type = type)
 #'   x
 #' }
 #'
@@ -1995,12 +1995,12 @@ deparse_short = function(x){
 #'
 #'
 #' #
-#' # XIII) Using check_arg_plus to check and set list defaults
+#' # XIII) Using check_set_arg to check and set list defaults
 #' #
 #'
 #' # Sometimes it is useful to have arguments that are themselves
 #' # list of arguments.
-#' # Witch check_arg_plus you can check the arguments nested in lists
+#' # Witch check_set_arg you can check the arguments nested in lists
 #' # and easily set default values at the same time.
 #' #
 #' # When you check a list element, you MUST use the syntax argument$element
@@ -2019,23 +2019,23 @@ deparse_short = function(x){
 #'   reg = do.call("lm", lm.opts)
 #'
 #'   # plotting the correlation, with defaults
-#'   check_arg_plus(plot.opts$main, "character scalar NULL{'Correlation between x and y'}")
+#'   check_set_arg(plot.opts$main, "character scalar NULL{'Correlation between x and y'}")
 #'
 #'   # you can use variables created in the function when setting the default
 #'   x_name = deparse(substitute(x))
-#'   check_arg_plus(plot.opts$xlab, "character scalar NULL{x_name}")
-#'   check_arg_plus(plot.opts$ylab, "character scalar NULL{'y'}")
+#'   check_set_arg(plot.opts$xlab, "character scalar NULL{x_name}")
+#'   check_set_arg(plot.opts$ylab, "character scalar NULL{'y'}")
 #'
 #'   # we restrict to only two plotting types: p or h
-#'   check_arg_plus(plot.opts$type, "NULL{'p'} match(p, h)")
+#'   check_set_arg(plot.opts$type, "NULL{'p'} match(p, h)")
 #'
 #'   plot.opts$x = x
 #'   plot.opts$y = y
 #'   do.call("plot", plot.opts)
 #'
 #'   # with the fit
-#'   check_arg_plus(line.opts$col, "NULL{'firebrick'}") # no checking but default setting
-#'   check_arg_plus(line.opts$lwd, "integer scalar GE{0} NULL{2}") # check + default
+#'   check_set_arg(line.opts$col, "NULL{'firebrick'}") # no checking but default setting
+#'   check_set_arg(line.opts$lwd, "integer scalar GE{0} NULL{2}") # check + default
 #'   line.opts$a = reg
 #'   do.call("abline", line.opts)
 #' }
@@ -2146,9 +2146,9 @@ deparse_short = function(x){
 #'   # Now we check that x and y are valid => with check_value
 #'   # We also use the possibility to assign the value of y and x directly
 #'   # We add a custom message because y/x are NOT arguments
-#'   check_value_plus(y, "evalset numeric vector", .data = data,
+#'   check_set_value(y, "evalset numeric vector", .data = data,
 #'                    .message = "In the argument 'fml', the LHS must be numeric.")
-#'   check_value_plus(x, "evalset numeric vector", .data = data,
+#'   check_set_value(x, "evalset numeric vector", .data = data,
 #'                    .message = "In the argument 'fml', the RHS must be numeric.")
 #'
 #'   # The dots => only arguments to plot are valid
@@ -2157,8 +2157,8 @@ deparse_short = function(x){
 #'
 #'   # We also set the xlab/ylab
 #'   dots = list(...) # dots has a special meaning in check_value (no need to pass .message)
-#'   check_value_plus(dots$ylab, "NULL{deparse(fml[[2]])} character vector conv len(,3)")
-#'   check_value_plus(dots$xlab, "NULL{deparse(fml[[3]])} character vector conv len(,3)")
+#'   check_set_value(dots$ylab, "NULL{deparse(fml[[2]])} character vector conv len(,3)")
+#'   check_set_value(dots$xlab, "NULL{deparse(fml[[3]])} character vector conv len(,3)")
 #'
 #'   dots$y = y
 #'   dots$x = x
@@ -2201,7 +2201,7 @@ check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...
 }
 
 #' @describeIn check_arg Same as \code{check_arg}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
-check_arg_plus = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0){
+check_set_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   mc = match.call(expand.dots = FALSE)
 
@@ -2243,7 +2243,7 @@ check_value = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL,
 }
 
 #' @describeIn check_arg Same as \code{check_value}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
-check_value_plus = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL, .data = list(), .value, .env, .up = 0){
+check_set_value = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   mc = match.call(expand.dots = FALSE)
 
@@ -2261,6 +2261,16 @@ check_value_plus = function(.x, .type, .message, .arg_name, .prefix, .choices = 
   check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .prefix = .prefix, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
 
 }
+
+
+
+check_arg_plus = check_set_arg
+#' @rdname check_arg
+"check_arg_plus"
+
+check_value_plus = check_set_arg
+#' @rdname check_arg
+"check_value_plus"
 
 
 
@@ -2286,7 +2296,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
   # Checking for these types requires a) finding the types, and b) checking for them. This is about 13us => 10 times slower than no check
   # One solution is to create two argument checking functions:
   #  1) check_arg => safe function with direct outing if necessary
-  #  2) check_arg_plus => same as check_arg but accomodates NULL{default} and partial matching. But if setDreamerr_check(FALSE), no direct outing
+  #  2) check_set_arg => same as check_arg but accomodates NULL{default} and partial matching. But if setDreamerr_check(FALSE), no direct outing
   #
 
   # To avoid code duplication (and to avoid creating new sub functions), I created chunks of
@@ -2297,7 +2307,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
   #
 
   # NOTE on the return of this function:
-  # when use return(x): means that the last exaluated x_all is returned. It's of use mostly for check_value_plus.
+  # when use return(x): means that the last exaluated x_all is returned. It's of use mostly for check_set_value.
   # x is guaranteed to exist.
 
   # Arg plus types:
@@ -2585,8 +2595,16 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       n_dots = length(dots_origin)
 
+      # That's weird that match.call does not catch the ... in nested calls
+      # It actually catches it but only when the ... are named.
+      # That's really a pain in the neck to deal with that
+      # if(!"..." %in% names(mc) && ){
+      #
+      # }
+
       # Missing
       if(n_dots == 0){
+        # OK => really there is nothing
         if(grepl("mbt", type_low, fixed = TRUE)){
           stop_up("In argument '...', no value is provided. Problem: at least one value is required.", up = .up + 2)
         } else {
@@ -2888,7 +2906,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         if(is_list){
           IS_LIST = TRUE
         } else {
-          # stop_up("In check_value_plus(), the argument '.x' must be a variable name or a list-element of the form x$element. Currently it is neither.")
+          # stop_up("In check_set_value(), the argument '.x' must be a variable name or a list-element of the form x$element. Currently it is neither.")
         }
       }
 
@@ -4303,7 +4321,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
               } else if(IS_PLUS && grepl("conv", my_subtype, fixed = TRUE)){
                 # Anything atomic CAN be converted
-                storage.mode(x) = "character"
+                # Storage mode does not work on factors
+                x = as.character(x)
                 is_done[k] = TRUE
 
                 # START::COPY(conv_assign)
@@ -4486,7 +4505,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           } else if(grepl("character", my_type, fixed = TRUE)){
             if(IS_PLUS && grepl("conv", my_type, fixed = TRUE)){
               # Every atomic element can be converted to character
-              storage.mode(x) = "character"
+              x = as.character(x)
               is_done[k] = TRUE
 
               # START::COPY(conv_assign)

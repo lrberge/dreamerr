@@ -4,7 +4,7 @@
 \alias{sfill}
 \title{Fills a string vector with a symbol}
 \usage{
-sfill(x = "", n = NULL, symbol = " ", right = FALSE, anchor)
+sfill(x = "", n = NULL, symbol = " ", right = FALSE, anchor, na = "NA")
 }
 \arguments{
 \item{x}{A character vector.}
@@ -16,6 +16,8 @@ sfill(x = "", n = NULL, symbol = " ", right = FALSE, anchor)
 \item{right}{Logical, default is \code{FALSE}. Whether the character vector should be filled on the left( default) or on the right.}
 
 \item{anchor}{Character scalar, can be missing. If provided, the filling is done up to this anchor. See examples.}
+
+\item{na}{Character that will replace any NA value in input. Default is "NA".}
 }
 \value{
 Returns a character vector of the same length as \code{x}.

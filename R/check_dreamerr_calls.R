@@ -214,7 +214,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
           # we check if it's because it's alist
           is_list = sapply(mc_arg, function(x) is.call(x) && grepl("^[\\.[:alpha:]][[:alnum:]\\._]*\\$", deparse_long(x)))
           if(all(!is_name & is_list)){
-            stop_up(up = 1, "You cannot check list elements in check_arg, but you can in check_arg_plus. Please refer to Section XIII) in the examples.")
+            stop_up(up = 1, "You cannot check list elements in check_arg, but you can in check_set_arg. Please refer to Section XIII) in the examples.")
           } else {
             stop_up(up = 1, "In check_arg, the arguments '.x' to '.x9' must be argument names. This is not the case for '", deparse_long(mc_arg[[which(!is_name)[1]]]), "'. Please refer to the details/examples/vignette.")
           }
@@ -226,7 +226,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
         is_list = sapply(mc_arg, function(x) is.call(x) && grepl("^[\\.[:alpha:]][[:alnum:]\\._]*\\$", deparse_long(x)))
         is_ok = is_name | is_list
         if(any(!is_ok)){
-          stop_up(up = 1, "In check_arg_plus, the arguments '.x' to '.x9' must be argument names (or list elements). This is not the case for '", deparse_long(mc_arg[[which(!is_ok)[1]]]), "'. Please refer to the details/examples/vignette.")
+          stop_up(up = 1, "In check_set_arg, the arguments '.x' to '.x9' must be argument names (or list elements). This is not the case for '", deparse_long(mc_arg[[which(!is_ok)[1]]]), "'. Please refer to the details/examples/vignette.")
         }
       }
     }
@@ -259,7 +259,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
 
         if(is_list){
           if(!IS_PLUS){
-            stop_up("To check elements of arguments that are lists, you must use check_arg_plus (and not check_arg).")
+            stop_up("To check elements of arguments that are lists, you must use check_set_arg (and not check_arg).")
           }
         } else {
           msg = ifelse(.up > 0, "The arguments passed to your internal function must have the exact same name as in the user-level function.\n If you really want to change the name of the argument in your internal function, a workaround is to use 'check_value' in combination with the argument '.arg_name' which gives the original name the argument refers to.", "")

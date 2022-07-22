@@ -112,7 +112,7 @@ setDreamerr_dev.mode = function(dev.mode = FALSE){
 
 #' Sets argument checking on/off "semi-globally"
 #'
-#' You can allow your users to turn off argument checking within your function by using \code{set_check}. Only the functions \code{\link[dreamerr]{check_arg}} nd \code{\link[dreamerr]{check_value}} can be turned off that way.
+#' You can allow your users to turn off argument checking within your function by using \code{set_check}. Only the functions \code{\link[dreamerr]{check_arg}} nd \code{\link[dreamerr:check_arg]{check_value}} can be turned off that way.
 #'
 #' @param x A logical scalar, no default.
 #'
@@ -280,7 +280,7 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, st
     my_call = ""
     if(stop == FALSE && warn == FALSE){
       if(call.){
-        my_call = deparse(sys.calls()[[sys.nframe() - 1]])[1] # call can have svl lines
+        my_call = deparse(sys.calls()[[max(1, sys.nframe() - 1)]])[1] # call can have svl lines
         nmax = 70
         if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax-1), "...")
         my_call = paste0(my_call, "\n")
@@ -389,7 +389,7 @@ stop_up = function(..., up = 1){
   }
 
   # The original call
-  my_call = deparse(sys.calls()[[sys.nframe() - (1 + up)]])[1] # call can have svl lines
+  my_call = deparse(sys.calls()[[max(1, sys.nframe() - (1 + up))]])[1] # call can have svl lines
   nmax = 50
   if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax - 1), "...")
 
@@ -411,7 +411,7 @@ warn_up = function(..., up = 1, immediate. = FALSE){
   }
 
   # The original call
-  my_call = deparse(sys.calls()[[sys.nframe() - (1 + up)]])[1] # call can have svl lines
+  my_call = deparse(sys.calls()[[max(1, sys.nframe() - (1 + up))]])[1] # call can have svl lines
   nmax = 50
   if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax - 1), "...")
 
@@ -903,9 +903,9 @@ n_letter = function(n){
 
 
 
-#' Formatting for numbers to appear in-text
+#' Formatting numbers with display of significant digits
 #'
-#' Formatting of numbers, when they are to appear in messages. Displays only significant digits in a "nice way" and adds commas to separate thousands.
+#' Formatting of numbers, when they are to appear in messages. Displays only significant digits in a "nice way" and adds commas to separate thousands. It does much less than the \code{\link[base]{format}} function, but also a bit more though.
 #'
 #' @param x A numeric vector.
 #' @param s The number of significant digits to be displayed. Defaults to 2. All digits not in the decimal are always shown.
@@ -921,14 +921,14 @@ n_letter = function(n){
 #' x[sample(1e5, 1e4, TRUE)] = NA
 #'
 #' # Dumb function telling the number of NA values
-#' tell_na = function(x) message("x contains ", signif_plus(sum(is.na(x))), " NA values.")
+#' tell_na = function(x) message("x contains ", fsignif(sum(is.na(x))), " NA values.")
 #'
 #' tell_na(x)
 #'
 #' # Some differences with signif:
 #' show_diff = function(x, d = 2) cat("signif(x, ", d, ") -> ", signif(x, d),
-#'                                    " vs signif_plus(x, ", d, ") -> ",
-#'                                    signif_plus(x, d), "\n", sep = "")
+#'                                    " vs fsignif(x, ", d, ") -> ",
+#'                                    fsignif(x, d), "\n", sep = "")
 #'
 #' # Main difference is for large numbers
 #' show_diff(95123.125)
@@ -938,7 +938,7 @@ n_letter = function(n){
 #' show_diff(pi / 500)
 #'
 #'
-signif_plus = function (x, s = 2, r = 0, commas = TRUE){
+fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
   # This is not intended to be applied to large vectors (not efficient)
   # Only for the in-print formatting of some numbers
 
@@ -995,14 +995,37 @@ signif_plus = function (x, s = 2, r = 0, commas = TRUE){
   res
 }
 
+#' @rdname fsignif
+"signif_plus"
 
-fit_screen = function(msg){
+
+
+#' Nicely fits a message in the current R console
+#'
+#' Utility to display long messages with nice formatting. This function cuts the message to fit the current screen width of the R console. Words are never cut in the middle.
+#'
+#' @param msg Text message: character vector.
+#' @param width The maximum width of the screen the message should take. Default is 0.9.
+#'
+#' @details
+#' This function does not handle tabulations.
+#'
+#' @return
+#' It returns a single character vector with line breaks at the appropriate width.
+#'
+#' @examples
+#'
+#' cat(fit_screen(enumerate_items(state.name, nmax = Inf)))
+#'
+#' cat(fit_screen(enumerate_items(state.name, nmax = Inf), 0.5))
+#'
+fit_screen = function(msg, width = 0.9){
   # makes a message fit the current screen, by cutting the text at the appropriate location
   # msg must be a character string of length 1
 
   # Note that \t are NOT handled
 
-  MAX_WIDTH = getOption("width") * 0.9
+  MAX_WIDTH = getOption("width") * width
 
   res = c()
 
@@ -1040,6 +1063,7 @@ fit_screen = function(msg){
 #' @param n A positive integer giving the total expected length of each character string. Can be NULL (default). If \code{NULL}, then \code{n} is set to the maximum number of characters in \code{x} (i.e. \code{max(nchar(x))}).
 #' @param symbol Character scalar, default to \code{" "}. The symbol used to fill.
 #' @param right Logical, default is \code{FALSE}. Whether the character vector should be filled on the left( default) or on the right.
+#' @param na Character that will replace any NA value in input. Default is "NA".
 #' @param anchor Character scalar, can be missing. If provided, the filling is done up to this anchor. See examples.
 #'
 #' @return
@@ -1061,29 +1085,38 @@ fit_screen = function(msg){
 #' cat(sep = "\n", sfill(x))
 #' cat(sep = "\n", sfill(x, anchor = "."))
 #'
-sfill = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor){
+sfill = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor, na = "NA"){
   # Character vectors starting with " " are not well taken care of
 
-  check_arg_plus(x, "character vector conv")
+  check_set_arg(x, "l0 character vector conv")
+  if(length(x) == 0) return(character(0))
+
   check_arg(n, "NULL integer scalar GE{0}")
   check_arg(symbol, "character scalar")
   check_arg(right, "logical scalar")
   check_arg(anchor, "character scalar")
 
-  x[is.na(x)] = "NA"
+  x[is.na(x)] = na
 
   if(nchar(symbol) != 1) stop("Argument 'symbol' must be a single character (currenlty it is of length ", nchar(symbol), ").")
 
   IS_ANCHOR = FALSE
   if(!missing(anchor)){
     if(nchar(anchor) != 1){
-      stop("If provided, argument 'anchor' must be a single character (currenlty it is of length ", nchar(symbol), ").")
+      stop("If provided, argument 'anchor' must be a single character (currenlty it is of length ", nchar(anchor), ").")
     }
     IS_ANCHOR = TRUE
     x_origin = x
     is_x_anchor = grepl(anchor, x, fixed = TRUE)
     x_split = strsplit(x, anchor, fixed = TRUE)
-    x = sapply(x_split, function(v) v[1])
+    if(right){
+      x = sapply(x_split, function(v) v[max(length(v), 1)])
+    } else {
+      x = sapply(x_split, function(v) v[1])
+    }
+
+    x[is.na(x)] = ""
+
   }
 
   if(!is.null(n) && n == 0) return(x)
@@ -1093,7 +1126,7 @@ sfill = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor){
 
   n2fill = n - n_all
   qui = which(n2fill > 0)
-  if(length(qui) == 0) return(x)
+  if(length(qui) == 0 && !IS_ANCHOR) return(x)
 
   if(symbol == " "){
     if(right == TRUE){
@@ -1117,7 +1150,12 @@ sfill = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor){
   if(IS_ANCHOR){
     for(i in seq_along(x_split)){
       if(is_x_anchor[i]){
-        x_split[[i]][1] = res[i]
+        if(right){
+          x_split[[i]][length(x_split[[i]])] = res[i]
+        } else {
+          x_split[[i]][1] = res[i]
+        }
+
         res[i] = paste(x_split[[i]], collapse = anchor)
       }
     }

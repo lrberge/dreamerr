@@ -11,7 +11,7 @@ The main purpose of this package is twofold: i) to facilitate the developer's li
 \details{
 Thus you can very easily make your package look professional with \code{\link[dreamerr]{check_arg}} (checking arguments properly \emph{is} professional).
 
-It also offers a set of small tools to provide informative messages to the users. See \code{\link[dreamerr]{stop_up}} and \code{\link[dreamerr]{warn_up}} to throw errors and warnings in the appropriate location. There are many tools to form messages: \code{\link[dreamerr]{enumerate_items}} to form textual list of elements (with many options including conjugating verbs, etc...), \code{\link[dreamerr]{plural}} to conjugate verbs depending on the argument, and \code{\link[dreamerr]{n_letter}}, \code{\link[dreamerr]{n_th}}, \code{\link[dreamerr]{n_times}} to write integers in words (which usually looks nicer).
+It also offers a set of small tools to provide informative messages to the users. See \code{\link[dreamerr]{stop_up}} and \code{\link[dreamerr:stop_up]{warn_up}} to throw errors and warnings in the appropriate location. There are many tools to form messages: \code{\link[dreamerr]{enumerate_items}} to form textual list of elements (with many options including conjugating verbs, etc...), \code{\link[dreamerr]{plural}} to conjugate verbs depending on the argument, and \code{\link[dreamerr:n_times]{n_letter}}, \code{\link[dreamerr:n_times]{n_th}}, \code{\link[dreamerr]{n_times}} to write integers in words (which usually looks nicer).
 
 To sum up in a few words, this package was created to enhance the user experience and facilitate package development.
 }
@@ -23,6 +23,6 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Laurent Berge \email{laurent.berge@uni.lu}
+\strong{Maintainer}: Laurent Berge \email{laurent.berge@u-bordeaux.fr}
 
 }

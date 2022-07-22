@@ -143,11 +143,11 @@ On top of the types, you also have 8 global keywords that can be anywhere in the
  
  - **dotnames**: when checking the `...` argument, requires all elements to be named.
 
-#### `check_arg_plus`
+#### `check_set_arg`
 
-Actually there are two functions to check arguments: `check_arg` and `check_arg_plus`. The difference between the two is that i) the second allows keywords that re-assigns values to the argument (i.e. the `match` class, the `conv` keyword, `NULL{expr}`, and `evalset`), and ii) allows to check list elements of list arguments.
+Actually there are two functions to check arguments: `check_arg` and `check_set_arg`. The difference between the two is that i) the second allows keywords that re-assigns values to the argument (i.e. the `match` class, the `conv` keyword, `NULL{expr}`, and `evalset`), and ii) allows to check list elements of list arguments.
 
-Let's illustrate when to use `check_arg_plus`:
+Let's illustrate when to use `check_set_arg`:
 
 ```{r}
 plot_cor = function(x, y = NULL, line.opts = list(), ...){
@@ -156,7 +156,7 @@ plot_cor = function(x, y = NULL, line.opts = list(), ...){
   # y: 
   #  - numeric vector of the same length as x
   # - if y is NULL, then x with some noise is assigned to it 
-  check_arg_plus(y, "NULL{x + rnorm(length(x))} numeric vector len(data)", .data = x)
+  check_set_arg(y, "NULL{x + rnorm(length(x))} numeric vector len(data)", .data = x)
   
   # We ensure line.opts is a list (even of 0-length)
   check_arg(line.opts, "named list L0")
@@ -172,11 +172,11 @@ plot_cor = function(x, y = NULL, line.opts = list(), ...){
   # - if not provided => "firebrick"
   # - partially matched to firebrick or darkblue
   # - otherwise, a positive integer or a character scalar
-  check_arg_plus(line.opts$col, "NULL{'firebrick'} match(firebrick, darkblue) | scalar(integer, character) GE{0}") 
+  check_set_arg(line.opts$col, "NULL{'firebrick'} match(firebrick, darkblue) | scalar(integer, character) GE{0}") 
   # lwd:
   # - if not provided => 2
   # - otherwise a positive integer scalar
-  check_arg_plus(line.opts$lwd, "integer scalar GE{0} NULL{2}") # check + default
+  check_set_arg(line.opts$lwd, "integer scalar GE{0} NULL{2}") # check + default
   
   line.opts$a = reg
   do.call("abline", line.opts)
@@ -186,7 +186,7 @@ plot_cor(rnorm(100), line.opts = list(col = "dark"))
 
 ```
 
-Why sperating argument checking in two functions? First, it is because `check_arg_plus` requires (marginally, but still) more processing--so it's better to always use the faster function when appropriate, and use `check_arg_plus` only when needed. Second, and this is the main reason, it is because `dreamerr` allows the user to turn off argument checking with `setDreamerr_check(FALSE)`. If a call to a function works, then writting off all `check_arg` calls would also work. This is not the case for `check_arg_plus` since it re-assigns values to the arguments--and therefore can't be turned off.
+Why sperating argument checking in two functions? First, it is because `check_set_arg` requires (marginally, but still) more processing--so it's better to always use the faster function when appropriate, and use `check_set_arg` only when needed. Second, and this is the main reason, it is because `dreamerr` allows the user to turn off argument checking with `setDreamerr_check(FALSE)`. If a call to a function works, then writting off all `check_arg` calls would also work. This is not the case for `check_set_arg` since it re-assigns values to the arguments--and therefore can't be turned off.
 
 #### Developer mode
 
@@ -232,7 +232,7 @@ lm_check = function(formula, data, subset, weights, na.action, method = "qr", mo
 
   # method:
   # - either 'qr' or 'model.frame', partially matched
-  check_arg_plus(method, "match(qr, model.frame)")
+  check_set_arg(method, "match(qr, model.frame)")
 
   # You can pool arguments of the same type:
   check_arg(model, x, y, qr, singular.ok, "logical scalar")
@@ -274,7 +274,7 @@ lm_check_bis = function(formula, data, subset, weights, na.action, method = "qr"
 
   # Below: same as before
   check_arg(na.action, "null function arg(1,)")
-  check_arg_plus(method, "match(qr, model.frame)")
+  check_set_arg(method, "match(qr, model.frame)")
   check_arg(model, x, y, qr, singular.ok, "logical scalar")
   check_arg(contrasts, "null list")
   

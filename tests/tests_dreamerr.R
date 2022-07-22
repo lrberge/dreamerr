@@ -14,7 +14,7 @@
 # * add complex calls (multiple types)
 # * add check_value
 # * check returns from check_arg and check_value
-# * specifics from check_arg_plus (conv, NULL, etc)
+# * specifics from check_set_arg (conv, NULL, etc)
 
 library(dreamerr)
 
@@ -405,10 +405,17 @@ test_err(test_charin(x2 = 55))
 # strict / multi / different inits
 
 test_match = function(x1 = c("bon", "jour", "soleil"), x2, x3){
-  check_arg_plus(x1, "match")
-  check_arg_plus(x2, "strict match(bon, jour, soleil)")
-  check_arg_plus(x3, "multi match", .choices = c("bon", "jour", "soleil"))
-  invisible(NULL)
+  mc = match.call()
+  check_set_arg(x1, "match")
+  if("x1" %in% names(mc)) return(x1)
+
+  check_set_arg(x2, "strict match(bon, jour, soleil)")
+  if("x2" %in% names(mc)) return(x2)
+
+  check_set_arg(x3, "multi match", .choices = c("bon", "jour", "soleil"))
+  if("x3" %in% names(mc)) return(x3)
+
+  return(x1)
 }
 
 
@@ -417,17 +424,18 @@ test_match = function(x1 = c("bon", "jour", "soleil"), x2, x3){
 #
 
 # x1: match
-test_match(x1 = "jour")
-test_match(x1 = "s")
-test_match(x1 = "So")
-test_match(x1 = "Bo")
+test_match() == "bon"
+test_match(x1 = "jour") == "jour"
+test_match(x1 = "s") == "soleil"
+test_match(x1 = "So") == "soleil"
+test_match(x1 = "Bo") == "bon"
 
 # x2: strict match(bon, jour, soleil)
-test_match(x2 = "jour")
-test_match(x2 = "s")
+test_match(x2 = "jour") == "jour"
+test_match(x2 = "s") == "soleil"
 
 # x3: multi match, .choices = c("bon", "jour", "soleil")
-test_match(x3 = c("jour", "bo"))
+test_match(x3 = c("jour", "bo")) %in% c("bon", "jour")
 
 #
 # should **not** work

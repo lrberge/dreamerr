@@ -1,17 +1,17 @@
 
 
 # Functions to export -- main
-export(check_arg, check_arg_plus)
-export(check_value, check_value_plus)
+export(check_arg, check_arg_plus, check_set_arg)
+export(check_value, check_value_plus, check_set_value)
 export(validate_dots)
 
 export(stop_up, warn_up)
 
 # Other
 export(n_letter, n_th, n_times)
-export(signif_plus)
+export(signif_plus, fsignif)
 export(ifsingle, ifunit, plural, plural_len, enumerate_items)
-export(sfill)
+export(sfill, fit_screen)
 
 # Setter/Getter
 export(setDreamerr_check, setDreamerr_dev.mode)

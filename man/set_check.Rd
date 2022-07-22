@@ -10,7 +10,7 @@ set_check(x)
 \item{x}{A logical scalar, no default.}
 }
 \description{
-You can allow your users to turn off argument checking within your function by using \code{set_check}. Only the functions \code{\link[dreamerr]{check_arg}} nd \code{\link[dreamerr]{check_value}} can be turned off that way.
+You can allow your users to turn off argument checking within your function by using \code{set_check}. Only the functions \code{\link[dreamerr]{check_arg}} nd \code{\link[dreamerr:check_arg]{check_value}} can be turned off that way.
 }
 \details{
 This function can be useful if you develop a function that may be used in large range loops (>100K). In such situations, it may be good to still check all arguments, but to offer the user to turn this checking off with an extra argument (named \code{arg.check} for instance). Doing so you would achieve the feat of i) having a user-friendly function thanks to argument checking and, ii) still achieve high performance in large loops (although the computational footprint of argument checking is quite low [around 30 micro seconds for missing arguments to 80 micro seconds for non-missing arguments of simple type]).
