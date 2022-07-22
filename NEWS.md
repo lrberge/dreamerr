@@ -1,10 +1,43 @@
 # NEWS for `dreamerr`
 
+## Version 1.3.0
+
+### Name changes
+
+  - Functions `check_arg_plus` and `check_value_plus` become `check_set_arg` and `check_set_value` to improve clarity.
+
+## Version 1.2.3
+
+#### Bug fixes
+
+  - in `check_arg_plus` conversion of factors to characters now works properly.
+  
+  - Fix bug in `stop_up` when the argument `up` was not appropriately set by the user.
+
+  - fix bug in `sfill` regarding the combined usage of `anchor` and `right` in special circumstances.
+  
+#### New features
+  
+  - now `sfill` accepts 0-length vectors.
+  
+  - new exported function: `fit_screen`.
+
+
 ## Version 1.2.2
+
+#### Bug fixes
+
+  - fix bugs in `sfill`:
+  
+    * when an anchor was provided and all characters before that were of the same length.
+    
+    * when an anchor was provided and the fill was from the right.
 
 #### User visible changes
 
  - `check_`family: objects are now returned invisibly.
+ 
+ - new function `fsignif` which is an alias of `signif_plus`.
 
 ## Version 1.2.1 (31-08-2020)
 
