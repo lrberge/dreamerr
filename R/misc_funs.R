@@ -1027,6 +1027,7 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
 #'
 #' @param msg Text message: character vector.
 #' @param width The maximum width of the screen the message should take. Default is 0.9.
+#' @param leading_ws Logical, default is \code{TRUE}. Whether to keep the leading white spaces when the line is cut.
 #'
 #' @details
 #' This function does not handle tabulations.
@@ -1036,11 +1037,22 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
 #'
 #' @examples
 #'
-#' cat(fit_screen(enumerate_items(state.name, nmax = Inf)))
+#' # A long message of two lines with a few leading spaces
+#' msg = enumerate_items(state.name, nmax = Inf)
+#' msg = paste0("     ", gsub("Michigan, ", "\n", msg))
 #'
-#' cat(fit_screen(enumerate_items(state.name, nmax = Inf), 0.5))
+#' # by default the message takes 90% of the screen
+#' cat(fit_screen(msg))
 #'
-fit_screen = function(msg, width = 0.9){
+#' # Now we reduce it to 50%
+#' cat(fit_screen(msg, 0.5))
+#'
+#' # we add leading_ws = FALSE to avoid the continuation of leading WS
+#' cat(fit_screen(msg, 0.5, FALSE))
+#'
+#' # The
+#'
+fit_screen = function(msg, width = 0.9, leading_ws = TRUE){
   # makes a message fit the current screen, by cutting the text at the appropriate location
   # msg must be a character string of length 1
 
@@ -1057,17 +1069,39 @@ fit_screen = function(msg, width = 0.9){
       res = c(res, m)
     } else {
       # we apply a splitting algorithm
-      m_split = strsplit(m, " ", fixed = TRUE)[[1]]
+
+      lead_ws = gsub("^([ \t]*).*", "\\1", m, perl = TRUE)
+      m = trimws(m)
+      N_LEAD = nchar(lead_ws)
+      add_lead = TRUE
+      first = TRUE
+
+      m_split = strsplit(m, "(?<=[^ ]) ", perl = TRUE)[[1]]
 
       while(TRUE){
-        where2split = which.max(cumsum(nchar(m_split) + 1) - 1 > MAX_WIDTH) - 1
-        res = c(res, paste(m_split[1:where2split], collapse = " "))
-        m_split = m_split[-(1:where2split)]
 
-        if(sum(nchar(m_split) + 1) - 1 <= MAX_WIDTH){
-          res = c(res, paste(m_split, collapse = " "))
+        if(add_lead){
+          width = MAX_WIDTH - N_LEAD
+          prefix = lead_ws
+        } else {
+          width = MAX_WIDTH
+          prefix = ""
+        }
+
+        if(sum(nchar(m_split) + 1) - 1 <= width){
+          res = c(res, paste0(prefix, paste(m_split, collapse = " ")))
           break
         }
+
+        where2split = which.max(cumsum(nchar(m_split) + 1) - 1 > width) - 1
+        res = c(res, paste0(prefix, paste(m_split[1:where2split], collapse = " ")))
+        m_split = m_split[-(1:where2split)]
+
+        if(!leading_ws && first){
+          add_lead = FALSE
+          first = FALSE
+        }
+
       }
     }
   }

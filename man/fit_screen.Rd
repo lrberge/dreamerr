@@ -4,12 +4,14 @@
 \alias{fit_screen}
 \title{Nicely fits a message in the current R console}
 \usage{
-fit_screen(msg, width = 0.9)
+fit_screen(msg, width = 0.9, leading_ws = TRUE)
 }
 \arguments{
 \item{msg}{Text message: character vector.}
 
 \item{width}{The maximum width of the screen the message should take. Default is 0.9.}
+
+\item{leading_ws}{Logical, default is \code{TRUE}. Whether to keep the leading white spaces when the line is cut.}
 }
 \value{
 It returns a single character vector with line breaks at the appropriate width.
@@ -22,8 +24,19 @@ This function does not handle tabulations.
 }
 \examples{
 
-cat(fit_screen(enumerate_items(state.name, nmax = Inf)))
+# A long message of two lines with a few leading spaces
+msg = enumerate_items(state.name, nmax = Inf)
+msg = paste0("     ", gsub("Michigan, ", "\n", msg))
 
-cat(fit_screen(enumerate_items(state.name, nmax = Inf), 0.5))
+# by default the message takes 90\% of the screen
+cat(fit_screen(msg))
+
+# Now we reduce it to 50\%
+cat(fit_screen(msg, 0.5))
+
+# we add leading_ws = FALSE to avoid the continuation of leading WS
+cat(fit_screen(msg, 0.5, FALSE))
+
+# The
 
 }

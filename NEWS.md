@@ -2,6 +2,10 @@
 
 ## Version 1.3.0
 
+### Bug fixes
+
+ - fixes `fit_screen` (used in `stop_up` and `warn_up`) so that it does not mess with white spaces.
+
 ### Name changes
 
   - Functions `check_arg_plus` and `check_value_plus` become `check_set_arg` and `check_set_value` to improve clarity.

@@ -300,7 +300,7 @@ Then why creating two functions? If the user runs a function in which the argume
 \section{\code{check_value}}{
 
 
-The functions \code{check_value} and \code{check_value_plus} are almost identical to the respective functions \code{check_arg} and \code{check_set_arg}. The key differences are as follows:
+The functions \code{check_value} and \code{check_set_value} are almost identical to the respective functions \code{check_arg} and \code{check_set_arg}. The key differences are as follows:
 
 \itemize{
 \item They can check values instead of arguments. Indeed, if you try to check a value with \code{check_arg}, nothing will happen (provided the name of the value is not an argument). Why? Because it will consider it as a missing argument. Therefore, you are can check anything with \code{check_value}.
@@ -1093,9 +1093,9 @@ plot_fml = function(fml, data, ...){
   # Now we check that x and y are valid => with check_value
   # We also use the possibility to assign the value of y and x directly
   # We add a custom message because y/x are NOT arguments
-  check_value_plus(y, "evalset numeric vector", .data = data,
+  check_set_value(y, "evalset numeric vector", .data = data,
                    .message = "In the argument 'fml', the LHS must be numeric.")
-  check_value_plus(x, "evalset numeric vector", .data = data,
+  check_set_value(x, "evalset numeric vector", .data = data,
                    .message = "In the argument 'fml', the RHS must be numeric.")
 
   # The dots => only arguments to plot are valid
@@ -1104,8 +1104,8 @@ plot_fml = function(fml, data, ...){
 
   # We also set the xlab/ylab
   dots = list(...) # dots has a special meaning in check_value (no need to pass .message)
-  check_value_plus(dots$ylab, "NULL{deparse(fml[[2]])} character vector conv len(,3)")
-  check_value_plus(dots$xlab, "NULL{deparse(fml[[3]])} character vector conv len(,3)")
+  check_set_value(dots$ylab, "NULL{deparse(fml[[2]])} character vector conv len(,3)")
+  check_set_value(dots$xlab, "NULL{deparse(fml[[3]])} character vector conv len(,3)")
 
   dots$y = y
   dots$x = x
