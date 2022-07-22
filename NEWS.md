@@ -10,9 +10,18 @@
 
   - Functions `check_arg_plus` and `check_value_plus` become `check_set_arg` and `check_set_value` to improve clarity.
 
-### Other
+### Improvements
 
  - `fsignif` now displays trailing 0s appropriately and is neutral to character vectors (instead of throwing an error).
+ 
+ - the comparison types now can evaluate values from the calling frame:
+```r
+z = 32
+x = 77
+try(check_value(x, "numeric scalar LE{z}"))
+#> Error: in check_value(x, "numeric scalar LE{z}"):
+#>  Value 'x' must be a numeric scalar lower than, or equal to, 32. Problem: it is strictly greater than 32.
+```
 
 ## Version 1.2.3
 

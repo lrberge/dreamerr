@@ -428,16 +428,22 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
 
       # greater
       if(grepl("ge{", my_type, fixed = TRUE)){
-        value_ge = signif_plus(extract_curly(my_type_raw, "ge"), 5)
+        value2eval = extract_curly(my_type_raw, "ge", as.string = TRUE)
+        value_ge = signif_plus(eval(parse(text = value2eval), parent.frame(3)))
+
       } else if(grepl("gt{", my_type, fixed = TRUE)){
-        value_gt = signif_plus(extract_curly(my_type_raw, "gt"), 5)
+        value2eval = extract_curly(my_type_raw, "gt", as.string = TRUE)
+        value_gt = signif_plus(eval(parse(text = value2eval), parent.frame(3)))
       }
 
       # lower
       if(grepl("le{", my_type, fixed = TRUE)){
-        value_le = signif_plus(extract_curly(my_type_raw, "le"), 5)
+        value2eval = extract_curly(my_type_raw, "le", as.string = TRUE)
+        value_le = signif_plus(eval(parse(text = value2eval), parent.frame(3)))
+
       } else if(grepl("lt{", my_type, fixed = TRUE)){
-        value_lt = signif_plus(extract_curly(my_type_raw, "lt"), 5)
+        value2eval = extract_curly(my_type_raw, "lt", as.string = TRUE)
+        value_lt = signif_plus(eval(parse(text = value2eval), parent.frame(3)))
       }
 
       if(!is.null(value_ge) || !is.null(value_gt) || !is.null(value_le) || !is.null(value_lt)){
@@ -4639,7 +4645,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         # GE
         if(grepl("ge{", my_type, fixed = TRUE)){
 
-          value = extract_curly(my_type_raw, "ge")
+          value2eval = extract_curly(my_type_raw, "ge", as.string = TRUE)
+          value = eval(parse(text = value2eval), parent.frame(2))
 
           if(is.na(value)){
             stop_up("Problem in the evaluation of ge{expr} in ", my_type_raw, ". The expression in ge{} is ill-formed.")
@@ -4653,7 +4660,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
         } else if(grepl("gt{", my_type, fixed = TRUE)){
           # GT
-          value = extract_curly(my_type_raw, "gt")
+          value2eval = extract_curly(my_type_raw, "gt", as.string = TRUE)
+          value = eval(parse(text = value2eval), parent.frame(2))
 
           if(is.na(value)){
             stop_up("Problem in the evaluation of gt{expr} in ", my_type_raw, ". The expression in gt{} is ill-formed.")
@@ -4672,7 +4680,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         # LE
         if(grepl("le{", my_type, fixed = TRUE)){
-          value = extract_curly(my_type_raw, "le")
+          value2eval = extract_curly(my_type_raw, "le", as.string = TRUE)
+          value = eval(parse(text = value2eval), parent.frame(2))
 
           if(is.na(value)){
             stop_up("Problem in the evaluation of le{expr} in ", my_type_raw, ". The expression in le{} is ill-formed.")
@@ -4685,7 +4694,8 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
         } else if(grepl("lt{", my_type, fixed = TRUE)){
           # LT
-          value = extract_curly(my_type_raw, "lt")
+          value2eval = extract_curly(my_type_raw, "lt", as.string = TRUE)
+          value = eval(parse(text = value2eval), parent.frame(2))
 
           if(is.na(value)){
             stop_up("Problem in the evaluation of lt{expr} in ", my_type_raw, ". The expression in lt{} is ill-formed.")
