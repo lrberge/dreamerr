@@ -2184,14 +2184,18 @@ deparse_short = function(x){
 #'
 #'
 #'
-check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0){
+check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...,
+                     .message, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   if(!getOption("dreamerr_check") || exists("DREAMERR_CHECK", parent.frame(), inherits = FALSE)) return(NULL)
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
+    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3,
+                         .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8,
+                         .x9 = .x9, ..., .message = .message, .choices = .choices,
+                         .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::CHUNK(set_up)
@@ -2202,17 +2206,25 @@ check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...
   }
   # END::CHUNK(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = FALSE, .is_value = FALSE)
+  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4,
+                 .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ...,
+                 .message = .message, .choices = .choices, .data = .data,
+                 .value = .value, .env = .env, .up = .up, .mc = mc,
+                 .is_plus = FALSE, .is_value = FALSE)
 
 }
 
 #' @describeIn check_arg Same as \code{check_arg}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
-check_set_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0){
+check_set_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...,
+                         .message, .choices = NULL, .data = list(), .value, .env, .up = 0){
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
+    check_dreamerr_calls(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3,
+                         .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8,
+                         .x9 = .x9, ..., .message = .message, .choices = .choices,
+                         .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::COPY(set_up)
@@ -2222,19 +2234,26 @@ check_set_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9,
   }
   # END::COPY(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4, .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ..., .message = .message, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = TRUE, .is_value = FALSE)
+  check_arg_core(.x = .x, .type = .type, .x1 = .x1, .x2 = .x2, .x3 = .x3, .x4 = .x4,
+                 .x5 = .x5, .x6 = .x6, .x7 = .x7, .x8 = .x8, .x9 = .x9, ...,
+                 .message = .message, .choices = .choices, .data = .data,
+                 .value = .value, .env = .env, .up = .up, .mc = mc,
+                 .is_plus = TRUE, .is_value = FALSE)
 
 }
 
 #' @describeIn check_arg Checks if a (single) value is of the appropriate type
-check_value = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL, .data = list(), .value, .env, .up = 0){
+check_value = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL,
+                       .data = list(), .value, .env, .up = 0){
 
   if(!getOption("dreamerr_check") || exists("DREAMERR_CHECK", parent.frame(), inherits = FALSE)) return(NULL)
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .prefix = .prefix, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message,
+                         .arg_name = .arg_name, .prefix = .prefix, .choices = .choices,
+                         .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::COPY(set_up)
@@ -2244,17 +2263,22 @@ check_value = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL,
   }
   # END::COPY(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .prefix = .prefix, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
+  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name,
+                 .prefix = .prefix, .choices = .choices, .data = .data, .value = .value,
+                 .env = .env, .up = .up, .mc = mc, .is_plus = FALSE, .is_value = TRUE)
 
 }
 
 #' @describeIn check_arg Same as \code{check_value}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
-check_set_value = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL, .data = list(), .value, .env, .up = 0){
+check_set_value = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL,
+                           .data = list(), .value, .env, .up = 0){
 
   mc = match.call(expand.dots = FALSE)
 
   if(getOption("dreamerr_dev.mode")){
-    check_dreamerr_calls(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .prefix = .prefix, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up)
+    check_dreamerr_calls(.x = .x, .type = .type, .message = .message,
+                         .arg_name = .arg_name, .prefix = .prefix, .choices = .choices,
+                         .data = .data, .value = .value, .env = .env, .up = .up)
   }
 
   # START::COPY(set_up)
@@ -2264,7 +2288,9 @@ check_set_value = function(.x, .type, .message, .arg_name, .prefix, .choices = N
   }
   # END::COPY(set_up)
 
-  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name, .prefix = .prefix, .choices = .choices, .data = .data, .value = .value, .env = .env, .up = .up, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
+  check_arg_core(.x = .x, .type = .type, .message = .message, .arg_name = .arg_name,
+                 .prefix = .prefix, .choices = .choices, .data = .data, .value = .value,
+                 .env = .env, .up = .up, .mc = mc, .is_plus = TRUE, .is_value = TRUE)
 
 }
 
@@ -2274,7 +2300,7 @@ check_arg_plus = check_set_arg
 #' @rdname check_arg
 "check_arg_plus"
 
-check_value_plus = check_set_arg
+check_value_plus = check_set_value
 #' @rdname check_arg
 "check_value_plus"
 
