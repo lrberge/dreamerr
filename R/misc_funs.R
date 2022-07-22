@@ -327,6 +327,7 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, st
 #' @param ... Objects that will be coerced to character and will compose the error message.
 #' @param up The number of frames up, default is 1. The call in the error message will be based on the function \code{up} frames up the stack. See examples. If you have many calls to \code{stop_up}/\code{warn_up} with a value of \code{up} different than one, you can use \code{\link[dreamerr]{set_up}} to change the default value of \code{up} within the function.
 #' @param immediate. Whether the warning message should be prompted directly. Defaults to \code{FALSE}.
+#' @param msg A character vector, default is \code{NULL}. If provided, this message will be displayed right under the error message. This is mostly useful when the text contains formatting because the function \code{\link{stop}} used to send the error message erases any formatting.
 #'
 #' @details
 #' These functions are really made for package developers to facilitate the good practice of providing informative user-level error/warning messages.
@@ -377,9 +378,9 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, st
 #' main_function(1, 1:2)
 #'
 #'
-stop_up = function(..., up = 1){
+stop_up = function(..., up = 1, msg = NULL){
 
-  message = paste0(...)
+  main_msg = paste0(...)
 
   # up with set_up
   mc = match.call()
@@ -393,7 +394,19 @@ stop_up = function(..., up = 1){
   nmax = 50
   if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax - 1), "...")
 
-  stop("in ", my_call, ":\n ", fit_screen(message), call. = FALSE)
+  intro = paste0("in ", my_call)
+
+  main_msg = fit_screen(main_msg)
+
+  if(!is.null(msg)){
+    if(length(msg) > 1){
+      msg = paste(msg, collapse = "")
+    }
+    msg = fit_screen(msg)
+    on.exit(message(msg))
+  }
+
+  stop(intro, ": \n", main_msg, call. = FALSE)
 
 }
 
@@ -418,7 +431,6 @@ warn_up = function(..., up = 1, immediate. = FALSE){
   warning("In ", my_call, ":\n ", fit_screen(message), call. = FALSE, immediate. = immediate.)
 
 }
-
 
 
 

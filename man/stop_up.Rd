@@ -5,7 +5,7 @@
 \alias{warn_up}
 \title{Stops (or warns in) sub-function execution}
 \usage{
-stop_up(..., up = 1)
+stop_up(..., up = 1, msg = NULL)
 
 warn_up(..., up = 1, immediate. = FALSE)
 }
@@ -13,6 +13,8 @@ warn_up(..., up = 1, immediate. = FALSE)
 \item{...}{Objects that will be coerced to character and will compose the error message.}
 
 \item{up}{The number of frames up, default is 1. The call in the error message will be based on the function \code{up} frames up the stack. See examples. If you have many calls to \code{stop_up}/\code{warn_up} with a value of \code{up} different than one, you can use \code{\link[dreamerr]{set_up}} to change the default value of \code{up} within the function.}
+
+\item{msg}{A character vector, default is \code{NULL}. If provided, this message will be displayed right under the error message. This is mostly useful when the text contains formatting because the function \code{\link{stop}} used to send the error message erases any formatting.}
 
 \item{immediate.}{Whether the warning message should be prompted directly. Defaults to \code{FALSE}.}
 }
