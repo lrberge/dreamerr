@@ -6,6 +6,10 @@
 
   - Functions `check_arg_plus` and `check_value_plus` become `check_set_arg` and `check_set_value` to improve clarity.
 
+### Other
+
+ - `fsignif` now displays trailing 0s appropriately and is neutral to character vectors (instead of throwing an error).
+
 ## Version 1.2.3
 
 #### Bug fixes

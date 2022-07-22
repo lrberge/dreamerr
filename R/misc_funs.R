@@ -942,14 +942,19 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
   # This is not intended to be applied to large vectors (not efficient)
   # Only for the in-print formatting of some numbers
 
-  if(!is.numeric(x)){
+  # It would supa dupa simple in c++...
+
+  if(is.character(x)){
     return(x)
   }
 
+  if(!is.numeric(x)){
+    stop("The argumnent 'x' must be numeric.")
+  }
 
   commas_single = function(x, s, r){
 
-    if (!is.finite(x) || abs(x) < 1) return(as.character(x))
+    if(!is.finite(x) || abs(x) < 1) return(as.character(x))
 
     if((p <- ceiling(log10(abs(x)))) < s){
       r = max(r, s - p)
@@ -983,11 +988,11 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
   }
 
   signif_single = function(x, s, r) {
-    if (is.na(x)) {
+    if(is.na(x)) {
       return(NA)
     }
 
-    if (abs(x) >= 10^(s - 1)){
+    if(abs(x) >= 10^(s - 1)){
       return(round(x, r))
     } else {
       return(signif(x, s))
@@ -997,6 +1002,16 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
   res = sapply(x, signif_single, s = s, r = r)
 
   if(commas) res = sapply(res, commas_single, s = s, r = r)
+
+  qui0 = grepl("^0.", res, perl = TRUE)
+  if(any(qui0)){
+    qui_short = nchar(res) < s + 2
+    if(any(qui_short)){
+      for(i in which(qui0)[qui_short]){
+        res[i] = as.vector(sprintf("%s%.*s", res[i], s + 2 - nchar(res[i]), "0000000000000000"))
+      }
+    }
+  }
 
   res
 }
