@@ -942,6 +942,10 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
   # This is not intended to be applied to large vectors (not efficient)
   # Only for the in-print formatting of some numbers
 
+  if(!is.numeric(x)){
+    return(x)
+  }
+
 
   commas_single = function(x, s, r){
 
@@ -972,7 +976,9 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
       sol = c(sol, quoi[i])
       if (i%%3 == 0 && i != n) sol = c(sol, ",")
     }
+
     res = paste0(ifelse(x_sign == -1, "-", ""), paste0(rev(sol), collapse = ""), dec_string)
+
     res
   }
 
