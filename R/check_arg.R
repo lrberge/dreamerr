@@ -1191,8 +1191,32 @@ deparse_short = function(x){
 #' Full-fledged argument checking. Checks that the user provides arguments of the requested type (even complex) in a very simple way for the developer. Provides detailed and informative error messages for the user.
 #'
 #' @param .x An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
-#' @param .type A character string representing the requested type(s) of the arguments. This is a bit long so please look at the details section or the vignette for explanations. Each type is composed of one main class and restrictions (optional). Types can be separated with pipes (\code{|}). The main classes are: i) \code{"scalar"} for scalars, i.e. vectors of length one, ii) \code{"vector"}, iii) \code{"matrix"}, iv) \code{"data.frame"}, v) \code{"list"}, vi) \code{formula}, vii) \code{function}, viii) \code{charin}, i.e. a character string in a set of choices, viii) \code{"match"}, i.e. a character scalar that should partially match a vector of choices, x) \code{"class(my_class1, my_class2)"}, i.e. an object whose class is any of the ones in parentheses, xi) \code{"NA"}, something identical to \code{NA}.
-#' You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object should be of length between \code{a} and \code{b} (you can leave \code{a} or \code{b} missing, \code{len(a)} means length *equal* to \code{a}), \code{len(data)} and \code{len(value)} are also possible (see details), 2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the number of arguments, 4) \code{"na ok"} to allow the object to have NAs (for "scalar" types), or \code{"no na"} to restrict the object to have no NA (for "data.frame", "vector", and "matrix" types), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}: for numeric scalars/vectors/matrices, \code{GE{expr}} restrics the object to have only values striclty greater than (greater or equal/strictly lower than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)}, for scalars/vectors/matrices you can restrict the type of the object by adding the expected type in parentheses: should it be numeric, logical, etc.
+#' @param .type A character string representing the requested type(s) of the arguments. 
+#' This is a bit long so please look at the details section or the vignette for explanations. 
+#' Each type is composed of one main class and restrictions (optional). 
+#' Types can be separated with pipes (\code{|}). 
+#' The main classes are: i) \code{"scalar"} for scalars, i.e. vectors of length one, 
+#' ii) \code{"vector"}, iii) \code{"matrix"}, iv) \code{"data.frame"}, 
+#' v) \code{"list"}, vi) \code{formula}, vii) \code{function}, viii) \code{charin},
+#'  i.e. a character string in a set of choices, ix) \code{"match"},
+#'  i.e. a character scalar that should partially match a vector of choices, 
+#' x) `path`, a character scalar pointing to a file or directory, 
+#' xi) \code{"class(my_class1, my_class2)"}, i.e. an object whose class is any 
+#' of the ones in parentheses, xii) \code{"NA"}, something identical to \code{NA}.
+#' You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object
+#'  should be of length between \code{a} and \code{b} (you can leave \code{a} 
+#' or \code{b} missing, \code{len(a)} means length *equal* to \code{a}), 
+#' \code{len(data)} and \code{len(value)} are also possible (see details), 
+#' 2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of 
+#' rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the number 
+#' of arguments, 4) \code{"na ok"} to allow the object to have NAs (for "scalar" types), 
+#' or \code{"no na"} to restrict the object to have no NA (for "data.frame", "vector", 
+#' and "matrix" types), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}: 
+#' for numeric scalars/vectors/matrices, \code{GE{expr}} restrics the object 
+#' to have only values striclty greater than (greater or equal/strictly lower 
+#' than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)}, 
+#' for scalars/vectors/matrices you can restrict the type of the object by 
+#' adding the expected type in parentheses: should it be numeric, logical, etc.
 #' @param .x1 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param .x2 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param .x3 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
@@ -1203,7 +1227,13 @@ deparse_short = function(x){
 #' @param .x8 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param .x9 An argument to be checked. Must be an argument name. Can also be the type, see details/examples.
 #' @param ... Only used to check \code{'...'} (dot-dot-dot) arguments.
-#' @param .message A character string, optional. By default, if the user provides a wrong argument, the error message stating what type of argument is required is automatically formed. You can alternatively provide your own error message, maybe more tailored to your function. The reason of why there is a problem is appended in the end of the message. You can use the special character \code{__ARG__} in the message. If found, \code{__ARG__} will be replaced by the appropriate argument name.
+#' @param .message A character string, optional. By default, if the user provides a 
+#' wrong argument, the error message stating what type of argument is required is 
+#' automatically formed. You can alternatively provide your own error message, 
+#' maybe more tailored to your function. The reason of why there is a problem is 
+#' appended in the end of the message. You can use the special character 
+#' \code{__ARG__} in the message. If found, \code{__ARG__} will be 
+#' replaced by the appropriate argument name.
 #' @param .choices Only if one of the types (in argument \code{type}) is \code{"match"}. The values the argument can take. Note that even if the \code{type} is \code{"match"}, this argument is optional since you have other ways to declare the choices.
 #' @param .data Must be a data.frame, a list or a vector. Used in three situations. 1) if the global keywords \code{eval} or \code{evalset} are present: the argument will also be evaluated in the data (i.e. the argument can be a variable name of the data set). 2) if the argument is expected to be a formula and \code{var(data)} is included in the type: then the formula will be expected to contain variables from \code{.data}. 3) if the keywords \code{len(data)}, \code{nrow(data)} or \code{ncol(data)} are requested, then the required length, number of rows/columns, will be based on the data provided in \code{.data}.
 #' @param .value An integer scalar or a named list of integers scalars. Used when the keyword \code{value} is present (like for instance in \code{len(value)}). If several values are to be provided, then it must be a named list with names equal to the codes: for instance if \code{nrow(value)} and \code{ncol(value)} are both present in the type, you can use (numbers are an example) \code{.value = list(nrow = 5, ncol = 6)}. See Section IV) in the examples.
@@ -1220,7 +1250,7 @@ deparse_short = function(x){
 #'
 #' A type MUST have at least one main class. For example: in the type \code{"logical vector len(,2) no na"}, \code{vector} is the main class, \code{no na} is the option, and \code{logical} and \code{len(,2)} are restrictions
 #'
-#' There are 13 main classes that can be checked. On the left the keyword, on the right what is expected from the argument, and in square brackets the related section in the examples:
+#' There are 14 main classes that can be checked. On the left the keyword, on the right what is expected from the argument, and in square brackets the related section in the examples:
 #' \itemize{
 #' \item \code{scalar}: an atomic vector of length 1 [Section I)]
 #' \item \code{vector}: an atomic vector [Section IV)]
@@ -1233,11 +1263,12 @@ deparse_short = function(x){
 #' \item \code{function}: a function [Section V)]
 #' \item \code{charin}: a character vector with values in a vector of choices [Section III)]
 #' \item \code{match}: a character vector with values in a vector of choices, partial matching enabled and only available in \code{check_set_arg} [Section III)]
+#' \item `path`: a character scalar pointing to a file or a directory
 #' \item \code{class}: a custom class [Section VI)]
 #' \item \code{NA}: a vector of length 1 equal to NA--does not support options nor restrictions, usually combined with other main classes (see Section on combining multiple types) [Section VI)]
 #' }
 #'
-#' There are seven type options, they are not available for each types. Here what they do and the types to which they are associated:
+#' There are eight type options, they are not available for each types. Here what they do and the types to which they are associated:
 #' \itemize{
 #' \item \code{NA OK} (or \code{NAOK}): Tolerates the presence of NA values. Available for \code{scalar}.
 #' \item \code{NO NA} (or \code{NONA}): Throws an error if NAs are present. Available for \code{vector}, \code{matrix}, \code{vmatrix}, \code{data.frame}, and \code{vdata.frame}.
@@ -1246,6 +1277,7 @@ deparse_short = function(x){
 #' \item \code{multi}: Allows multiple matches. Available for \code{charin}, \code{match}.
 #' \item \code{strict}: Makes the matching case-sensitive. Available for \code{match}.
 #' \item \code{os} and \code{ts}: Available for \code{formula}. Option \code{os} (resp. \code{ts}) enforces that the formula is one-sided (resp. two-sided).
+#' \item `dir`, `read` and `create`: Available for `path`. Option `dir` checks whether the path points to a directory and not a file. Option `read` checks whether the file actually exists and has read permission. Option `create` creates up to the grand-parent folder if it was not yet existing.
 #' }
 #'
 #' You can further add restrictions. There are roughly six types of restrictions. Here what they do and the types to which they are associated:

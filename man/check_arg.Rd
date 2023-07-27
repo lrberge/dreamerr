@@ -90,8 +90,32 @@ check_value_plus
 \arguments{
 \item{.x}{An argument to be checked. Must be an argument name. Can also be the type, see details/examples.}
 
-\item{.type}{A character string representing the requested type(s) of the arguments. This is a bit long so please look at the details section or the vignette for explanations. Each type is composed of one main class and restrictions (optional). Types can be separated with pipes (\code{|}). The main classes are: i) \code{"scalar"} for scalars, i.e. vectors of length one, ii) \code{"vector"}, iii) \code{"matrix"}, iv) \code{"data.frame"}, v) \code{"list"}, vi) \code{formula}, vii) \code{function}, viii) \code{charin}, i.e. a character string in a set of choices, viii) \code{"match"}, i.e. a character scalar that should partially match a vector of choices, x) \code{"class(my_class1, my_class2)"}, i.e. an object whose class is any of the ones in parentheses, xi) \code{"NA"}, something identical to \code{NA}.
-You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object should be of length between \code{a} and \code{b} (you can leave \code{a} or \code{b} missing, \code{len(a)} means length *equal* to \code{a}), \code{len(data)} and \code{len(value)} are also possible (see details), 2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the number of arguments, 4) \code{"na ok"} to allow the object to have NAs (for "scalar" types), or \code{"no na"} to restrict the object to have no NA (for "data.frame", "vector", and "matrix" types), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}: for numeric scalars/vectors/matrices, \code{GE{expr}} restrics the object to have only values striclty greater than (greater or equal/strictly lower than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)}, for scalars/vectors/matrices you can restrict the type of the object by addin}
+\item{.type}{A character string representing the requested type(s) of the arguments.
+This is a bit long so please look at the details section or the vignette for explanations.
+Each type is composed of one main class and restrictions (optional).
+Types can be separated with pipes (\code{|}).
+The main classes are: i) \code{"scalar"} for scalars, i.e. vectors of length one,
+ii) \code{"vector"}, iii) \code{"matrix"}, iv) \code{"data.frame"},
+v) \code{"list"}, vi) \code{formula}, vii) \code{function}, viii) \code{charin},
+i.e. a character string in a set of choices, ix) \code{"match"},
+i.e. a character scalar that should partially match a vector of choices,
+x) \code{path}, a character scalar pointing to a file or directory,
+xi) \code{"class(my_class1, my_class2)"}, i.e. an object whose class is any
+of the ones in parentheses, xii) \code{"NA"}, something identical to \code{NA}.
+You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object
+should be of length between \code{a} and \code{b} (you can leave \code{a}
+or \code{b} missing, \code{len(a)} means length \emph{equal} to \code{a}),
+\code{len(data)} and \code{len(value)} are also possible (see details),
+2) \code{nrow(a,b)} or \code{ncol(a,b)} to specify the expected number of
+rows or columns, 3) \code{arg(a,b)}, only for functions, to retrict the number
+of arguments, 4) \code{"na ok"} to allow the object to have NAs (for "scalar" types),
+or \code{"no na"} to restrict the object to have no NA (for "data.frame", "vector",
+and "matrix" types), 5) \code{GE}, \code{GT}, \code{LE} and \code{LT}:
+for numeric scalars/vectors/matrices, \code{GE{expr}} restrics the object
+to have only values striclty greater than (greater or equal/strictly lower
+than/lower or equal) the value in curly brackets, 6) e.g. \code{scalar(type1, type2)},
+for scalars/vectors/matrices you can restrict the type of the object by
+adding the expected type in parentheses: should it be numeric, logical, etc.}
 
 \item{.x1}{An argument to be checked. Must be an argument name. Can also be the type, see details/examples.}
 
@@ -113,7 +137,13 @@ You can then add optional restrictions: 1) \code{len(a, b)}, i.e. the object sho
 
 \item{...}{Only used to check \code{'...'} (dot-dot-dot) arguments.}
 
-\item{.message}{A character string, optional. By default, if the user provides a wrong argument, the error message stating what type of argument is required is automatically formed. You can alternatively provide your own error message, maybe more tailored to your function. The reason of why there is a problem is appended in the end of the message. You can use the special character \code{__ARG__} in the message. If found, \code{__ARG__} will be replaced by the appropriate argument name.}
+\item{.message}{A character string, optional. By default, if the user provides a
+wrong argument, the error message stating what type of argument is required is
+automatically formed. You can alternatively provide your own error message,
+maybe more tailored to your function. The reason of why there is a problem is
+appended in the end of the message. You can use the special character
+\code{__ARG__} in the message. If found, \code{__ARG__} will be
+replaced by the appropriate argument name.}
 
 \item{.choices}{Only if one of the types (in argument \code{type}) is \code{"match"}. The values the argument can take. Note that even if the \code{type} is \code{"match"}, this argument is optional since you have other ways to declare the choices.}
 
@@ -137,13 +167,13 @@ Full-fledged argument checking. Checks that the user provides arguments of the r
 }
 \section{Functions}{
 \itemize{
-\item \code{check_set_arg}: Same as \code{check_arg}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
+\item \code{check_set_arg()}: Same as \code{check_arg}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
 
-\item \code{check_value}: Checks if a (single) value is of the appropriate type
+\item \code{check_value()}: Checks if a (single) value is of the appropriate type
 
-\item \code{check_set_value}: Same as \code{check_value}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
+\item \code{check_set_value()}: Same as \code{check_value}, but includes in addition: i) default setting, ii) type conversion, iii) partial matching, and iv) checking list elements. (Small drawback: cannot be turned off.)
+
 }}
-
 \section{How to form a type}{
 
 
@@ -153,7 +183,7 @@ The syntax is: \code{"main_class option(s) restriction(s)"}
 
 A type MUST have at least one main class. For example: in the type \code{"logical vector len(,2) no na"}, \code{vector} is the main class, \code{no na} is the option, and \code{logical} and \code{len(,2)} are restrictions
 
-There are 13 main classes that can be checked. On the left the keyword, on the right what is expected from the argument, and in square brackets the related section in the examples:
+There are 14 main classes that can be checked. On the left the keyword, on the right what is expected from the argument, and in square brackets the related section in the examples:
 \itemize{
 \item \code{scalar}: an atomic vector of length 1 [Section I)]
 \item \code{vector}: an atomic vector [Section IV)]
@@ -166,11 +196,12 @@ There are 13 main classes that can be checked. On the left the keyword, on the r
 \item \code{function}: a function [Section V)]
 \item \code{charin}: a character vector with values in a vector of choices [Section III)]
 \item \code{match}: a character vector with values in a vector of choices, partial matching enabled and only available in \code{check_set_arg} [Section III)]
+\item \code{path}: a character scalar pointing to a file or a directory
 \item \code{class}: a custom class [Section VI)]
 \item \code{NA}: a vector of length 1 equal to NA--does not support options nor restrictions, usually combined with other main classes (see Section on combining multiple types) [Section VI)]
 }
 
-There are seven type options, they are not available for each types. Here what they do and the types to which they are associated:
+There are eight type options, they are not available for each types. Here what they do and the types to which they are associated:
 \itemize{
 \item \code{NA OK} (or \code{NAOK}): Tolerates the presence of NA values. Available for \code{scalar}.
 \item \code{NO NA} (or \code{NONA}): Throws an error if NAs are present. Available for \code{vector}, \code{matrix}, \code{vmatrix}, \code{data.frame}, and \code{vdata.frame}.
@@ -179,6 +210,7 @@ There are seven type options, they are not available for each types. Here what t
 \item \code{multi}: Allows multiple matches. Available for \code{charin}, \code{match}.
 \item \code{strict}: Makes the matching case-sensitive. Available for \code{match}.
 \item \code{os} and \code{ts}: Available for \code{formula}. Option \code{os} (resp. \code{ts}) enforces that the formula is one-sided (resp. two-sided).
+\item \code{dir}, \code{read} and \code{create}: Available for \code{path}. Option \code{dir} checks whether the path points to a directory and not a file. Option \code{read} checks whether the file actually exists and has read permission. Option \code{create} creates up to the grand-parent folder if it was not yet existing.
 }
 
 You can further add restrictions. There are roughly six types of restrictions. Here what they do and the types to which they are associated:
@@ -191,6 +223,20 @@ You can further add restrictions. There are roughly six types of restrictions. H
 \item \code{arg(a, b)}: Available only for \code{function}. Ensures that the function has a number of arguments between \code{a} and \code{b}, both integers (possibly missing). Tolerates the \code{value} keyword (see in \code{len}). See Section V) in the examples.
 \item \code{left(a, b)} and \code{right(a, b)}: Only available for \code{formula}. Restricts the number of parts in the left-hand-side or in the right-hand-side of the formula. Tolerates the \code{value} keyword (see in \code{len}). See Section VIII) in the examples.
 }
+
+[Section I)]: R:Section\%20I)
+[Section IV)]: R:Section\%20IV)
+[Section IV)]: R:Section\%20IV)
+[Section IV)]: R:Section\%20IV)
+[Section VI)]: R:Section\%20VI)
+[Section VI)]: R:Section\%20VI)
+[Section V)]: R:Section\%20V)
+[Section VIII)]: R:Section\%20VIII)
+[Section V)]: R:Section\%20V)
+[Section III)]: R:Section\%20III)
+[Section III)]: R:Section\%20III)
+[Section VI)]: R:Section\%20VI)
+[Section VI)]: R:Section\%20VI)
 }
 
 \section{Global keywords}{
@@ -226,7 +272,7 @@ You have three different ways to set the choices:
 When the user doesn't provide the argument, the default is set to the first choice.
 Since the main class \code{match} performs a re-assignment of the variable, it is only available in \code{check_set_arg}.
 
-The main class \code{charin} is similar to \code{match} in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) [that's the main difference between \code{check_arg} and \code{check_set_arg}].
+The main class \code{charin} is similar to \code{match} in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) \link{that's the main difference between \code{check_arg} and \code{check_set_arg}}.
 }
 
 \section{Combining multiple types}{
@@ -315,7 +361,7 @@ The main reason for using \code{check_value} is that sometimes you only know if 
 \section{Disabling argument checking}{
 
 
-Although the argument checking offered by \code{check_arg} is highly optimized and fast (it depends on the type [and your computer], but it is roughly of the order of 80 micro seconds for non-missing arguments, 20 micro seconds for missing arguments), you may want to disable it for small functions in large loops (>100K iterations although this practice is not really common in R). If so, just use the function \code{\link[dreamerr]{setDreamerr_check}}, by typing \code{setDreamerr_check(FALSE)}. This will disable any call to \code{check_arg}.
+Although the argument checking offered by \code{check_arg} is highly optimized and fast (it depends on the type \link{and your computer}, but it is roughly of the order of 80 micro seconds for non-missing arguments, 20 micro seconds for missing arguments), you may want to disable it for small functions in large loops (>100K iterations although this practice is not really common in R). If so, just use the function \code{\link[dreamerr]{setDreamerr_check}}, by typing \code{setDreamerr_check(FALSE)}. This will disable any call to \code{check_arg}.
 
 Note that the argument checking of \code{check_set_arg} cannot be disabled because the special types it allows perform reassignment in the upper frame. That's the main difference with \code{check_arg}.
 }

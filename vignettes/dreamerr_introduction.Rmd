@@ -106,6 +106,8 @@ The meaning of the classes is as follows:
  
  - **match**: a character scalar that must be in a list of choices after partial matching. Option `multi` accepts vectors of length greater than 1, `strict` enables case sensitivity (which is off by default). This class also reassigns the argument after the partial matching. You have three ways to provide the choices: i) in the argument `.choices`, ii) directly in parentheses after the class: `match(value1, value2, etc)`, or iii) in the argument's default values, e.g. `fun = function(x = c("value1", "value2", etc))`.
  
+ - **path**: a character scalar that should point to a directory or a file. Option `dir` checks that the path points to a directory. Option `read` checks that the file exists already and has read permission. Option `create` creates up to the grand-parent and parent folders in case these do not exist.
+ 
  - **class**: an object whose class is listed in parentheses. Example: if `class(lm, glm)`, then only `lm` or `glm` arguments will be accepted.
  
  - **NA**: exactly `NA` (i.e. an atomic vector of length 1 equal to NA).

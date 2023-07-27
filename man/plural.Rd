@@ -28,9 +28,9 @@ Utilities to write user-level messages. These functions add an \sQuote{s} or a v
 }
 \section{Functions}{
 \itemize{
-\item \code{plural_len}: Adds an s and conjugate a verb depending on the length of \code{x}
-}}
+\item \code{plural_len()}: Adds an s and conjugate a verb depending on the length of \code{x}
 
+}}
 \examples{
 
 # Let's create an error message when NAs are present

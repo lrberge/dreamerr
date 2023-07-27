@@ -4,14 +4,22 @@
 \alias{fit_screen}
 \title{Nicely fits a message in the current R console}
 \usage{
-fit_screen(msg, width = 0.9, leading_ws = TRUE)
+fit_screen(msg, width = NULL, leading_ws = TRUE, leader = "")
 }
 \arguments{
 \item{msg}{Text message: character vector.}
 
-\item{width}{The maximum width of the screen the message should take. Default is 0.9.}
+\item{width}{A number between 0 and 1, or an integer. The maximum width of the screen the message should take.
+Numbers between 0 and 1 represent a fraction of the screen. You can also refer to the
+screen width with the special variable \code{.sw}. Integers represent the number of characters
+and cannot be lower than 15. Default is \code{min(120, 0.95*.sw)} (the min between 120 characters and
+90\% of the screen width).}
 
-\item{leading_ws}{Logical, default is \code{TRUE}. Whether to keep the leading white spaces when the line is cut.}
+\item{leading_ws}{Logical, default is \code{TRUE}. Whether to keep the leading
+white spaces when the line is cut.}
+
+\item{leader}{Character scalar, default is the empty string. If provided, this
+value will be placed in front of every line.}
 }
 \value{
 It returns a single character vector with line breaks at the appropriate width.
@@ -28,7 +36,7 @@ This function does not handle tabulations.
 msg = enumerate_items(state.name, nmax = Inf)
 msg = paste0("     ", gsub("Michigan, ", "\n", msg))
 
-# by default the message takes 90\% of the screen
+# by default the message takes 95\% of the screen
 cat(fit_screen(msg))
 
 # Now we reduce it to 50\%
@@ -37,6 +45,8 @@ cat(fit_screen(msg, 0.5))
 # we add leading_ws = FALSE to avoid the continuation of leading WS
 cat(fit_screen(msg, 0.5, FALSE))
 
-# The
+# We add "#> " in front of each line
+cat(fit_screen(msg, 0.5, leader = "#> "))
+
 
 }

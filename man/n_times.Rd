@@ -23,11 +23,11 @@ Set of (tiny) functions that convert integers into words.
 }
 \section{Functions}{
 \itemize{
-\item \code{n_th}: Transforms the integer \code{n} to \code{nth} appropiately.
+\item \code{n_th()}: Transforms the integer \code{n} to \code{nth} appropiately.
 
-\item \code{n_letter}: Transforms small integers to words.
+\item \code{n_letter()}: Transforms small integers to words.
+
 }}
-
 \examples{
 
 find = function(v, x){

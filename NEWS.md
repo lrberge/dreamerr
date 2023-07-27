@@ -2,19 +2,30 @@
 
 ## Version 1.3.0
 
-### Bug fixes
+### New functions
 
- - fixes `fit_screen` so that it does not mess with white spaces.
+- New set of `hook` error and warning functions for reporting in complex internal functions. These are `set_hook` to set a function as the hook and `stop_hook`/`warn_hook` error and warning functions used to report as if they were called from the hooked function.
+
+- `warni` and `stopi` for warning and stop functions with character interpolation using [stringmagic](https://github.com/lrberge/stringmagic)
+
+### New type
+
+- The type `path` has been added to `check_arg`. It is used to check paths.
 
 ### Name changes
 
-  - Functions `check_arg_plus` and `check_value_plus` become `check_set_arg` and `check_set_value` to improve clarity.
+- Functions `check_arg_plus` and `check_value_plus` become `check_set_arg` and `check_set_value` to improve clarity.
 
 ### Improvements
 
- - `fsignif` now displays trailing 0s appropriately and is neutral to character vectors (instead of throwing an error).
+- All warning and stop functions gain string interpolation with [stringmagic](https://github.com/lrberge/stringmagic).
+
+- `fit_screen`:
+  - fix prpblem with leading white spaces
+  - add the possibility to add a leader string
+  - improved algorithm
  
- - the comparison types now can evaluate values from the calling frame:
+- the comparison types now can evaluate values from the calling frame:
 ```r
 z = 32
 x = 77

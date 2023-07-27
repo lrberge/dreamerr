@@ -29,9 +29,9 @@ Why writing these functions then? Actually, I've found that they make the code m
 }
 \section{Functions}{
 \itemize{
-\item \code{ifunit}: Conditional element selection depending on whether \code{x} is equal to unity or not.
-}}
+\item \code{ifunit()}: Conditional element selection depending on whether \code{x} is equal to unity or not.
 
+}}
 \examples{
 
 # Let's create an error message when NAs are present
