@@ -326,6 +326,20 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
       all_requested_types[i] = req_type
 
       next
+    } else if(grepl("path", my_type)){
+      #
+      # PATH
+      #
+      
+      is_dir = grepl("dir", my_type, fixed = TRUE)
+      is_read = grepl("read", my_type, fixed = TRUE)
+      is_create = grepl("create", my_type, fixed = TRUE)
+      
+      req_type = sma("a path to {&is_read;an existing }{&is_dir;directory;file}")
+
+      all_requested_types[i] = req_type
+
+      next
     } else if(grepl("function", my_type)){
       #
       # FUNCTION
@@ -560,7 +574,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
           the_null_argument = ifelse(nchar(add_null) > 0, " The (nullable) argument", " Argument")
         }
 
-        msg_start = paste0(the_null_argument, " '", x_name, "' must be ")
+        msg_start = paste0(the_null_argument, " `", x_name, "` must be ")
       }
     }
 
@@ -3784,9 +3798,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
         # Character coercion
         if(!is.character(x)) x = as.character(x)
-
-
-
+        
         pblm_match = FALSE
         if(is_strict){
           res_int = pmatch(x, choices, duplicates.ok = TRUE)
@@ -3922,6 +3934,162 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
       next
 
+    } else if(grepl("path", my_type, fixed = TRUE)){
+      ####
+      #### __PATH ####
+      ####      
+      
+      is_dir = grepl("dir", my_type, fixed = TRUE)
+      is_create = grepl("create", my_type, fixed = TRUE)
+      is_read = grepl("read", my_type, fixed = TRUE)
+      
+      for(k in which(!is_done)){
+        x = x_all[[k]]
+        
+        if(length(x) != 1){
+          all_reasons[[k]][i] = sma("it is not of length 1 (instead, it is of length {len?x})")
+          is_done_or_fail[k] = TRUE
+          next
+        }
+        
+        if(!is.character(x)){
+          all_reasons[[k]][i] = sma("it is not a character string, instead it is ",
+                                    "of class {enum.bq ? class(x)}")
+          is_done_or_fail[k] = TRUE
+          next
+        }
+        
+        if(is.na(x)){
+          all_reasons[[k]][i] = "it is equal to NA"
+          is_done_or_fail[k] = TRUE
+          next
+        }
+        
+        path = try(normalizePath(x, "/", mustWork = FALSE))
+        if("try-error" %in% class(path)){
+          path = try(normalizePath(paste0("./", x), "/", mustWork = FALSE))
+          if("try-error" %in% class(path)){
+            all_reasons[[k]][i] = paste0("the path ", x, " is not valid, please revise")
+            is_done_or_fail[k] = TRUE
+            next
+          }
+        }
+
+        # If path exists: fine!
+        ok = FALSE
+        if(is_dir){
+          ok = dir.exists(path)
+        } else {
+          ok = file.exists(path)
+        }
+        
+        if(ok){
+          if(is_read){
+            if(file.access(path, 4) != 0){
+              all_reasons[[k]][i] = "The path exists but you do not have read permission."
+              is_done_or_fail[k] = TRUE
+              next
+            }
+          } else {
+            if(file.access(path, 2) != 0){
+              all_reasons[[k]][i] = "The path exists but you do not have write permission."
+              is_done_or_fail[k] = TRUE
+              next
+            }
+          }
+          # otherwise, we're good
+          is_done[k] = TRUE
+          next
+        }
+
+        # Now the path does not exist already
+
+        # here: it must be an error
+        if(is_read){
+          # Let's find out the precise reason
+          path_debug = normalizePath(path, "/", mustWork = FALSE)
+    
+          full_pblm = FALSE
+          while(!file.exists(path_debug)){
+            if(!grepl("/", path_debug)){
+              full_pblm = TRUE
+              break
+            }  
+            path_debug = gsub("/[^/]*$", "", path_debug)
+          }
+          
+          if(full_pblm){
+            msg_pblm = "everything in the path is wrong, not even the start!"
+          } else if(dirname(path) == path_debug){
+            filename = basename(path)
+            msg_pblm = paste0("the file `", filename, "` does not exist in the folder `", 
+                              path_debug, "`")
+          } else {
+            file_not_exist = substr(path, nchar(path_debug) + 1, nchar(path))
+            msg_pblm = paste0("the path up to '", path_debug, 
+                              "' exists, but not after it (i.e. `",
+                              file_not_exist, "` does not)")
+          }
+            
+          all_reasons[[k]][i] = msg_pblm
+          is_done_or_fail[k] = TRUE
+          next
+        }
+
+        # Here we're in write
+        # behavior:
+        # - if parent exists fine
+        # - if not: we check the grand-grand parent:
+        #   * if exists: then we create the grand parent + parent if is_create
+        #   * if it does not: error
+         
+        path_parent = dirname(path)
+        if(dir.exists(path_parent)){
+          if(file.access(path_parent, 2) != 0){
+            all_reasons[[k]][i] = paste0("The parent folder exists (`", path_parent, "`)",
+                                         " but you do not have write permission")
+            is_done_or_fail[k] = TRUE
+            next
+          }
+          is_done[k] = TRUE
+          next
+        }
+
+        if(is_create){
+          # we allow: EXISTS/NOT_EXIST/NOT_EXIST/FILE_DIR
+          path_grand_parent = dirname(path_parent)
+          if(dir.exists(path_grand_parent)){
+            dir.create(path_parent)
+            is_done[k] = TRUE
+            next
+          }
+          
+          path_grand_grand_parent = dirname(path_grand_parent)
+          if(dir.exists(path_grand_grand_parent)){
+            dir.create(path_grand_parent)
+            dir.create(path_parent)
+            is_done[k] = TRUE
+            next
+          }
+          
+          msg_pblm = paste0("the path to the grand-grand parent directory of the path (`", 
+                            path_grand_grand_parent, "`) does not exist")
+          
+        } else {
+          msg_pblm = paste0("the path to the parent's directory of the path (`", 
+                            path_parent, "`) does not exist")
+          
+        }
+        
+        all_reasons[[k]][i] = msg_pblm
+        is_done_or_fail[k] = TRUE
+      }
+      
+      if(all(is_done)) return(invisible(path))
+
+      # We don't check further with paths
+      next
+      
     } else if(grepl("(^| )na( |$)", my_type)){
       #
       # __special NA type ####
