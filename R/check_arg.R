@@ -2201,7 +2201,7 @@ check_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ...
   # START::CHUNK(set_up)
   # It's faster to write it here than in check_arg_core (where we would need call evaluation)
   if(missing(.up)){
-    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
+    up_value = mget("DREAMERR_UP", parent.frame(), ifnotfound = 0)
     .up = up_value[[1]]
   }
   # END::CHUNK(set_up)
@@ -2229,7 +2229,7 @@ check_set_arg = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9,
 
   # START::COPY(set_up)
   if(missing(.up)){
-    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
+    up_value = mget("DREAMERR_UP", parent.frame(), ifnotfound = 0)
     .up = up_value[[1]]
   }
   # END::COPY(set_up)
@@ -2258,7 +2258,7 @@ check_value = function(.x, .type, .message, .arg_name, .prefix, .choices = NULL,
 
   # START::COPY(set_up)
   if(missing(.up)){
-    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
+    up_value = mget("DREAMERR_UP", parent.frame(), ifnotfound = 0)
     .up = up_value[[1]]
   }
   # END::COPY(set_up)
@@ -2283,7 +2283,7 @@ check_set_value = function(.x, .type, .message, .arg_name, .prefix, .choices = N
 
   # START::COPY(set_up)
   if(missing(.up)){
-    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 0)
+    up_value = mget("DREAMERR_UP", parent.frame(), ifnotfound = 0)
     .up = up_value[[1]]
   }
   # END::COPY(set_up)
@@ -2313,7 +2313,9 @@ check_value_plus = check_set_value
 #### CORE FUNCTION ####
 ####
 
-check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., .message, .choices = NULL, .data = list(), .value, .env, .up = 0, .arg_name, .prefix, .mc, .is_plus = FALSE, .is_value = FALSE){
+check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., 
+                          .message, .choices = NULL, .data = list(), .value, .env, .up = 0, 
+                          .arg_name, .prefix, .mc, .is_plus = FALSE, .is_value = FALSE){
 
   # NOTA: the price to pay to using a core function called by user-level functions is about 4us. I think that's fair for the
   # clarity it adds to the code (and I hate duplication anyway).
@@ -2348,7 +2350,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
   # - evalset
 
   IS_VALUE = .is_value
-  IS_PLUS = .is_plus
+  IS_SET = .is_plus
 
   mc = .mc
 
@@ -2422,7 +2424,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         n = length(mc_arg)
         x_names = character(n)
 
-        if(IS_PLUS){
+        if(IS_SET){
           # deparse costs more but it is required for lists
           for(i in 1:n) x_names[[i]] = deparse(mc_arg[[i]])
 
@@ -2452,14 +2454,14 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       formal.args = NULL
 
       IS_MBT = NULL
-      if(IS_PLUS){
+      if(IS_SET){
         IS_MATCH = NULL
         IS_NULL_DEFAULT = NULL
       } else {
         IS_MATCH = FALSE
       }
 
-      if(IS_PLUS){
+      if(IS_SET){
         # list elements are NEVER missing, but can be NULL. List elements that are NULL are considered like missing
         is_missing = (match(x_names, args_origin, nomatch = 0) == 0) & !IS_LIST
       } else {
@@ -2483,9 +2485,9 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
             is_done[i] = TRUE
 
-            # if IS_PLUS => we set NULL{default} if needed + match
+            # if IS_SET => we set NULL{default} if needed + match
 
-            if(IS_PLUS){
+            if(IS_SET){
 
               if(is.null(IS_NULL_DEFAULT)) IS_NULL_DEFAULT = grepl("null{", type_low, fixed = TRUE)
 
@@ -2799,7 +2801,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       is_done = rep(FALSE, n)
 
       # we need is match information
-      if(IS_PLUS){
+      if(IS_SET){
         IS_MATCH = grepl("match", type_low, fixed = TRUE)
       } else {
         IS_MATCH = FALSE
@@ -2922,12 +2924,12 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
     IS_DOTS = FALSE
 
-    # If IS_PLUS:
+    # If IS_SET:
     # - we find out if the object is an element in a list
     # - we enforce that the argument is a name or a list
     #
 
-    if(IS_PLUS){
+    if(IS_SET){
 
       sysOrigin = sys.parent(.up + 2)
 
@@ -2979,7 +2981,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
   }
 
   # RES: what will be returned by the function
-  # Only if IS_VALUE && IS_PLUS
+  # Only if IS_VALUE && IS_SET
   RES = NULL
 
   if(!IS_DOTS){
@@ -3009,7 +3011,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       # Evaluation of the argument
       if(IS_EVAL){
 
-        if(IS_PLUS && IS_LIST[i]) stop_up("The keywords 'eval' and 'evalset' are not available when checking list elements.")
+        if(IS_SET && IS_LIST[i]) stop_up("The keywords 'eval' and 'evalset' are not available when checking list elements.")
 
         if(missing(.env)){
           .env = parent.frame(.up + 3)
@@ -3075,7 +3077,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         #
         if(grepl("evalset", type_low, fixed = TRUE)){
 
-          if(!IS_PLUS){
+          if(!IS_SET){
             FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
             stop_up("The type evalset is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
           }
@@ -3139,7 +3141,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
           if(grepl("null{", type_low, fixed = TRUE)){
 
-            if(!IS_PLUS){
+            if(!IS_SET){
               FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
               stop_up("The type NULL{default} is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
             }
@@ -3167,7 +3169,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             next
           }
 
-        } else if(IS_PLUS && IS_LIST[i]){
+        } else if(IS_SET && IS_LIST[i]){
           # List elements that are NULL are like missing
 
           if(is.null(IS_MBT)) IS_MBT = grepl("mbt", type_low, fixed = TRUE)
@@ -3713,7 +3715,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       #
       IS_MATCH = TRUE
 
-      if(!IS_PLUS){
+      if(!IS_SET){
         FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
         stop_up("The main class 'match' is not available in ", FUN_NAME, "(), use ", FUN_NAME, "_plus() instead.")
       }
@@ -4272,7 +4274,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               if(is_num){
                 ok_subtypes = TRUE
 
-                if(IS_PLUS && (is.logical(x) || is.integer(x)) && grepl("conv", my_subtype, fixed = TRUE)){
+                if(IS_SET && (is.logical(x) || is.integer(x)) && grepl("conv", my_subtype, fixed = TRUE)){
                   # we coerce logical and integers into numeric
                   storage.mode(x) = "double"
 
@@ -4320,7 +4322,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                   # If here: type is OK
 
                   # We check if conversion is needed
-                  if(IS_PLUS && grepl("conv", my_subtype, fixed = TRUE)){
+                  if(IS_SET && grepl("conv", my_subtype, fixed = TRUE)){
                     # We coerce logicals and numeric to integer
 
                     if(!ok_conv){
@@ -4351,7 +4353,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 ok_subtypes = TRUE
                 break
 
-              } else if(IS_PLUS && grepl("conv", my_subtype, fixed = TRUE)){
+              } else if(IS_SET && grepl("conv", my_subtype, fixed = TRUE)){
                 # Anything atomic CAN be converted
                 # Storage mode does not work on factors
                 x = as.character(x)
@@ -4376,7 +4378,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               if(is.factor(x)){
                 ok_subtypes = TRUE
                 break
-              } else if(IS_PLUS && grepl("conv", my_subtype, fixed = TRUE)){
+              } else if(IS_SET && grepl("conv", my_subtype, fixed = TRUE)){
                 # Anything atomic CAN be converted
                 x = as.factor(x)
                 is_done[k] = TRUE
@@ -4403,7 +4405,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               } else if(grepl("loose", my_subtype, fixed = TRUE) && (is_num && all(x_omit[[k]] %in% c(0, 1)))){
                 ok_subtypes = TRUE
 
-                if(IS_PLUS && grepl("conv", my_subtype, fixed = TRUE)){
+                if(IS_SET && grepl("conv", my_subtype, fixed = TRUE)){
                   # we coerce logical and integers into numeric
                   storage.mode(x) = "logical"
 
@@ -4452,7 +4454,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
               next
             }
 
-            if(IS_PLUS && (is.integer(x) || is.logical(x)) && grepl("conv", my_type, fixed = TRUE)){
+            if(IS_SET && (is.integer(x) || is.logical(x)) && grepl("conv", my_type, fixed = TRUE)){
               storage.mode(x) = "double"
               # START::COPY(conv_assign)
                   if(IS_LIST[k]){
@@ -4513,7 +4515,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
 
             # If here => that's fine, now we check for conversion
-            if(IS_PLUS && grepl("conv", my_type, fixed = TRUE)){
+            if(IS_SET && grepl("conv", my_type, fixed = TRUE)){
 
               if(int_check_large == FALSE){
                 stop_up("In the type '", my_type, "', for the sub-type integer, the keyword 'large' is not compatible with the keyword 'conv' (since large integers cannot be converted to 32bit integers with as.integer(x)).")
@@ -4535,7 +4537,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
 
           } else if(grepl("character", my_type, fixed = TRUE)){
-            if(IS_PLUS && grepl("conv", my_type, fixed = TRUE)){
+            if(IS_SET && grepl("conv", my_type, fixed = TRUE)){
               # Every atomic element can be converted to character
               x = as.character(x)
               is_done[k] = TRUE
@@ -4581,7 +4583,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
 
             # if here => fine
-            if(IS_PLUS && grepl("conv", my_type, fixed = TRUE)){
+            if(IS_SET && grepl("conv", my_type, fixed = TRUE)){
               storage.mode(x) = "logical"
 
               # START::COPY(conv_assign)
@@ -4598,7 +4600,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             }
 
           } else if(grepl("factor", my_type, fixed = TRUE)){
-            if(IS_PLUS && grepl("conv", my_type, fixed = TRUE)){
+            if(IS_SET && grepl("conv", my_type, fixed = TRUE)){
               # Every atomic element can be converted to character
               x = as.factor(x)
               is_done[k] = TRUE

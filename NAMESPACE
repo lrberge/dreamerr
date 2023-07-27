@@ -5,16 +5,23 @@ export(check_arg, check_arg_plus, check_set_arg)
 export(check_value, check_value_plus, check_set_value)
 export(validate_dots)
 
-export(stop_up, warn_up)
+# hook related functions
+exportPattern("hook$")
 
-# Other
+# stop/warn
+export(stop_up, warn_up, stopi, warni)
+
+# misc
+export(fit_screen)
+
+# Other, deprecated following stringmagic integration
 export(n_letter, n_th, n_times)
 export(signif_plus, fsignif)
 export(ifsingle, ifunit, plural, plural_len, enumerate_items)
-export(sfill, fit_screen)
+export(sfill)
 
 # Setter/Getter
-export(setDreamerr_check, setDreamerr_dev.mode)
+export(setDreamerr_check, setDreamerr_dev.mode, setDreamerr_show_stack)
 export(set_up, set_check)
 
 # Goodies

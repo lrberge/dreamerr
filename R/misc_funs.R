@@ -4,434 +4,15 @@
 # ~: small utilities
 #----------------------------------------------#
 
+####
+#### imports ####
+####
 
-#' Sets dreamerr argument checking functions on or off
-#'
-#' This function allows to disable, or re-enable, all calls to \code{\link[dreamerr]{check_arg}} within any function. Useful only when running (very) large loops (>100K iter.) over small functions that use dreamerr's \code{\link[dreamerr]{check_arg}}.
-#'
-#' @param check Strict logical: either \code{TRUE} of \code{FALSE}. Default is \code{TRUE}.
-#'
-#' @author
-#' Laurent Berge
-#'
-#'
-#' @examples
-#'
-#' # Let's create a small function that returns the argument
-#' #  if it is a single character string, and throws an error
-#' #  otherwise:
-#'
-#' test = function(x){
-#'   check_arg(x, "scalar character")
-#'   x
-#' }
-#'
-#' # works:
-#' test("hey")
-#' # error:
-#' try(test(55))
-#'
-#' # Now we disable argument checking
-#' setDreamerr_check(FALSE)
-#' # works (although it shouldn't!):
-#' test(55)
-#'
-#' # re-setting argument checking on:
-#' setDreamerr_check(TRUE)
-#'
-#'
-setDreamerr_check = function(check = TRUE){
-  options("dreamerr_check" = TRUE)
-  check_arg(check, "scalar Logical")
-  options("dreamerr_check" = check)
-}
+sma = stringmagic::string_magic_alias(.check = FALSE)
 
-
-#' Sets the developer mode to help form check_arg calls
-#'
-#' Turns on/off a full fledged checking of calls to \code{\link[dreamerr]{check_arg}}. If on, it enables the developer mode which checks extensively calls to check_arg, allowing to find any problem. If a problem is found, it is pinpointed and the associated help is referred to.
-#'
-#' @param dev.mode A logical, default is \code{FALSE}.
-#'
-#' @details
-#' Since this mode ensures a detailed cheking of all \code{\link[dreamerr]{check_arg}} calls, it is thus a strain on performance and should be always turned off otherwise needed.
-#'
-#' @author
-#' Laurent Berge
-#'
-#' @seealso
-#' \code{\link[dreamerr]{check_arg}}
-#'
-#' @examples
-#'
-#' # If you're new to check_arg, given the many types available,
-#' # it's very common to make mistakes when creating check_arg calls.
-#' # The developer mode ensures that any problematic call is spotted
-#' # and the problem is clearly stated
-#' #
-#' # Note that since this mode ensures a detailed cheking of the call
-#' # it is thus a strain on performance and should be always turned off
-#' # otherwise needed.
-#' #
-#'
-#' # Setting the developer mode on:
-#' setDreamerr_dev.mode(TRUE)
-#'
-#' # Creating some 'wrong' calls => the problem is pinpointed
-#'
-#' test = function(x) check_arg(x, "integer scalar", "numeric vector")
-#' try(test())
-#'
-#' test = function(...) check_arg("numeric vector", ...)
-#' try(test())
-#'
-#' test = function(x) check_arg(x$a, "numeric vector")
-#' try(test())
-#'
-#' test = function(x) check_arg(x, "numeric vector integer")
-#' try(test())
-#'
-#' test = function(x) check_arg(x, "vector len(,)")
-#' try(test())
-#'
-#' # etc...
-#'
-#' # Setting the developer mode off:
-#' setDreamerr_dev.mode(FALSE)
-#'
-#'
-setDreamerr_dev.mode = function(dev.mode = FALSE){
-  if(!is.logical(dev.mode) || !length(dev.mode) == 1 || is.na(dev.mode)){
-    stop("Argument 'dev.mode' must be a logical scalar.")
-  }
-
-  options("dreamerr_dev.mode" = dev.mode)
-}
-
-
-
-#' Sets argument checking on/off "semi-globally"
-#'
-#' You can allow your users to turn off argument checking within your function by using \code{set_check}. Only the functions \code{\link[dreamerr]{check_arg}} nd \code{\link[dreamerr:check_arg]{check_value}} can be turned off that way.
-#'
-#' @param x A logical scalar, no default.
-#'
-#' @details
-#' This function can be useful if you develop a function that may be used in large range loops (>100K). In such situations, it may be good to still check all arguments, but to offer the user to turn this checking off with an extra argument (named \code{arg.check} for instance). Doing so you would achieve the feat of i) having a user-friendly function thanks to argument checking and, ii) still achieve high performance in large loops (although the computational footprint of argument checking is quite low [around 30 micro seconds for missing arguments to 80 micro seconds for non-missing arguments of simple type]).
-#'
-#' @examples
-#'
-#' # Let's give an example
-#' test_check = function(x, y, arg.check = TRUE){
-#'   set_check(arg.check)
-#'   check_arg(x, y, "numeric scalar")
-#'   x + y
-#' }
-#'
-#' # Works: argument checking on
-#' test_check(1, 2)
-#'
-#' # If mistake, nice error msg
-#' try(test_check(1, "a"))
-#'
-#' # Now argument checking turned off
-#' test_check(1, 2, FALSE)
-#' # But if mistake: "not nice" error message
-#' try(test_check(1, "a", FALSE))
-#'
-#'
-#'
-set_check = function(x){
-
-  if(isFALSE(x)){
-    assign("DREAMERR_CHECK", FALSE, parent.frame())
-  }
-
-}
-
-
-#' Sets "semi-globally" the 'up' argument of dreamerr's functions
-#'
-#' When \code{\link[dreamerr]{check_arg}} (or \code{\link[dreamerr]{stop_up}}) is used in non user-level functions, the argument \code{.up} is used to provide an appropriate error message referencing the right function.
-#'
-#' To avoid repeating the argument \code{.up} in each \code{check_arg} call, you can set it (kind of) "globally" with \code{set_up}.
-#'
-#' @param .up An integer greater or equal to 0.
-#'
-#' @details
-#' The function \code{set_up} does not set the argument \code{up} globally, but only for all calls to \code{check_arg} and \code{check_value} within the same function.
-#'
-#'
-#' @examples
-#'
-#' # Example with computation being made within a non user-level function
-#'
-#' sum_fun = function(x, y){
-#'   my_internal(x, y, sum = TRUE)
-#' }
-#'
-#' diff_fun = function(x, y){
-#'   my_internal(x, y, sum = FALSE)
-#' }
-#'
-#' my_internal = function(x, y, sum){
-#'   set_up(1) # => errors will be at the user-level function
-#'   check_arg(x, y, "numeric scalar mbt")
-#'
-#'   # Identical to calling
-#'   # check_arg(x, y, "numeric scalar mbt", .up = 1)
-#'
-#'   if(sum) return(x + y)
-#'   return(x - y)
-#' }
-#'
-#' # we check it works
-#' sum_fun(5, 6)
-#' diff_fun(5, 6)
-#'
-#' # Let's throw some errors
-#' try(sum_fun(5))
-#' try(sum_fun(5, 1:5))
-#'
-set_up = function(.up = 1){
-  if(length(.up) == 1 && is.numeric(.up) && !is.na(.up) && .up == floor(.up) && .up >= 0){
-    assign("DREAMERR__UP", .up, parent.frame())
-  } else {
-    stop("Argument '.up' must be an integer scalar greater or equal to 1. This is currently not the case.")
-  }
-}
-
-
-#' Checks the arguments in dots from methods
-#'
-#' This function informs the user of arguments passed to a method but which are not used by the method.
-#'
-#' @param valid_args A character vector, default is missing. Arguments that are not in the definition of the function but which are considered as valid. Typically internal arguments that should not be directly accessed by the user.
-#' @param suggest_args A character vector, default is missing. If the user provides invalid arguments, he might not be aware of the main arguments of the function. Use this argument to inform the user of these main arguments.
-#' @param stop Logical, default is \code{FALSE}. If \code{TRUE}, when the user provides invalid arguments, the function will call \code{\link[base]{stop}} instead of prompting a warning (default).
-#' @param warn Logical, default is \code{TRUE}. If \code{TRUE}, when the user provides invalid arguments, the function will call \code{\link[base]{warning}} (default). If \code{FALSE} (and so are the other arguments \code{stop} and \code{message}), then no message is prompted to the user, rather it is the only output of the function.
-#' @param message Logical, default is \code{FALSE}. If \code{TRUE}, a standard message is prompted to the user (instead of a warning).
-#' @param call. Logical, default is \code{FALSE}. If \code{TRUE}, when the user provides invalid arguments, then the message will also contain the call to the initial function (by default, only the function name is shown).
-#' @param immediate. Logical, default is \code{FALSE}. Can be only used with the argument \code{warn = TRUE}: whether the warning is immediately displayed or not.
-#'
-#' @return
-#' This function returns the message to be displayed. If no message is to be displayed because all the arguments are valid, then \code{NULL} is returned.
-#'
-#' @examples
-#'
-#' # The typical use of this function is within methods
-#'
-#' # Let's create a 'my_class' object and a summary method
-#' my_obj = list()
-#' class(my_obj) = "my_class"
-#'
-#' # In the summary method, we add validate_dots
-#' # to inform the user of invalid arguments
-#'
-#' summary.my_class = function(object, arg_one, arg_two, ...){
-#'
-#'   validate_dots()
-#'   # CODE of summary.my_class
-#'   invisible(NULL)
-#' }
-#'
-#' # Now let's test it, we add invalid arguments
-#' summary(my_obj, wrong = 3)
-#' summary(my_obj, wrong = 3, info = 5)
-#'
-#' # Now let's :
-#' #   i) inform the user that argument arg_one is the main argument
-#' #  ii) consider 'info' as a valid argument (but not shown to the user)
-#' # iii) show a message instead of a warning
-#'
-#' summary.my_class = function(object, arg_one, arg_two, ...){
-#'
-#'   validate_dots(valid_args = "info", suggest_args = "arg_one", message = TRUE)
-#'   # CODE of summary.my_class
-#'   invisible(NULL)
-#' }
-#'
-#' # Let's retest it
-#' summary(my_obj, wrong = 3) # not OK => suggestions
-#' summary(my_obj, info = 5)  # OK
-#'
-#'
-#'
-validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, stop, call. = FALSE, immediate. = TRUE){
-  # Function to catch the arguments passing in ...
-  # we suggest some principal arguments
-
-  mc = sys.calls()[[sys.nframe() - 1]]
-  args_up = names(mc)
-  args_fun = names(formals(sys.function(sys.parent())))
-
-  args = setdiff(args_up, c(args_fun, ""))
-  fun_name = as.character(mc[[1]])
-
-  args_invalid = setdiff(args, valid_args)
-  res = NULL
-  if(length(args_invalid) > 0){
-
-    # Default values
-    if(missing(message)) message = FALSE
-    if(missing(stop)) stop = FALSE
-    if(missing(warn)) warn = !isTRUE(message) & !isTRUE(stop)
-
-    my_call = ""
-    if(stop == FALSE && warn == FALSE){
-      if(call.){
-        my_call = deparse(sys.calls()[[max(1, sys.nframe() - 1)]])[1] # call can have svl lines
-        nmax = 70
-        if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax-1), "...")
-        my_call = paste0(my_call, "\n")
-      }
-    }
-
-
-    suggest_info = setdiff(suggest_args, names(mc))
-    suggest = ""
-    if(length(suggest_info) == 1){
-      if(length(suggest_args) == 1){
-        suggest = paste0(" (fyi, its main argument is '", suggest_info, "').")
-      } else {
-        suggest = paste0(" (fyi, another of its main arguments is '", suggest_info, "').")
-      }
-    } else if(length(suggest_info) >= 2){
-      suggest = paste0(" (fyi, some of its main arguments are ", enumerate_items(suggest_info, quote = TRUE), ").")
-    } else {
-      suggest = "."
-    }
-
-    res = paste0(enumerate_items(args_invalid, "is.quote"), " not", ifsingle(args_invalid, " a", ""), " valid argument", plural_len(args_invalid), " of function ", fun_name, suggest)
-
-    my_call = fit_screen(my_call)
-
-    if(stop){
-      stop_up(my_call, res)
-    } else if(warn){
-      warn_up(my_call, res, immediate. = immediate.)
-    } else if(message){
-      base::message(my_call, res)
-    }
-
-  }
-
-  res
-}
-
-
-#' Stops (or warns in) sub-function execution
-#'
-#' Useful if you employ non-user level sub-functions within user-level functions. When an error is thrown in the sub function, the error message will integrate the call of the user-level function, which is more informative and appropriate for the user. It offers a similar functionality for \code{warning}.
-#'
-#' @param ... Objects that will be coerced to character and will compose the error message.
-#' @param up The number of frames up, default is 1. The call in the error message will be based on the function \code{up} frames up the stack. See examples. If you have many calls to \code{stop_up}/\code{warn_up} with a value of \code{up} different than one, you can use \code{\link[dreamerr]{set_up}} to change the default value of \code{up} within the function.
-#' @param immediate. Whether the warning message should be prompted directly. Defaults to \code{FALSE}.
-#' @param msg A character vector, default is \code{NULL}. If provided, this message will be displayed right under the error message. This is mostly useful when the text contains formatting because the function \code{\link{stop}} used to send the error message erases any formatting.
-#'
-#' @details
-#' These functions are really made for package developers to facilitate the good practice of providing informative user-level error/warning messages.
-#'
-#' @author
-#' Laurent Berge
-#'
-#' @examples
-#'
-#' # We create a main user-level function
-#' # The computation is done by an internal function
-#' # Here we compare stop_up with a regular stop
-#'
-#' main_function = function(x = 1, y = 2){
-#'   my_internal_function(x, y)
-#' }
-#'
-#' my_internal_function = function(x, y){
-#'   if(!is.numeric(x)){
-#'     stop_up("Argument 'x' must be numeric but currently isn't.")
-#'   }
-#'
-#'   # Now regular stop
-#'   if(!is.numeric(y)){
-#'     stop("Argument 'y' must be numeric but currently isn't.")
-#'   }
-#'
-#'   nx = length(x)
-#'   ny = length(y)
-#'   if(nx != ny){
-#'     warn_up("The lengths of x and y don't match (", nx, " vs ", ny, ").")
-#'   }
-#'
-#'   x + y
-#' }
-#'
-#' # Let's compare the two error messages
-#' # stop_up:
-#' try(main_function(x = "a"))
-#' # => the user understands that the problem is with x
-#'
-#' # Now compare with the regular stop:
-#' try(main_function(y = "a"))
-#' # Since the user has no clue of what my_internal_function is,
-#' #  s/he will be puzzled of what to do to sort this out
-#'
-#' # Same with the warning => much clearer with warn_up
-#' main_function(1, 1:2)
-#'
-#'
-stop_up = function(..., up = 1, msg = NULL){
-
-  main_msg = paste0(...)
-
-  # up with set_up
-  mc = match.call()
-  if(!"up" %in% names(mc)){
-    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 1)
-    up = up_value[[1]]
-  }
-
-  # The original call
-  my_call = deparse(sys.calls()[[max(1, sys.nframe() - (1 + up))]])[1] # call can have svl lines
-  nmax = 50
-  if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax - 1), "...")
-
-  intro = paste0("in ", my_call)
-
-  main_msg = fit_screen(main_msg)
-
-  if(!is.null(msg)){
-    if(length(msg) > 1){
-      msg = paste(msg, collapse = "")
-    }
-    msg = fit_screen(msg)
-    on.exit(message(msg))
-  }
-
-  stop(intro, ": \n", main_msg, call. = FALSE)
-
-}
-
-
-#' @describeIn stop_up Warnings at the level of user-level functions
-warn_up = function(..., up = 1, immediate. = FALSE){
-
-  message = paste0(...)
-
-  # up with set_up
-  mc = match.call()
-  if(!"up" %in% names(mc)){
-    up_value = mget("DREAMERR__UP", parent.frame(), ifnotfound = 1)
-    up = up_value[[1]]
-  }
-
-  # The original call
-  my_call = deparse(sys.calls()[[max(1, sys.nframe() - (1 + up))]])[1] # call can have svl lines
-  nmax = 50
-  if(nchar(my_call) > nmax) my_call = paste0(substr(my_call, 1, nmax - 1), "...")
-
-  warning("In ", my_call, ":\n ", fit_screen(message), call. = FALSE, immediate. = immediate.)
-
-}
-
+####
+#### functions ####
+####
 
 
 #' Enumerates the elements of a vector
@@ -1038,8 +619,15 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
 #' Utility to display long messages with nice formatting. This function cuts the message to fit the current screen width of the R console. Words are never cut in the middle.
 #'
 #' @param msg Text message: character vector.
-#' @param width The maximum width of the screen the message should take. Default is 0.9.
-#' @param leading_ws Logical, default is \code{TRUE}. Whether to keep the leading white spaces when the line is cut.
+#' @param width A number between 0 and 1, or an integer. The maximum width of the screen the message should take. 
+#' Numbers between 0 and 1 represent a fraction of the screen. You can also refer to the 
+#' screen width with the special variable `.sw`. Integers represent the number of characters 
+#' and cannot be lower than 15. Default is `min(120, 0.95*.sw)` (the min between 120 characters and
+#' 90% of the screen width).
+#' @param leading_ws Logical, default is \code{TRUE}. Whether to keep the leading 
+#' white spaces when the line is cut.
+#' @param leader Character scalar, default is the empty string. If provided, this 
+#' value will be placed in front of every line.
 #'
 #' @details
 #' This function does not handle tabulations.
@@ -1053,7 +641,7 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
 #' msg = enumerate_items(state.name, nmax = Inf)
 #' msg = paste0("     ", gsub("Michigan, ", "\n", msg))
 #'
-#' # by default the message takes 90% of the screen
+#' # by default the message takes 95% of the screen
 #' cat(fit_screen(msg))
 #'
 #' # Now we reduce it to 50%
@@ -1061,16 +649,31 @@ fsignif = signif_plus = function (x, s = 2, r = 0, commas = TRUE){
 #'
 #' # we add leading_ws = FALSE to avoid the continuation of leading WS
 #' cat(fit_screen(msg, 0.5, FALSE))
+#' 
+#' # We add "#> " in front of each line
+#' cat(fit_screen(msg, 0.5, leader = "#> "))
 #'
-#' # The
 #'
-fit_screen = function(msg, width = 0.9, leading_ws = TRUE){
+fit_screen = function(msg, width = NULL, leading_ws = TRUE, leader = ""){
   # makes a message fit the current screen, by cutting the text at the appropriate location
   # msg must be a character string of length 1
+  
+  if(length(msg) == 0) return(msg)
 
   # Note that \t are NOT handled
+  
+  # eval
+  width = check_set_width(substitute(width))
 
-  MAX_WIDTH = getOption("width") * width
+  N_LEAD = nchar(leader)
+
+  if(width > 1){
+    MAX_WIDTH = width
+  } else {
+    MAX_WIDTH = getOption("width") * width
+  }
+
+  MAX_WIDTH = max(MAX_WIDTH, 15)
 
   res = c()
 
@@ -1078,13 +681,13 @@ fit_screen = function(msg, width = 0.9, leading_ws = TRUE){
 
   for(m in msg_split){
     if(nchar(m) <= MAX_WIDTH){
-      res = c(res, m)
+      res = c(res, paste0(leader, m))
     } else {
       # we apply a splitting algorithm
 
       lead_ws = gsub("^([ \t]*).*", "\\1", m, perl = TRUE)
       m = trimws(m)
-      N_LEAD = nchar(lead_ws)
+      N_LEAD_WS = nchar(lead_ws)
       add_lead = TRUE
       first = TRUE
 
@@ -1093,11 +696,11 @@ fit_screen = function(msg, width = 0.9, leading_ws = TRUE){
       while(TRUE){
 
         if(add_lead){
-          width = MAX_WIDTH - N_LEAD
-          prefix = lead_ws
+          width = MAX_WIDTH - N_LEAD_WS - N_LEAD
+          prefix = paste0(leader, lead_ws)
         } else {
-          width = MAX_WIDTH
-          prefix = ""
+          width = MAX_WIDTH - N_LEAD
+          prefix = leader
         }
 
         if(sum(nchar(m_split) + 1) - 1 <= width){
@@ -1120,6 +723,23 @@ fit_screen = function(msg, width = 0.9, leading_ws = TRUE){
 
   paste(res, collapse = "\n")
 }
+
+check_set_width = function(width_expr){
+  sw = getOption("width") 
+  data = list(.sw = sw)
+  width = eval(width_expr, data, parent.frame(2))
+  
+  if(isFALSE(width)){
+    width = Inf
+  }
+  
+  if(is.null(width)){
+    width = min(120, 0.95 * sw)
+  }
+  
+  width
+}
+
 
 
 #' Fills a string vector with a symbol
@@ -1355,6 +975,89 @@ R code:",
 
 
 
+
+suggest_item = function(x, items, write_msg = TRUE, newline = TRUE, info = "variable"){
+  # typical use: x is not in items
+  #              we want to suggest possible values
+  # returns vector of length 0 if no suggestion
+  
+  items_origin = items
+
+  # 1: with case
+  nx = nchar(x)
+  items_nx = substr(items, 1, nx)
+
+  qui = items_nx == x
+  if(any(qui)){
+    res = items[qui]
+
+  } else {
+    # 2: without case
+
+    x = tolower(x)
+    items_nx = tolower(items_nx)
+
+    qui = items_nx == x
+    if(any(qui)){
+      res = items[qui]
+    } else {
+      # 3: with spelling mistakes, keeping the order
+      # only if x > 3 characters
+
+      if(nx < 3) return(character(0))
+
+      # lazy algorithm
+      score = numeric(length(items))
+      for(i in 1:nx){
+        score = score + (substr(items_nx, i, i) == substr(x, i, i))
+      }
+
+      if(any(score > (nx / 2))){
+        s_order = order(score, decreasing = TRUE)
+        score = score[s_order]
+        items = items[s_order]
+        
+        res = items[score > nx / 2]
+        
+      } else {
+        # 4: with spelling mistakes, ignoring the order
+        x_letters = strsplit(x, "")[[1]]
+        score = numeric(length(items))
+        for(i in 1:nx){
+          score = score + (substr(items_nx, i, i) %in% x_letters)
+        }
+
+        s_order = order(score, decreasing = TRUE)
+        score = score[s_order]
+        items = items[s_order]
+        
+        res = items[score > (nx * 0.65)]
+      }
+    }
+  }  
+
+  if(write_msg){
+    if(length(res) == 0){
+      if(length(items_origin) <= 5){
+        res = sma("FYI the {info}{$s, are, enum.bq ? items_origin}.")
+      } else {
+        res = sma("\nFYI the {info}s are: {sort, ', 'c ? items_origin}.")
+      }
+    } else {
+      res = sma("Maybe you meant {enum.bq.or ? res}?")
+    }
+
+    if(newline){
+      res = paste0("\n", res)
+    }
+  } else {
+    if(length(res) == 0){
+      res = head(items_origin, 5)
+    }
+  }
+
+  res
+}
 
 
 

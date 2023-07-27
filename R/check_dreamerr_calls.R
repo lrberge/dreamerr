@@ -26,7 +26,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
   FUN_NAME_FULL = deparse_long(current_call[[1]])
 
   IS_VALUE = grepl("value", FUN_NAME_FULL)
-  IS_PLUS = grepl("plus", FUN_NAME_FULL)
+  IS_SET = grepl("plus|set", FUN_NAME_FULL)
 
   FUN_NAME = ifelse(IS_VALUE, "check_value", "check_arg")
 
@@ -207,7 +207,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
     # checking that arguments are names, first we find if check_arg plus
 
     if(!IS_DOTS){
-      if(!IS_PLUS){
+      if(!IS_SET){
         # => all names
         is_name = sapply(mc_arg, is.name)
         if(any(!is_name)){
@@ -258,7 +258,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
         }
 
         if(is_list){
-          if(!IS_PLUS){
+          if(!IS_SET){
             stop_up("To check elements of arguments that are lists, you must use check_set_arg (and not check_arg).")
           }
         } else {
@@ -304,7 +304,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
   # Checking the validity of the type
   #
 
-  if(!IS_PLUS){
+  if(!IS_SET){
     if(grepl("(?i)evalset", type)){
       stop_up("You cannot use the keyword 'evalset' in ", FUN_NAME, ", use ", FUN_NAME, "_plus instead. See Section II) or XVI) in the examples.")
     }
@@ -473,7 +473,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
               next
             }
 
-            if(!IS_PLUS && grepl("conv", my_type, fixed = TRUE)){
+            if(!IS_SET && grepl("conv", my_type, fixed = TRUE)){
               stop_up(up = 2, "You cannot use the keyword 'conv' in ", FUN_NAME, ", use ", FUN_NAME, "_plus instead. See Section XI) in the examples.")
             }
 
@@ -549,7 +549,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
 
     } else if(is_there("match")){
 
-      if(!IS_PLUS) stop_up("You cannot use the main class 'match' in ", FUN_NAME, ", you must use ", FUN_NAME, "_plus instead.")
+      if(!IS_SET) stop_up("You cannot use the main class 'match' in ", FUN_NAME, ", you must use ", FUN_NAME, "_plus instead.")
 
       make_error_warning("match.multi.strict", my_type_raw)
 
