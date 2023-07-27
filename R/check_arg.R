@@ -646,7 +646,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
 }
 
 
-extract_curly = function(type, x, as.string = FALSE){
+extract_curly = function(type, x, as.string = FALSE, envir = parent.frame(3)){
   # feed: gt{log(5)} => gives c(2, 3)
   # type = "scalarNumericgt{log(5)}lt{exp(3)}" ; x = "gt"
 
@@ -660,7 +660,7 @@ extract_curly = function(type, x, as.string = FALSE){
     if(!grepl("(", value2parse, fixed = TRUE)){
       res = as.numeric(value2parse)
     } else {
-      res = eval(parse(text = value2parse))
+      res = eval(parse(text = value2parse), envir)
     }
   }
 
@@ -1124,7 +1124,6 @@ inform_class = function(x, short = FALSE){
   } else {
     res = paste0("it is of class ", enumerate_items(class(x), quote = TRUE))
   }
-
 
   res
 }
