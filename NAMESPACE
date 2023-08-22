@@ -3,16 +3,19 @@
 # Functions to export -- main
 export(check_arg, check_arg_plus, check_set_arg)
 export(check_value, check_value_plus, check_set_value)
+export(check_expr)
 export(validate_dots)
 
 # hook related functions
-exportPattern("hook$")
+export(set_hook, stop_hook, warn_hook, check_expr_hook)
+export(generate_set_hook, generate_stop_hook, generate_warn_hook, 
+       generate_check_expr_hook, generate_get_hook)
 
 # stop/warn
 export(stop_up, warn_up, stopi, warni)
 
 # misc
-export(fit_screen)
+export(fit_screen, suggest_item)
 
 # Other, deprecated following stringmagic integration
 export(n_letter, n_th, n_times)
