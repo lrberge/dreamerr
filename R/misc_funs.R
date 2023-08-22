@@ -1136,6 +1136,84 @@ suggest_item = function(x, items, msg.write = FALSE, msg.newline = TRUE, msg.ite
 
 
 
+####
+#### pkgdown ####
+####
+
+
+renvir_get = function(key){
+  # Get the values of envir variables
+  # we also evaluate them
+
+  value_raw = Sys.getenv(key)
+
+  if(value_raw == ""){
+      return(NULL)
+  }
+
+  # Any default value should be able to be evaluated "as such"
+  value_clean = gsub("__%%;;", "\n", value_raw)
+  value_clean = gsub("&quot;", '"', value_clean)
+  value_clean = gsub("&apos;", "'", value_clean)
+
+  value = eval(str2lang(value_clean))
+
+  return(value)
+}
+
+is_package_root = function(){
+  isTRUE(renvir_get("package_ROOT"))
+}
+
+fix_pkgwdown_path = function(){
+    # https://github.com/r-lib/pkgdown/issues/1218
+    # just because I use google drive... it seems pkgdown cannot convert to relative path...
+
+    # This is to ensure it only works for me
+    if(!is_package_root()) return(NULL)
+
+    all_files = list.files("docs/articles/", full.names = TRUE, pattern = "html$")
+
+    for(f in all_files){
+        my_file = file(f, "r", encoding = "UTF-8")
+        text = readLines(f)
+        close(my_file)
+        if(any(grepl("../../../", text, fixed = TRUE))){
+            # We embed the images directly: safer
+            
+            message("pkgdown images updated: ", gsub(".+/", "", f))
+
+            # A) we get the path
+            # B) we transform to URI
+            # C) we replace the line
+
+            pat = "<img.+\\.\\./.+/dreamerr/.+/images/"
+            qui = which(grepl(pat, text))
+            for(i in qui){
+                # ex: line = "<img src = \"../../../Google drive/dreamerr/dreamerr/vignettes/images/etable/etable_tex_2021-12-02_1.05477838.png\">"
+                line = text[i]
+                line_split = strsplit(line, "src *= *\"")[[1]]
+                path = gsub("\".*", "", line_split[2])
+                # ROOT is always dreamerr
+                path = gsub(".+dreamerr/", "", path)
+                path = gsub("^articles", "vignettes", path)
+
+                URI = knitr::image_uri(path)
+
+                rest = gsub("^[^\"]+\"", "", line_split[2])
+                new_line = paste0(line_split[1], ' src = "', URI, '"', rest)
+
+                text[i] = new_line
+            }
+
+            my_file = file(f, "w", encoding = "UTF-8")
+            writeLines(text, f)
+            close(my_file)
+        }
+    }
+
+}
+
 
 
 
