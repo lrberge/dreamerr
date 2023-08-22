@@ -11,6 +11,31 @@
 sma = stringmagic::string_magic_alias(.check = FALSE)
 
 ####
+#### utilities ####
+####
+
+string_x = function(x, n, from){
+  # string extract
+
+  if(is.character(n)){
+    n = nchar(n)
+  }
+
+  if(n < 0){
+    if(!missing(from)) stop("Internal error: you should not provide arg. `from` when `n` is negative.")
+    from = nchar(x) + n + 1
+    to = nchar(x)
+  } else if(!missing(from)){
+    to = from + n - 1
+  } else {
+    from = 1
+    to = n
+  }
+
+  substr(x, from, to)
+}
+
+####
 #### functions ####
 ####
 
@@ -975,11 +1000,65 @@ R code:",
 
 
 
-
-suggest_item = function(x, items, write_msg = TRUE, newline = TRUE, info = "variable"){
+#' Suggest the the closest elements from a string vector
+#' 
+#' Compares a character scalar to the elements from a character vector and 
+#' returns the elements that are the closest to the input.
+#' 
+#' @param x Character scalar, must be provided. This reference will be compared 
+#' to the elements of the string vector in the argument `items`.
+#' @param items Character vector, must be provided. Elements to which the value in 
+#' argument `x` will be compared.
+#' @param msg.write Logical scalar, default is `FALSE`. If `TRUE`, a message is returned,
+#' equal to `"Maybe you meant {enum.bq.or ? matches}?"` (see [stringmagic](https://lrberge.github.io/stringmagic/articles/guide_string_magic.html)
+#' for information on the interpolation) if there were matches. If no matches were found,
+#' the message is `"FYI the {msg.item}{$s, are, enum.bq ? items}."`.
+#' @param msg.newline Logical scalar, default is `TRUE`. Only used if `msg.write = TRUE`.
+#' Whether to add a new line just before the message.
+#' @param msg.item Character scalar, default is `"variable"`. Only used if `msg.write = TRUE`.
+#' What does the `items` represent?
+#' 
+#' @details 
+#' This function is useful when used internally to guide the user to relevant choices.
+#' 
+#' The choices to which the user is guided are in decreasing quality. First light mispells
+#' are checked. Then more important mispells. Finally very important mispells. Completely 
+#' off potential matches are not reported.
+#' 
+#' If the argument `msg.write` is `TRUE`, then a character scalar is returned containing
+#' a message suggesting the matches.
+#' 
+#' @return 
+#' It returns a vector of matches. If no matches were found 
+#' 
+#' @author 
+#' Laurent Berge
+#' 
+#' @examples 
+#' 
+#' # function reporting the sum of a variable
+#' sum_var = function(data, var){
+#'   # var: a variable name, should be part of data
+#'   if(!var %in% names(data)){
+#'     suggestion = suggest_item(var, names(data), msg.write = TRUE)
+#'     stopi("The variable `{var}` is not in the data set. {suggestion}")
+#'   }
+#' 
+#'   sum(data[[var]])
+#' }
+#' 
+#' # The error message guides us to a suggestion
+#' try(sum_var(iris, "Petal.Le"))
+#' 
+suggest_item = function(x, items, msg.write = FALSE, msg.newline = TRUE, msg.item = "variable"){
   # typical use: x is not in items
   #              we want to suggest possible values
   # returns vector of length 0 if no suggestion
+  
+  check_set_arg(x, "character scalar conv mbt")
+  check_arg(items, "character vector no na mbt")
+  check_arg(msg.write, msg.newline, "logical scalar")
+  check_arg(msg.item, "character scalar")
   
   items_origin = items
 
@@ -1036,23 +1115,19 @@ suggest_item = function(x, items, write_msg = TRUE, newline = TRUE, info = "vari
     }
   }  
 
-  if(write_msg){
+  if(msg.write){
     if(length(res) == 0){
       if(length(items_origin) <= 5){
-        res = sma("FYI the {info}{$s, are, enum.bq ? items_origin}.")
+        res = sma("FYI the {msg.item}{$s, are, enum.bq ? items_origin}.")
       } else {
-        res = sma("\nFYI the {info}s are: {sort, ', 'c ? items_origin}.")
+        res = sma("\nFYI the {msg.item}s are: {sort, ', 'c ? items_origin}.")
       }
     } else {
       res = sma("Maybe you meant {enum.bq.or ? res}?")
     }
 
-    if(newline){
+    if(msg.newline && !grepl("^\n", res)){
       res = paste0("\n", res)
-    }
-  } else {
-    if(length(res) == 0){
-      res = head(items_origin, 5)
     }
   }
 
