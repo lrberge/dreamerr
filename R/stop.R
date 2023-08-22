@@ -247,7 +247,7 @@ setDreamerr_show_stack = function(show_full_stack = FALSE){
 ####
 
 
-#' @describeIn stop_hook Generate a package specific set_hook function
+#' @describeIn stop_hook Generates a package specific `set_hook` function
 generate_set_hook = function(namespace){
   check_arg(namespace, "character scalar mbt")
   hook_name = paste0("dreamerr_hook_", namespace)
@@ -255,7 +255,7 @@ generate_set_hook = function(namespace){
   res
 }
 
-#' @describeIn stop_hook Generate a package specific stop_hook function
+#' @describeIn stop_hook Generates a package specific `stop_hook` function
 generate_stop_hook = function(namespace){
   check_arg(namespace, "character scalar mbt")
   hook_name = paste0("dreamerr_hook_", namespace)
@@ -269,7 +269,7 @@ generate_stop_hook = function(namespace){
   res
 }
 
-#' @describeIn stop_hook Generate a package specific warn_hook function
+#' @describeIn stop_hook Generates a package specific `warn_hook` function
 generate_warn_hook = function(namespace){
   check_arg(namespace, "character scalar mbt")
   hook_name = paste0("dreamerr_hook_", namespace)
@@ -283,14 +283,27 @@ generate_warn_hook = function(namespace){
   res
 }
 
-#' @describeIn stop_hook Mark the function as the hook
+#' @describeIn stop_hook Marks the function as the hook
 set_hook = function(){
   assign("dreamerr_HOOK", 1, parent.frame())
 }
 
-get_up_hook = function(namespace_hook){
+#' @describeIn stop_hook Generates the function giving the number of frames we 
+#' need to go up the call stack to find the hooked function
+generate_get_hook = function(){
+  check_arg(namespace, "character scalar mbt")
+  hook_name = paste0("dreamerr_hook_", namespace)
+  
+  res = function(){
+    get_up_hook(hook_name)
+  }
+  
+  res
+}
+
+get_up_hook = function(namespace_hook = "dreamerr_HOOK"){
   # up with set_up
-  f = parent.frame()
+  f = parent.frame(2)
   up = 1
   while(!identical(f, .GlobalEnv)){
     if(exists(namespace_hook, f)){
@@ -574,25 +587,6 @@ warn_up = function (..., up = 1, immediate. = FALSE, envir = parent.frame(), ver
 #### warnings ####
 ####
 
-warn_no_named_dots = function(dots, extra_args = NULL, extra_funName = ""){
-  if(!is.null(names(dots))){
-    is_extra = !is.null(extra_args)
-    args_fun = names(formals(sys.function(sys.parent())))
-    args_fun = unique(c(args_fun, extra_args))
-    args_fun = setdiff(args_fun, "...")
-
-    dot_names = names(dots)
-    dot_names = dot_names[nchar(dot_names) > 0]
-    sugg_txt = suggest_item(dot_names[1], args_fun, info = "argument")
-
-    warn_up("The arguments in `...` shall not have names{&is_extra; or may refer to the ",
-                      "arguments of the function in {bq?extra_funName}}. ",
-            "The name{$s, enum.bq ? dot_names}",
-            " may refer to {$(an;some)} argument{$s}?", sugg_txt)
-
-  }
-}
-
 #' Checks the arguments in dots from methods
 #'
 #' This function informs the user of arguments passed to a method but which are not used by the method.
@@ -708,6 +702,157 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, st
 
   }
 
+  res
+}
+
+
+####
+#### extra checking functions ####
+####
+
+#' Checks the evaluation of an expression
+#' 
+#' This functions checks the evaluation of an expression and, if an error is thrown,
+#' captures it and integrates the captured message after a custom error message.
+#' 
+#' @param expr An expression to be evaluated.
+#' @param ... Character scalars. The values of `...` will be coerced with the function
+#' [string_magic](https://lrberge.github.io/stringmagic/articles/guide_string_magic.html).
+#' This means that string interpolation is allowed. Ex: `"Arg. {arg} should be positive"`
+#' leads to `"Arg. power should be positive"` if `arg` is equal to "power". 
+#' 
+#' If argument `verbatim` is `TRUE`, the values are instead coereced with `paste0`.
+#' @param clean Character vector, default is missing. If provided, the function 
+#' [`string_clean`](https://lrberge.github.io/stringmagic/reference/string_clean.html)
+#' is applied to the *captured error message* to clean it when necessary. Each element
+#' of the vector should be of the form `"pat => rep"` with pat a regular expression
+#' to be replace and `rep` the replacement.
+#' @param up Integer, default is 0. It is used to construct the call in the error message.
+#' By default the call reported is the function containing `check_expr`. If you want to
+#' report a function higher in the stack, use `up = 1`, or higher.
+#' @param arg_name Character scalar, default is missing. Used when the expression in
+#' `expr` leads to an error and the custom message is missing (i.e. no element is 
+#' provided in `...`). In that case, the default message is: "The argument {arg_name} could not be evaluated.".
+#' The default value for `arg_name` is `deparse(substitute(expr))`, if this guess is wrong,
+#' use `arg_name`.
+#' @param verbatim Logical scalar, default is `FALSE`. By default the elements of `...`
+#' allow string interpolation with "{}" using [stringmagic](https://github.com/lrberge/stringmagic).  
+#' If `TRUE`, no interpolation is performed.
+#' 
+#' @details 
+#' The purpose of this functions is to provide useful error messages to the user. 
+#' 
+#' @inherit stop_up seealso 
+#' 
+#' @author 
+#' Laurent Berge
+#' 
+#' @examples 
+#' 
+#' test = function(x, y){
+#'   check_expr(mean(x, y), "Computing the mean didn't work:")
+#' }
+#' 
+#' 
+check_expr = function(expr, ..., clean, up = 0, arg_name, verbatim = FALSE){
+
+  res = tryCatch(expr, error = function(e) structure(list(conditionCall(e),
+                                                          conditionMessage(e)), class = "try-error"))
+  if(inherits(res, "try-error")){
+
+    if(missing(up)){
+      # up with set_up
+      
+      f = parent.frame()
+      if(exists("DREAMERR_UP", f)){
+        up_value = mget("DREAMERR_UP", parent.frame(), ifnotfound = 0)
+        up = up_value[[1]]
+      }
+    }
+    
+    up = up + 1 
+    
+    if(verbatim){
+      msg = paste0(..., collapse = "")
+    } else {
+      msg = stringmagic::string_magic(..., .envir = parent.frame())
+    }
+    
+    if(nchar(msg) == 0){
+      if(missing(arg_name)){
+        arg_name = deparse(substitute(expr))
+      }
+      msg = paste0("Argument '", arg_name, "' could not be evaluated: ")
+      stop_up(msg, res[[2]], verbatim = verbatim, envir = parent.frame(), up = up)
+      
+    } else {
+      call_non_informative = deparse(substitute(expr),100)[1]
+
+      call_error = deparse(res[[1]], 100)[1]
+
+      if(call_error == call_non_informative || call_error == "NULL" || grepl("^(doTry|eval)", call_error)){
+        call_error = ""
+      } else {
+        call_error = paste0("In ", call_error, ": ")
+      }
+
+      err = res[[2]]
+      if(grepl("^in eval\\(str[^:]+:\n", err)){
+        err = sub("^in eval\\(str[^:]+:\n", "", err)
+      }
+            
+      # cleaning ugly call repetition
+      current_call = deparse(sys.call(sys.parent(up)))[1]
+      first_err = gsub("\n.+", "", err)
+      if(grepl(substr(current_call, 1, 20), first_err, fixed = TRUE)){
+        err = gsub("^[^\n]+\n", "", err)
+      }
+      
+      # cleaning extra artifacts
+      i_clean = 0
+      msg_split = strsplit(msg, "\n")[[1]]
+      err_split = strsplit(err, "\n")[[1]]
+      while(i_clean < min(length(msg_split), length(err_split))){
+        if(string_x(msg_split[i_clean + 1], 15) == string_x(err_split[i_clean + 1], 15)){
+          i_clean = i_clean + 1
+        } else {
+          break
+        }
+      }
+      
+      for(i in seq_len(i_clean)){
+        err = gsub("^[^\n]+\n", "", err)
+      }
+      
+      if(!missing(clean)){
+        err = stringmagic::string_clean(err, clean)
+      }
+      stop_up(msg, "\n", call_error, err, verbatim = TRUE, up = up)
+    }
+  }
+  res
+}
+
+#' @describeIn check_expr As `check_expr` but sets the error call at the level of the hooked function
+check_expr_hook = function(expr, ..., clean, arg_name, verbatim = FALSE){
+  up = get_up_hook(hook_name)
+
+  check_expr(expr = expr, ..., clean = clean, up = up, arg_name = arg_name, 
+              verbatim = verbatim)
+}
+
+#' @describeIn check_expr Generates a package specific `check_expr_hook` function
+generate_check_expr_hook = function(namespace){
+  check_arg(namespace, "character scalar mbt")
+  hook_name = paste0("dreamerr_hook_", namespace)
+  
+  res = function(expr, ..., clean, arg_name, verbatim = FALSE){
+    up = get_up_hook(hook_name)
+
+    check_expr(expr = expr, ..., clean = clean, up = up, arg_name = arg_name, 
+               verbatim = verbatim)
+  }
+  
   res
 }
 
