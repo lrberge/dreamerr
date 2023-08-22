@@ -3,7 +3,7 @@
 
 # dreamerr: Error Handling Made Easy
 
-<a href="https://cran.r-project.org/web/checks/check_results_dreamerr.html"><img src="https://cranchecks.info/badges/flavor/release/dreamerr" alt="CRAN status"></a>
+<a href="https://cran.r-project.org/web/checks/check_results_dreamerr.html"><img src="https://www.r-pkg.org/badges/version/dreamerr" alt="CRAN status"></a>
 <a href="https://cran.r-project.org/package=dreamerr"><img src="http://www.r-pkg.org/badges/version/dreamerr" alt="Version"> </a>
 <a href="https://ipub.com/dev-corner/apps/r-package-downloads/"> <img src="https://cranlogs.r-pkg.org/badges/dreamerr" alt = "Downloads"> </a>
 
