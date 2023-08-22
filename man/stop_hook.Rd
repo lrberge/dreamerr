@@ -5,6 +5,7 @@
 \alias{generate_stop_hook}
 \alias{generate_warn_hook}
 \alias{set_hook}
+\alias{generate_get_hook}
 \alias{stop_hook}
 \alias{warn_hook}
 \title{Error displaying a call located at a hook location}
@@ -16,6 +17,8 @@ generate_stop_hook(namespace)
 generate_warn_hook(namespace)
 
 set_hook()
+
+generate_get_hook()
 
 stop_hook(..., msg = NULL, envir = parent.frame(), verbatim = FALSE)
 
@@ -62,13 +65,16 @@ warn_hook = generate_warn_hook("pkg_name")
 }
 \section{Functions}{
 \itemize{
-\item \code{generate_set_hook()}: Generate a package specific set_hook function
+\item \code{generate_set_hook()}: Generates a package specific \code{set_hook} function
 
-\item \code{generate_stop_hook()}: Generate a package specific stop_hook function
+\item \code{generate_stop_hook()}: Generates a package specific \code{stop_hook} function
 
-\item \code{generate_warn_hook()}: Generate a package specific warn_hook function
+\item \code{generate_warn_hook()}: Generates a package specific \code{warn_hook} function
 
-\item \code{set_hook()}: Mark the function as the hook
+\item \code{set_hook()}: Marks the function as the hook
+
+\item \code{generate_get_hook()}: Generates the function giving the number of frames we
+need to go up the call stack to find the hooked function
 
 \item \code{warn_hook()}: Warning with a call located at a hook location
 
