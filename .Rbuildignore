@@ -2,3 +2,5 @@
 ^\.Rproj\.user$
 Rplots.pdf
 ^\.Renviron$
+^\.Rprofile$
+^\.vscode$
