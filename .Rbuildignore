@@ -4,3 +4,4 @@ Rplots.pdf
 ^\.Renviron$
 ^\.Rprofile$
 ^\.vscode$
+^\.github$
