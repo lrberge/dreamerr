@@ -120,7 +120,7 @@ setDreamerr_dev.mode = function(dev.mode = FALSE){
 #' @param x A logical scalar, no default.
 #'
 #' @details
-#' This function can be useful if you develop a function that may be used in large range loops (>100K). In such situations, it may be good to still check all arguments, but to offer the user to turn this checking off with an extra argument (named \code{arg.check} for instance). Doing so you would achieve the feat of i) having a user-friendly function thanks to argument checking and, ii) still achieve high performance in large loops (although the computational footprint of argument checking is quite low [around 30 micro seconds for missing arguments to 80 micro seconds for non-missing arguments of simple type]).
+#' This function can be useful if you develop a function that may be used in large range loops (>100K). In such situations, it may be good to still check all arguments, but to offer the user to turn this checking off with an extra argument (named \code{arg.check} for instance). Doing so you would achieve the feat of i) having a user-friendly function thanks to argument checking and, ii) still achieve high performance in large loops (although the computational footprint of argument checking is quite low (around 30 micro seconds for missing arguments to 80 micro seconds for non-missing arguments of simple type)).
 #'
 #' @examples
 #'
@@ -148,7 +148,6 @@ set_check = function(x){
   if(isFALSE(x)){
     assign("DREAMERR_CHECK", FALSE, parent.frame())
   }
-
 }
 
 
@@ -290,7 +289,7 @@ set_hook = function(){
 
 #' @describeIn stop_hook Generates the function giving the number of frames we 
 #' need to go up the call stack to find the hooked function
-generate_get_hook = function(){
+generate_get_hook = function(namespace){
   check_arg(namespace, "character scalar mbt")
   hook_name = paste0("dreamerr_hook_", namespace)
   
@@ -715,6 +714,8 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, st
 #' This functions checks the evaluation of an expression and, if an error is thrown,
 #' captures it and integrates the captured message after a custom error message.
 #' 
+#' @inheritParams stop_hook
+#' 
 #' @param expr An expression to be evaluated.
 #' @param ... Character scalars. The values of `...` will be coerced with the function
 #' [string_magic](https://lrberge.github.io/stringmagic/articles/guide_string_magic.html).
@@ -835,7 +836,8 @@ check_expr = function(expr, ..., clean, up = 0, arg_name, verbatim = FALSE){
 
 #' @describeIn check_expr As `check_expr` but sets the error call at the level of the hooked function
 check_expr_hook = function(expr, ..., clean, arg_name, verbatim = FALSE){
-  up = get_up_hook(hook_name)
+  
+  up = get_up_hook()
 
   check_expr(expr = expr, ..., clean = clean, up = up, arg_name = arg_name, 
               verbatim = verbatim)
