@@ -27,46 +27,6 @@
         "runOn": "folderOpen"
       }
     },
-    {
-      "label": "git bash",
-      "type": "shell",
-      "command": "",
-      "options": {
-        "shell": {
-          // NOTA: path/to/git/bin must be on PATH
-          "executable": "sh.exe",
-          "args": ["--login"]
-        }
-      },
-      // Mark as a background task to avoid the spinner animation on the terminal tab
-      "isBackground": true,
-      "problemMatcher": [],
-      // Create the tasks in a terminal group
-      "presentation": {
-        "echo": false,
-        "group": "my-group"
-      }
-    },
-    {
-      "label": "R-term",
-      "type": "shell",
-      "command": "",
-      "options": {
-        "shell": {
-          // NOTA: to attach R properly to VSCode, you need the custom .Rprofile
-          // that is why you should have an Rprofile set up properly
-          // see task "Write VSCode Rprofile"
-          "executable": "radian.exe",
-          "args": ["--no-save", "no-restore"]
-        }
-      },
-      "isBackground": true,
-      "problemMatcher": [],
-      "presentation": {
-        "echo": false,
-        "group": "my-group"
-      }
-    }
   ]
 }
 
