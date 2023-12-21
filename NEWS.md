@@ -1,6 +1,6 @@
 # NEWS for `dreamerr`
 
-## Version 1.3.0
+## Version 1.4.0
 
 ### New functions
 
@@ -12,20 +12,26 @@
 
 - The type `path` has been added to `check_arg`. It is used to check paths.
 
-### Name changes
-
-- Functions `check_arg_plus` and `check_value_plus` become `check_set_arg` and `check_set_value` to improve clarity.
-
 ### Improvements
 
 - All warning and stop functions gain string interpolation with [stringmagic](https://github.com/lrberge/stringmagic).
 
-- `fit_screen`:
-  - fix prpblem with leading white spaces
-  - add the possibility to add a leader string
-  - improved algorithm
+
+## Version 1.3.0
+
+### Bug fixes
+
+ - fixes `fit_screen` so that it does not mess with white spaces.
+
+### Name changes
+
+  - Functions `check_arg_plus` and `check_value_plus` become `check_set_arg` and `check_set_value` to improve clarity.
+
+### Improvements
+
+ - `fsignif` now displays trailing 0s appropriately and is neutral to character vectors (instead of throwing an error).
  
-- the comparison types now can evaluate values from the calling frame:
+ - the comparison types now can evaluate values from the calling frame:
 ```r
 z = 32
 x = 77
