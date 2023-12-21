@@ -733,11 +733,11 @@ validate_dots = function(valid_args = c(), suggest_args = c(), message, warn, st
 #' report a function higher in the stack, use `up = 1`, or higher.
 #' @param arg_name Character scalar, default is missing. Used when the expression in
 #' `expr` leads to an error and the custom message is missing (i.e. no element is 
-#' provided in `...`). In that case, the default message is: "The argument {arg_name} could not be evaluated.".
+#' provided in `...`). In that case, the default message is: "The argument `{`arg_name`}` could not be evaluated.".
 #' The default value for `arg_name` is `deparse(substitute(expr))`, if this guess is wrong,
 #' use `arg_name`.
 #' @param verbatim Logical scalar, default is `FALSE`. By default the elements of `...`
-#' allow string interpolation with "{}" using [stringmagic](https://github.com/lrberge/stringmagic).  
+#' allow string interpolation with "`{}`" using [stringmagic](https://github.com/lrberge/stringmagic).  
 #' If `TRUE`, no interpolation is performed.
 #' 
 #' @details 

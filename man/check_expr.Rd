@@ -34,12 +34,12 @@ report a function higher in the stack, use \code{up = 1}, or higher.}
 
 \item{arg_name}{Character scalar, default is missing. Used when the expression in
 \code{expr} leads to an error and the custom message is missing (i.e. no element is
-provided in \code{...}). In that case, the default message is: "The argument {arg_name} could not be evaluated.".
+provided in \code{...}). In that case, the default message is: "The argument \verb{\{}arg_name\verb{\}} could not be evaluated.".
 The default value for \code{arg_name} is \code{deparse(substitute(expr))}, if this guess is wrong,
 use \code{arg_name}.}
 
 \item{verbatim}{Logical scalar, default is \code{FALSE}. By default the elements of \code{...}
-allow string interpolation with "{}" using \href{https://github.com/lrberge/stringmagic}{stringmagic}.
+allow string interpolation with "\code{{}}" using \href{https://github.com/lrberge/stringmagic}{stringmagic}.
 If \code{TRUE}, no interpolation is performed.}
 
 \item{namespace}{Character scalar giving the namespace for which the hooks are valid. Only useful
