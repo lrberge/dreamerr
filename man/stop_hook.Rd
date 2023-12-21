@@ -18,7 +18,7 @@ generate_warn_hook(namespace)
 
 set_hook()
 
-generate_get_hook()
+generate_get_hook(namespace)
 
 stop_hook(..., msg = NULL, envir = parent.frame(), verbatim = FALSE)
 

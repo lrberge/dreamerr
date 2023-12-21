@@ -41,6 +41,9 @@ use \code{arg_name}.}
 \item{verbatim}{Logical scalar, default is \code{FALSE}. By default the elements of \code{...}
 allow string interpolation with "{}" using \href{https://github.com/lrberge/stringmagic}{stringmagic}.
 If \code{TRUE}, no interpolation is performed.}
+
+\item{namespace}{Character scalar giving the namespace for which the hooks are valid. Only useful
+when hook functions are used in a package.}
 }
 \description{
 This functions checks the evaluation of an expression and, if an error is thrown,

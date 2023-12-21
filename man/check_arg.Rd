@@ -272,7 +272,7 @@ You have three different ways to set the choices:
 When the user doesn't provide the argument, the default is set to the first choice.
 Since the main class \code{match} performs a re-assignment of the variable, it is only available in \code{check_set_arg}.
 
-The main class \code{charin} is similar to \code{match} in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) \link{that's the main difference between \code{check_arg} and \code{check_set_arg}}.
+The main class \code{charin} is similar to \code{match} in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) (that's the main difference between \code{check_arg} and \code{check_set_arg}).
 }
 
 \section{Combining multiple types}{
