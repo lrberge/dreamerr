@@ -361,7 +361,7 @@ The main reason for using \code{check_value} is that sometimes you only know if 
 \section{Disabling argument checking}{
 
 
-Although the argument checking offered by \code{check_arg} is highly optimized and fast (it depends on the type \link{and your computer}, but it is roughly of the order of 80 micro seconds for non-missing arguments, 20 micro seconds for missing arguments), you may want to disable it for small functions in large loops (>100K iterations although this practice is not really common in R). If so, just use the function \code{\link[dreamerr]{setDreamerr_check}}, by typing \code{setDreamerr_check(FALSE)}. This will disable any call to \code{check_arg}.
+Although the argument checking offered by \code{check_arg} is highly optimized and fast (it depends on the type (and your computer), but it is roughly of the order of 80 micro seconds for non-missing arguments, 20 micro seconds for missing arguments), you may want to disable it for small functions in large loops (>100K iterations although this practice is not really common in R). If so, just use the function \code{\link[dreamerr]{setDreamerr_check}}, by typing \code{setDreamerr_check(FALSE)}. This will disable any call to \code{check_arg}.
 
 Note that the argument checking of \code{check_set_arg} cannot be disabled because the special types it allows perform reassignment in the upper frame. That's the main difference with \code{check_arg}.
 }
