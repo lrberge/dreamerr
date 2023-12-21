@@ -1,7 +1,7 @@
 Package: dreamerr
 Type: Package
 Title: Error Handling Made Easy
-Version: 1.3.0
+Version: 1.4.0
 Authors@R: person("Laurent", "Berge", email = "laurent.berge@u-bordeaux.fr", role = c("aut", "cre"))
 Imports: Formula, utils, stringmagic
 Suggests: knitr, rmarkdown, stats, graphics
