@@ -57,6 +57,183 @@
       <small>Source: <a href="https://github.com/lrberge/dreamerr/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.4.0" id="dreamerr-140">dreamerr 1.4.0<small>2023-12-21</small><a class="anchor" aria-label="anchor" href="#dreamerr-140"></a></h2>
+<div class="section level3">
+<h3 id="new-functions-1-4-0">New functions<a class="anchor" aria-label="anchor" href="#new-functions-1-4-0"></a></h3>
+<ul><li><p>New set of <code>hook</code> error and warning functions for reporting in complex internal functions. These are <code>set_hook</code> to set a function as the hook and <code>stop_hook</code>/<code>warn_hook</code> error and warning functions used to report as if they were called from the hooked function.</p></li>
+<li><p><code>warni</code> and <code>stopi</code> for warning and stop functions with character interpolation using <a href="https://github.com/lrberge/stringmagic" class="external-link">stringmagic</a></p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-type-1-4-0">New type<a class="anchor" aria-label="anchor" href="#new-type-1-4-0"></a></h3>
+<ul><li>The type <code>path</code> has been added to <code>check_arg</code>. It is used to check paths.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="improvements-1-4-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-4-0"></a></h3>
+<ul><li>All warning and stop functions gain string interpolation with <a href="https://github.com/lrberge/stringmagic" class="external-link">stringmagic</a>.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.3.0" id="dreamerr-130">dreamerr 1.3.0<small>2023-08-23</small><a class="anchor" aria-label="anchor" href="#dreamerr-130"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-1-3-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-0"></a></h3>
+<ul><li>fixes <code>fit_screen</code> so that it does not mess with white spaces.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="name-changes-1-3-0">Name changes<a class="anchor" aria-label="anchor" href="#name-changes-1-3-0"></a></h3>
+<ul><li>Functions <code>check_arg_plus</code> and <code>check_value_plus</code> become <code>check_set_arg</code> and <code>check_set_value</code> to improve clarity.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="improvements-1-3-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-1-3-0"></a></h3>
+<ul><li><p><code>fsignif</code> now displays trailing 0s appropriately and is neutral to character vectors (instead of throwing an error).</p></li>
+<li><p>the comparison types now can evaluate values from the calling frame:</p></li>
+</ul><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">z</span> <span class="op">=</span> <span class="fl">32</span></span>
+<span><span class="va">x</span> <span class="op">=</span> <span class="fl">77</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="../reference/check_arg.html">check_value</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"numeric scalar LE{z}"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Error: in check_value(x, "numeric scalar LE{z}"):</span></span>
+<span><span class="co">#&gt;  Value 'x' must be a numeric scalar lower than, or equal to, 32. Problem: it is strictly greater than 32.</span></span></code></pre></div>
+<ul><li>
+<code>stop_up</code> now accepts the argument msg which is an extra message displayed right after the error message.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.2.3" id="dreamerr-123">dreamerr 1.2.3<small>2020-12-05</small><a class="anchor" aria-label="anchor" href="#dreamerr-123"></a></h2>
+<div class="section level5">
+<h5 id="bug-fixes-1-2-3">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-2-3"></a></h5>
+<ul><li><p>in <code>check_arg_plus</code> conversion of factors to characters now works properly.</p></li>
+<li><p>Fix bug in <code>stop_up</code> when the argument <code>up</code> was not appropriately set by the user.</p></li>
+<li><p>fix bug in <code>sfill</code> regarding the combined usage of <code>anchor</code> and <code>right</code> in special circumstances.</p></li>
+</ul></div>
+<div class="section level5">
+<h5 id="new-features-1-2-3">New features<a class="anchor" aria-label="anchor" href="#new-features-1-2-3"></a></h5>
+<ul><li><p>now <code>sfill</code> accepts 0-length vectors.</p></li>
+<li><p>new exported function: <code>fit_screen</code>.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.2.2" id="dreamerr-122">dreamerr 1.2.2<small>2020-11-09</small><a class="anchor" aria-label="anchor" href="#dreamerr-122"></a></h2>
+<div class="section level5">
+<h5 id="bug-fixes-1-2-2">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-2-2"></a></h5>
+<ul><li>
+<p>fix bugs in <code>sfill</code>:</p>
+<ul><li><p>when an anchor was provided and all characters before that were of the same length.</p></li>
+<li><p>when an anchor was provided and the fill was from the right.</p></li>
+</ul></li>
+</ul></div>
+<div class="section level5">
+<h5 id="user-visible-changes-1-2-2">User visible changes<a class="anchor" aria-label="anchor" href="#user-visible-changes-1-2-2"></a></h5>
+<ul><li><p><code>check_</code>family: objects are now returned invisibly.</p></li>
+<li><p>new function <code>fsignif</code> which is an alias of <code>signif_plus</code>.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.2.1" id="dreamerr-121">dreamerr 1.2.1<small>2020-08-31</small><a class="anchor" aria-label="anchor" href="#dreamerr-121"></a></h2>
+<div class="section level5">
+<h5 id="bug-fixes-1-2-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-2-1"></a></h5>
+<ul><li>Bug when using commas or parentheses in arguments <code>.prefix</code> or <code>.argname</code> of <code>check_value</code>.</li>
+<li>Bug in the error message in <code>check_value</code> when the argument could not be evaluated.</li>
+<li>Bug introduced in the previous version, when checking types or equality with the option “no na”</li>
+</ul></div>
+<div class="section level5">
+<h5 id="user-visible-changes-1-2-1">User visible changes<a class="anchor" aria-label="anchor" href="#user-visible-changes-1-2-1"></a></h5>
+<ul><li>
+<code>validate_dots</code>: nicer messages.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.2.0" id="dreamerr-120">dreamerr 1.2.0<small>2020-06-08</small><a class="anchor" aria-label="anchor" href="#dreamerr-120"></a></h2>
+<div class="section level5">
+<h5 id="important-changes-no-retro-compatibility-1-2-0">Important changes (no retro compatibility)<a class="anchor" aria-label="anchor" href="#important-changes-no-retro-compatibility-1-2-0"></a></h5>
+<ul><li>IMPORTANT CHANGE: Now by default, there is <code>NA</code> tolerance for the main classes <code>vector</code> and <code>matrix</code> (opposite to the previous behavior). The new keywords <code>NO NA</code> replace the former keywords <code>NA OK</code> for these classes.</li>
+</ul><pre><code><span><span class="va">test</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/check_arg.html">check_arg</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"numeric vector"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co"># Before (version &lt;= 1.1.0)</span></span>
+<span><span class="fu">test</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span> <span class="co"># =&gt; Error</span></span>
+<span><span class="co"># Now (version &gt;= 1.2.0)</span></span>
+<span><span class="fu">test</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span> <span class="co"># =&gt; is OK</span></span></code></pre>
+<ul><li>IMPORTANT CHANGE: values of 0 or 1 are not valid by default anymore when the <code>logical</code> type is requested.</li>
+</ul><pre><code><span><span class="va">test</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="../reference/check_arg.html">check_arg</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"logical scalar"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co"># Before (version &lt;= 1.1.0)</span></span>
+<span><span class="fu">test</span><span class="op">(</span><span class="fl">0</span><span class="op">)</span> <span class="co"># =&gt; is OK</span></span>
+<span><span class="co"># Now (version &gt;= 1.2.0)</span></span>
+<span><span class="fu">test</span><span class="op">(</span><span class="fl">0</span><span class="op">)</span> <span class="co"># =&gt; Error, must be logical</span></span></code></pre>
+<p>The new behavior is equivalent to the previous behavior when the type was <code>strict logical</code>. Now strict logical has been removed and <code>loose logical</code> has been introduced which accepts 0 and 1. Why this change? I remarked that when you allow arguments of very different types, one of which was a logical scalar, it was really useful to distinguish between them safely using <code>isTRUE</code> or <code>is.logical</code>. With the previous default behavior you could have a 0 or 1 that would prevent you from doing that. Of course you could use <code>strict logical</code> to trigger that behavior but it was non-intuitive.</p>
+</div>
+<div class="section level5">
+<h5 id="new-features-1-2-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-2-0"></a></h5>
+<ul><li><p>In <code>check_value</code>: you can use the new argument <code>.prefix</code> to design the error message.</p></li>
+<li><p>Function <code>check_value_plus</code> now returns the value of the element it has checked and possibly modified.</p></li>
+</ul><pre><code><span><span class="va">x</span> <span class="op">=</span> <span class="st">"t"</span></span>
+<span><span class="va">y</span> <span class="op">=</span> <span class="fu"><a href="../reference/check_arg.html">check_value_plus</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"match(This, Is, Raw)"</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="co"># =&gt; "This"</span></span>
+<span><span class="va">fml</span> <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Petal.Length</span><span class="op">)</span></span>
+<span><span class="va">z</span> <span class="op">=</span> <span class="fu"><a href="../reference/check_arg.html">check_value_plus</a></span><span class="op">(</span><span class="va">fml</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, <span class="st">"evalset numeric vector"</span>, .data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span></span>
+<span><span class="va">z</span></span></code></pre>
+<ul><li>
+<code>sfill</code> now accepts NAs.</li>
+</ul></div>
+<div class="section level5">
+<h5 id="other-changes-1-2-0">Other changes<a class="anchor" aria-label="anchor" href="#other-changes-1-2-0"></a></h5>
+<ul><li><p>Error messages in <code>check_value</code> have been improved.</p></li>
+<li><p><code>enumerate_items</code> now returns the empty string when 0-length vectors are in input.</p></li>
+</ul></div>
+<div class="section level5">
+<h5 id="bug-correction-1-2-0">Bug correction<a class="anchor" aria-label="anchor" href="#bug-correction-1-2-0"></a></h5>
+<ul><li><p>The main class <code>match</code> could lead the argument to lose its attributes (like names), now corrected.</p></li>
+<li><p>Vectors containing only NAs when NAs are tolerated could lead to a wrong error message, now corrected.</p></li>
+<li><p>Bug when <code>check_value_plus</code> was called from the global environment and an error was triggered.</p></li>
+<li><p>Bug when <code>check_value</code> was called and <code>.arg_name</code> was provided.</p></li>
+<li><p>Bug when the “<code>...</code>” argument contained <code>NULL</code> values.</p></li>
+<li><p>The developer mode now never applies to functions from packages using dreamerr</p></li>
+<li><p>Behavior of argument <code>nmax</code> in <code>enumerate_items</code> is fixed.</p></li>
+<li><p>Type conversion of matrices returned a vector, now corrected.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.1.0" id="dreamerr-110">dreamerr 1.1.0<small>2020-05-03</small><a class="anchor" aria-label="anchor" href="#dreamerr-110"></a></h2>
+<div class="section level5">
+<h5 id="new-functions-1-1-0">New functions<a class="anchor" aria-label="anchor" href="#new-functions-1-1-0"></a></h5>
+<ul><li><p><code>sfill</code>: formatting function for strings. Fills a character string up to the required length. Helps to form nice messages.</p></li>
+<li><p><code>set_up</code>: sets the argument <code>up</code> semi-globally (i.e. throughout all calls within a function).</p></li>
+<li><p><code>set_check</code>: turns on/off argument checking semi-globally (i.e. throughout all calls within a function).</p></li>
+</ul></div>
+<div class="section level5">
+<h5 id="new-features-1-1-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-1-0"></a></h5>
+<ul><li>When devising your own message (with argument <code>.message</code>), you can use the special character <code>__ARG__</code>. If found, it will be replaced by the appropriate argument name.</li>
+</ul></div>
+<div class="section level5">
+<h5 id="user-visible-changes-1-1-0">User visible changes<a class="anchor" aria-label="anchor" href="#user-visible-changes-1-1-0"></a></h5>
+<ul><li><p>Message informing no NA tolerance in the types is prompted only when the error comes from NA values.</p></li>
+<li><p>The developer mode catches more errors and provide more suggestions.</p></li>
+<li><p><code>check_value</code> now doesn’t throw an error for missing <code>.x</code>.</p></li>
+</ul></div>
+<div class="section level5">
+<h5 id="change-in-argument-names-1-1-0">Change in argument names<a class="anchor" aria-label="anchor" href="#change-in-argument-names-1-1-0"></a></h5>
+<ul><li>
+<code>.call_up</code> becomes <code>.up</code> – retro-compatibility is NOT ensured.</li>
+</ul></div>
+<div class="section level5">
+<h5 id="bug-correction-1-1-0">Bug correction<a class="anchor" aria-label="anchor" href="#bug-correction-1-1-0"></a></h5>
+<ul><li><p>Small bug that could occur for the types <code>"integer scalar na ok"</code> with the argument equal to <code>NA</code>.</p></li>
+<li><p>Important bug when using features requiring evaluations in the environment. Now the default environment is set up appropriately.</p></li>
+<li><p>Bug when using <code>var(data,env)</code> in a <code>formula</code> class with missing <code>data</code>.</p></li>
+<li><p>Very sneaky bug when badly forming a call to <code>check_arg</code> to check <code>...</code> in nested functions is now caught.</p></li>
+<li><p>In <code>enumerate_items</code>, when there were many elements, <code>quote = TRUE</code> led to quote the <code>XX others</code> that shouldn’t be quoted. Now corrected.</p></li>
+<li><p>In the <code>formula</code> class, if a variable was passed as a <code>Formula</code> (notice the capital F), this caused an error if one-sidedness or two-sidedness were to be checked.</p></li>
+<li><p>Bug when in <code>n_letter</code> when negative numbers are in. This bug propagated into <code>check_arg</code>.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.0.0" id="dreamerr-100">dreamerr 1.0.0<small>2020-04-15</small><a class="anchor" aria-label="anchor" href="#dreamerr-100"></a></h2>
+<p>This package is the outcome of over a decade of coding and developing packages in R. As a package developer I always wanted my code to be “safe”: so that if a user provides arguments of the good type the functions always work, and if there’s an argument of the wrong type then an informative error message is shown.</p>
+<p>The big problem is that error handling is extremely time consuming, especially if you want to specify informative error messages stating clearly where the problem comes from. This problem is compounded when you want to offer the user flexible arguments that can be of many types. To do error handling properly in such situations is a nightmare: you end up with big if/else trees with a lot of different messages. And it doesn’t improve the speed of your code! So you have little incentives to invest time in proper error handling.</p>
+<p>This is why I developed this function. It’s one line of code, and it does all the work for you. From the developer side it’s super simple, and from the user side, s/he ends up with extremely informative error messages therefore saving a lot of time in debugging.</p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
