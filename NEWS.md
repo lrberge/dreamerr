@@ -1,4 +1,10 @@
 
+# dreamerr 1.4.1
+
+## Bug fixes
+
+- fix display problem in `fsignif`
+
 # dreamerr 1.4.0
 
 ## New functions
