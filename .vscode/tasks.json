@@ -17,16 +17,23 @@
   "tasks": [
     {
       "label": "Create terminals",
-      // => will call these two tasks
       "dependsOn": [
         "git bash",
         "R-term"
       ],
-      // => starts the task when opening VSCode
       "runOptions": {
         "runOn": "folderOpen"
       }
     },
+    {
+      "type": "R",
+      "code": [
+        "devtools::install()"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "label": "R: Install"
+    }
   ]
 }
 
