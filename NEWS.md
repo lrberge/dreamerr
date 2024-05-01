@@ -5,6 +5,8 @@
 
 - fix display problem in `fsignif`
 
+- inrease the requirement of `stringmagic` version to be compatible with R v3.5.0
+
 # dreamerr 1.4.0
 
 ## New functions
