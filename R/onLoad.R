@@ -6,11 +6,7 @@
 
 if(!exists("str2lang", asNamespace("base"))){
   str2lang = function(x){
-    res = parse(text = x, keep.source = FALSE)
-    if(is.expression(res)){
-      res = res[[1]]
-    }
-    res
+    parse(text = x, keep.source = FALSE)[[1]]
   }
 }
 
