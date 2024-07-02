@@ -37,5 +37,6 @@ export(package_stats)
 
 importFrom(Formula, Formula)
 importFrom(utils, find)
+importFrom(stringmagic, sma, string_magic)
 
 

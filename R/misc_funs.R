@@ -4,11 +4,6 @@
 # ~: small utilities
 #----------------------------------------------#
 
-####
-#### imports ####
-####
-
-sma = stringmagic::string_magic_alias(.check = FALSE)
 
 ####
 #### utilities ####

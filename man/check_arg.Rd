@@ -143,7 +143,7 @@ automatically formed. You can alternatively provide your own error message,
 maybe more tailored to your function. The reason of why there is a problem is
 appended in the end of the message. You can use the special character
 \code{__ARG__} in the message. If found, \code{__ARG__} will be
-replaced by the appropriate argument name.}
+replaced by the appropriate argument name. Note that this message is interpolated with \code{string_magic()}.}
 
 \item{.choices}{Only if one of the types (in argument \code{type}) is \code{"match"}. The values the argument can take. Note that even if the \code{type} is \code{"match"}, this argument is optional since you have other ways to declare the choices.}
 

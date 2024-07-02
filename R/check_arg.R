@@ -48,6 +48,10 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
   if(!missing(message) && !is.null(message) && grepl("__ARG__", message, fixed = TRUE)){
     message = gsub("__ARG__", x_name, message)
   }
+  
+  if(!missing(message) && !is.null(message) && grepl("{", message, fixed = TRUE)){
+    message = string_magic(message, .envir = parent.frame(3))
+  }
 
   # We check the type is well formed
   type_clean = gsub("(?i)(safe ?)?null(\\{[^\\}]*\\})?|eval(set)?|dotnames|mbt", "", type)
@@ -1233,7 +1237,7 @@ deparse_short = function(x){
 #' maybe more tailored to your function. The reason of why there is a problem is 
 #' appended in the end of the message. You can use the special character 
 #' \code{__ARG__} in the message. If found, \code{__ARG__} will be 
-#' replaced by the appropriate argument name.
+#' replaced by the appropriate argument name. Note that this message is interpolated with \code{string_magic()}.
 #' @param .choices Only if one of the types (in argument \code{type}) is \code{"match"}. The values the argument can take. Note that even if the \code{type} is \code{"match"}, this argument is optional since you have other ways to declare the choices.
 #' @param .data Must be a data.frame, a list or a vector. Used in three situations. 1) if the global keywords \code{eval} or \code{evalset} are present: the argument will also be evaluated in the data (i.e. the argument can be a variable name of the data set). 2) if the argument is expected to be a formula and \code{var(data)} is included in the type: then the formula will be expected to contain variables from \code{.data}. 3) if the keywords \code{len(data)}, \code{nrow(data)} or \code{ncol(data)} are requested, then the required length, number of rows/columns, will be based on the data provided in \code{.data}.
 #' @param .value An integer scalar or a named list of integers scalars. Used when the keyword \code{value} is present (like for instance in \code{len(value)}). If several values are to be provided, then it must be a named list with names equal to the codes: for instance if \code{nrow(value)} and \code{ncol(value)} are both present in the type, you can use (numbers are an example) \code{.value = list(nrow = 5, ncol = 6)}. See Section IV) in the examples.
@@ -2358,6 +2362,7 @@ check_value_plus = check_set_value
 #### CORE FUNCTION ####
 ####
 
+
 check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9, ..., 
                           .message, .choices = NULL, .data = list(), .value, .env, .up = 0, 
                           .arg_name, .prefix, .mc, .is_plus = FALSE, .is_value = FALSE){
@@ -2403,6 +2408,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     #
     # CHECK ARG ####
     #
+    
 
     # We need the current call (both to identify the dots and to get the type)
     current_call = sys.call(sys.nframe() - 1)

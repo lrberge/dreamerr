@@ -1,6 +1,10 @@
 
 # dreamerr 1.4.1
 
+## New features
+
+- the argument `.message` of the `check_` functions is now interpolated with `string_magic()`
+
 ## Bug fixes
 
 - fix display problem in `fsignif`
