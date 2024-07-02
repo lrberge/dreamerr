@@ -28,7 +28,7 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
     IS_DOTS = TRUE
     text_problem = arg_name_header(x_name, problem = TRUE)
   } else {
-    text_problem = " Problem: "
+    text_problem = "\nPROBLEM: "
   }
 
   # start_with_value: specific to check_value // whether x refers to an argument or just a value

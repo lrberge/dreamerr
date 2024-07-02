@@ -5,6 +5,10 @@
 
 - the argument `.message` of the `check_` functions is now interpolated with `string_magic()`
 
+## Minor changes
+
+- to increase clarity, now the problem leading to an error is displayed in a newline with the suffix `PROBLEM` in uppercase
+
 ## Bug fixes
 
 - fix display problem in `fsignif`
