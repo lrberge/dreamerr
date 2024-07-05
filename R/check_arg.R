@@ -4897,7 +4897,11 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
 
           if(any(x_omit[[k]] < value)){
-            all_reasons[[k]][i] = paste0(msg, "strictly lower than ", signif_plus(value, 5, commas = FALSE))
+            all_reasons[[k]][i] = paste0(
+              msg, "strictly lower than ", 
+              signif_plus(value, 5, commas = FALSE), 
+              if(length(x_omit[[k]]) <= 5) paste0(" (", paste(x_omit[[k]][x_omit[[k]] < value], collapse = ", "), ")")
+            )
             is_done_or_fail[k] = TRUE
             next
           }
@@ -4912,7 +4916,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
           if(any(x_omit[[k]] <= value)){
             if(any(x_omit[[k]] < value)){
-              all_reasons[[k]][i] = paste0(msg, "lower than ", signif_plus(value, 5, commas = FALSE))
+              all_reasons[[k]][i] = paste0(
+                msg, "lower than ", signif_plus(value, 5, commas = FALSE),
+                if(length(x_omit[[k]]) <= 5) paste0(" (", paste(x_omit[[k]][x_omit[[k]] < value], collapse = ", "), ")")
+              )
             } else {
               all_reasons[[k]][i] = paste0(msg, "equal to ", signif_plus(value, 5, commas = FALSE), " (while it should be *striclty* greater than it)")
             }
@@ -4931,7 +4938,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
 
           if(any(x_omit[[k]] > value)){
-            all_reasons[[k]][i] = paste0(msg, "strictly greater than ", signif_plus(value, 5, commas = FALSE))
+            all_reasons[[k]][i] = paste0(
+              msg, "strictly greater than ", signif_plus(value, 5, commas = FALSE),
+              if(length(x_omit[[k]]) <= 5) paste0(" (", paste(x_omit[[k]][x_omit[[k]] > value], collapse = ", "), ")")
+            )
             is_done_or_fail[k] = TRUE
             next
           }
@@ -4946,7 +4956,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
           if(any(x_omit[[k]] >= value)){
             if(any(x_omit[[k]] > value)){
-              all_reasons[[k]][i] = paste0(msg, "greater than ", signif_plus(value, 5, commas = FALSE))
+              all_reasons[[k]][i] = paste0(
+                msg, "greater than ", signif_plus(value, 5, commas = FALSE),
+                if(length(x_omit[[k]]) <= 5) paste0(" (", paste(x_omit[[k]][x_omit[[k]] > value], collapse = ", "), ")")
+              )
             } else {
               all_reasons[[k]][i] = paste0(msg, "equal to ", signif_plus(value, 5, commas = FALSE), " (while it should be *striclty* lower than it)")
             }

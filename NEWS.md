@@ -9,6 +9,8 @@
 
 - to increase clarity, now the problem leading to an error is displayed in a newline with the suffix `PROBLEM` in uppercase
 
+- improve clarity of error messages involving lower than/greater than
+
 ## Bug fixes
 
 - fix display problem in `fsignif`
