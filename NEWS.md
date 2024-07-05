@@ -15,6 +15,8 @@
 
 - inrease the requirement of `stringmagic` version to be compatible with R v3.5.0
 
+- the `check_arg` family of functions now correctly reports the full call stack when requested
+
 # dreamerr 1.4.0
 
 ## New functions

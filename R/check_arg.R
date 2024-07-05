@@ -657,9 +657,19 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
   } else {
     full_msg = paste0(message, text_problem, error_msg)
   }
+  
+  show_full_stack = isTRUE(getOption("dreamerr_show_full_stack"))
+  if(show_full_stack){
+    sc = sys.calls()
+    my_call = sapply(sc, function(x) deparse(x, width.cutoff = 200L, nlines = 1))
+    my_call = sma("{'\n'c ! [{format.0 ? 1:length(my_call)}] {'100|...'k ? my_call}}")
 
+    my_call = paste0("the full stack is shown (set this off with setDreamerr_show_stack(FALSE))\n", my_call)
+  } else {
+    my_call = paste0("in ", my_call)
+  }
 
-  stop("in ", my_call, ":\n", fit_screen(full_msg), call. = FALSE)
+  stop(my_call, ":\n", fit_screen(full_msg), call. = FALSE)
 
 }
 
