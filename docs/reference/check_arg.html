@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dreamerr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.5.0</span>
       </span>
     </div>
 
@@ -223,7 +223,7 @@ automatically formed. You can alternatively provide your own error message,
 maybe more tailored to your function. The reason of why there is a problem is
 appended in the end of the message. You can use the special character
 <code>__ARG__</code> in the message. If found, <code>__ARG__</code> will be
-replaced by the appropriate argument name.</p></dd>
+replaced by the appropriate argument name. Note that this message is interpolated with <code>string_magic()</code>.</p></dd>
 
 
 <dt>.choices</dt>
@@ -327,7 +327,6 @@ replaced by the appropriate argument name.</p></dd>
 <li><p><code>safe NULL</code>: allows the argument to be equal to <code>NULL</code>, but an error is thrown if the argument is of the type <code>base$variable</code> or <code>base[["variable"]]</code>. This is to prevent oversights from the user, especially useful when the main class is a vector.</p></li>
 <li><p><code>NULL{expr}</code>: allows the argument to be equal to <code>NULL</code>, if the argument is <code>NULL</code>, then it assigns the value of expr to the argument.</p></li>
 <li><p><code>MBT</code>: (means "must be there") an error is thrown if the argument is not provided by the user.</p></li>
-<li><p><code>L0</code>: allows 0-length vectors--overrides the default which requires that any argument should have a positive length</p></li>
 <li><p><code>eval</code>: used in combination with the extra argument <code>.data</code>. Evaluates the value of the argument both in the data set and in the environment (this means the argument can be a variable name).</p></li>
 <li><p><code>evalset</code>: like <code>eval</code>, but after evaluation, assigns the obtained value to the argument. Only available in <code>check_set_arg</code>.</p></li>
 <li><p><code>dotnames</code>: only when checking <code>'...'</code> argument (see the related section below). Enforces that each object in <code>'...'</code> has a name.</p></li>
@@ -344,7 +343,7 @@ replaced by the appropriate argument name.</p></dd>
 <li><p>by writing the choices in parentheses: e.g. <code>fun = function(x) check_arg(x, "match(Tom, John)")</code></p></li>
 </ul><p>When the user doesn't provide the argument, the default is set to the first choice.
 Since the main class <code>match</code> performs a re-assignment of the variable, it is only available in <code>check_set_arg</code>.</p>
-<p>The main class <code>charin</code> is similar to <code>match</code> in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) that's the main difference between <code>check_arg</code> and <code>check_set_arg</code>.</p>
+<p>The main class <code>charin</code> is similar to <code>match</code> in that it expects a single character string in a set of choices. The main differences are: i) there is no partial matching, ii) the choices cannot be set by setting the argument default, and iii) its checking can be turned off with setDreamer_check(FALSE) (that's the main difference between <code>check_arg</code> and <code>check_set_arg</code>).</p>
     </div>
     <div id="combining-multiple-types">
     <h2>Combining multiple types</h2>
@@ -420,7 +419,7 @@ Since the main class <code>match</code> performs a re-assignment of the variable
     
 
 
-<p>Although the argument checking offered by <code>check_arg</code> is highly optimized and fast (it depends on the type and your computer, but it is roughly of the order of 80 micro seconds for non-missing arguments, 20 micro seconds for missing arguments), you may want to disable it for small functions in large loops (&gt;100K iterations although this practice is not really common in R). If so, just use the function <code><a href="setDreamerr_check.html">setDreamerr_check</a></code>, by typing <code>setDreamerr_check(FALSE)</code>. This will disable any call to <code>check_arg</code>.</p>
+<p>Although the argument checking offered by <code>check_arg</code> is highly optimized and fast (it depends on the type (and your computer), but it is roughly of the order of 80 micro seconds for non-missing arguments, 20 micro seconds for missing arguments), you may want to disable it for small functions in large loops (&gt;100K iterations although this practice is not really common in R). If so, just use the function <code><a href="setDreamerr_check.html">setDreamerr_check</a></code>, by typing <code>setDreamerr_check(FALSE)</code>. This will disable any call to <code>check_arg</code>.</p>
 <p>Note that the argument checking of <code>check_set_arg</code> cannot be disabled because the special types it allows perform reassignment in the upper frame. That's the main difference with <code>check_arg</code>.</p>
     </div>
     <div id="the-developer-mode">
@@ -469,76 +468,78 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co"># logical</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xlog <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xlog = NA):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar without NA. Problem: it is equal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  to NA while it should be NA-free.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar without NA.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is equal to NA while it should be NA-free.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xlog <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xlog = 2):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar. Problem: it is not of type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  logical (instead it is of type 'numeric').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of type logical (instead it is of type 'numeric').</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xlog <span class="op">=</span> <span class="va">sum</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xlog = sum):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar. Problem: it is not a scalar, it's</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  a function.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not a scalar, it's a function.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xlog <span class="op">=</span> <span class="va">faefeaf5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xlog = faefeaf5):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument 'xlog' (equal to 'faefeaf5') could not be evaluated. Problem:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  object 'faefeaf5' not found.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument 'xlog' (equal to 'faefeaf5') could not be evaluated.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: object 'faefeaf5' not found.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xlog <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xlog = c(TRUE, FALSE)):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar. Problem: it is not of length 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (currently: 2).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of length 1 (currently: 2).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xlog <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xlog = c()):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar. Problem: it is NULL.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog` must be a logical scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of length 1 (currently: 0).</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># numeric</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xnum <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xnum = NA):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnum` must be a numeric scalar without NA. Problem: it is equal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  to NA while it should be NA-free.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnum` must be a numeric scalar without NA.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is equal to NA while it should be NA-free.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xnum <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xnum = 1:5):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnum` must be a numeric scalar. Problem: it is not of length 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (currently: 5).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnum` must be a numeric scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of length 1 (currently: 5).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xnum <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xnum = Sys.Date()):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnum` must be a numeric scalar. Problem: it is not numeric</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (instead it is of type 'Date').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnum` must be a numeric scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not numeric (instead it is of type 'Date').</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># integer</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xint <span class="op">=</span> <span class="fl">5.5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xint = 5.5):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xint` must be an integer scalar with positive values. Problem: it</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  is not an integer, although it is numeric.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xint` must be an integer scalar with positive values.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not an integer, although it is numeric.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xint <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xint = -1):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xint` must be an integer scalar with positive values. Problem: it</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  is strictly lower than 0.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xint` must be an integer scalar with positive values.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is strictly lower than 0 (-1).</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># num &lt; 0.15</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xnumlt <span class="op">=</span> <span class="fl">0.15</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xnumlt = 0.15):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnumlt` must be a numeric scalar strictly lower than 0.15.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Problem: it is equal to 0.15000 (while it should be *striclty* lower than</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  it).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is equal to 0.15000 (while it should be *striclty* lower than</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> it).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xnumlt <span class="op">=</span> <span class="fl">0.16</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xnumlt = 0.16):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnumlt` must be a numeric scalar strictly lower than 0.15.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Problem: it is greater than 0.15000.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is greater than 0.15000 (0.16).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xnumlt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xnumlt = Sys.Date()):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnumlt` must be a numeric scalar strictly lower than 0.15.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Problem: it is not numeric (instead it is of type 'Date').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not numeric (instead it is of type 'Date').</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Date</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_scalar</span><span class="op">(</span>xdate <span class="op">=</span> <span class="fl">0.15</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_scalar(xdate = 0.15):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xdate` must be a scalar of type 'Date'. Problem: it is not of the</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  appropriate type (instead it is of type 'numeric').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xdate` must be a scalar of type 'Date'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of the appropriate type (instead it is of type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'numeric').</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
-<span class="r-in"><span><span class="co"># II) Examples for the globals: NULL, L0, MBT, eval, evalset</span></span></span>
+<span class="r-in"><span><span class="co"># II) Examples for the globals: NULL, MBT, eval, evalset</span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">test_globals</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">xnum</span>, <span class="va">xlog</span> <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">xint</span><span class="op">)</span><span class="op">{</span></span></span>
@@ -550,8 +551,7 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span>  <span class="co"># NULL allows NULL values</span></span></span>
 <span class="r-in"><span>  <span class="fu">check_arg</span><span class="op">(</span><span class="va">xlog</span>, <span class="st">"logical scalar safe NULL"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="co"># use L0 to accept length-0 objects</span></span></span>
-<span class="r-in"><span>  <span class="fu">check_arg</span><span class="op">(</span><span class="va">xint</span>, <span class="st">"integer vector L0"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">check_arg</span><span class="op">(</span><span class="va">xint</span>, <span class="st">"integer vector"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>xnum <span class="op">=</span> <span class="va">xnum</span>, xlog <span class="op">=</span> <span class="va">xlog</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
@@ -559,7 +559,8 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co"># xnum is required because of MBT option</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_globals</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_globals():</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument 'xnum' is required. Problem: it is missing.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument 'xnum' is required.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is missing.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># NULL{expr} sets the value of xnum to expr if xnum = NULL</span></span></span>
 <span class="r-in"><span><span class="co"># Here NULL{1} sets xnum to 1</span></span></span>
@@ -584,9 +585,9 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co"># ex: the variable 'log' does not exist in the iris DF</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_globals</span><span class="op">(</span><span class="fl">5</span>, xlog <span class="op">=</span> <span class="va">iris</span><span class="op">$</span><span class="va">log</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_globals(5, xlog = iris$log):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  The (nullable) argument `xlog` must be a logical scalar. Problem: it is</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  NULL (fine) but you entered 'iris$log'. If you really want it to be NULL,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  please use NULL directly or a variable containing NULL.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  The (nullable) argument `xlog` must be a logical scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is NULL (fine) but you entered 'iris$log'. If you really want it</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> to be NULL, please use NULL directly or a variable containing NULL.</span>
 <span class="r-in"><span><span class="co"># but xnum accepts it</span></span></span>
 <span class="r-in"><span><span class="fu">test_globals</span><span class="op">(</span><span class="va">iris</span><span class="op">$</span><span class="va">log</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $xnum</span>
@@ -596,20 +597,6 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># L0 means not NULL, 0-length vectors are OK</span></span></span>
-<span class="r-in"><span><span class="co"># 0-length is OK for xint:</span></span></span>
-<span class="r-in"><span><span class="fu">test_globals</span><span class="op">(</span>xnum <span class="op">=</span> <span class="fl">2</span>, xint <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $xnum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $xlog</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span><span class="co"># L0 still checks the type:</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_globals</span><span class="op">(</span><span class="fl">2</span>, xint <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_globals(2, xint = numeric(0)):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xint` must be an integer vector. Problem: it is of length 0 and</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  of type 'numeric'.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
 <span class="r-in"><span><span class="co"># eval and evalset</span></span></span>
@@ -639,9 +626,9 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co"># if we use a variable not in the environment nor in the data =&gt; error</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_eval</span><span class="op">(</span>x1 <span class="op">=</span> <span class="va">Sopal.Length</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_eval(x1 = Sopal.Length, data = iri...:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument 'x1' (equal to 'Sopal.Length') could not be evaluated. Problem:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  The variable 'Sopal.Length' is not in the data set (given in argument</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'data') nor in the environment.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument 'x1' (equal to 'Sopal.Length') could not be evaluated.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: The variable 'Sopal.Length' is not in the data set (given in</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> argument 'data') nor in the environment.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># but eval doesn't reassign back the value of the argument:</span></span></span>
 <span class="r-in"><span><span class="fu">test_eval</span><span class="op">(</span>x1 <span class="op">=</span> <span class="va">Sepal.Length</span>, data <span class="op">=</span> <span class="va">iris</span>, i <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
@@ -714,41 +701,49 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_match</span><span class="op">(</span>x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Au"</span>, <span class="st">"revoir"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_match(x1 = c("Au", "revoir")):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x1` must be a single character equal to 'bonjour' or 'Au revoir'</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (case sensitive). Problem: it is not of length 1 (currently: 2).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (case sensitive).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of length 1 (currently: 2).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_match</span><span class="op">(</span>x1 <span class="op">=</span> <span class="st">"au"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_match(x1 = "au"):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x1` must be a single character equal to 'bonjour' or 'Au revoir'</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (case sensitive). Problem: no match was found for 'au' (note that it is</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  case sensitive, maybe you meant 'Au revoir'?).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (case sensitive).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: no match was found for 'au' (note that it is case sensitive, maybe</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> you meant 'Au revoir'?).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_match</span><span class="op">(</span>x1 <span class="op">=</span> <span class="va">sum</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_match(x1 = sum):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x1` must be a single character equal to 'bonjour' or 'Au revoir'</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (case sensitive). Problem: it is not a vector, it's a function.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (case sensitive).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not a vector, it's a function.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_match</span><span class="op">(</span>x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_match(x1 = list(a = 1:5)):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x1` must be a single character equal to 'bonjour' or 'Au revoir'</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (case sensitive). Problem: it is not a vector, it's a list.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (case sensitive).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not a vector, it's a list.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_match</span><span class="op">(</span>x2 <span class="op">=</span> <span class="st">"san"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_match(x2 = "san"):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x2` must be a single character equal to 'Sarah', 'Santa', 'Santa</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Fe' or 'SANTA'. Problem: more than one value was matched for 'san':</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'Santa', 'Santa Fe' and 'SANTA'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Fe' or 'SANTA'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: more than one value was matched for 'san': 'Santa', 'Santa Fe' and</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'SANTA'.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_match</span><span class="op">(</span>x2 <span class="op">=</span> <span class="st">"santa"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_match(x2 = "santa"):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x2` must be a single character equal to 'Sarah', 'Santa', 'Santa</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Fe' or 'SANTA'. Problem: more than one value was matched for 'santa':</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'Santa' and 'SANTA', please check the case.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Fe' or 'SANTA'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: more than one value was matched for 'santa': 'Santa' and 'SANTA',</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> please check the case.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Same value as x3's default, but now provided by the user</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_match</span><span class="op">(</span>x3 <span class="op">=</span> <span class="st">"test"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_match(x3 = "test"):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x3` must be a character vector with values equal to 'Orange',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'Juice' or 'Good'. Problem: no match was found for 'test'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  'Juice' or 'Good'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: no match was found for 'test'.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_match</span><span class="op">(</span>x3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"or"</span>, <span class="st">"ju"</span>, <span class="st">"bad"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_match(x3 = c("or", "ju", "bad")):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x3` must be a character vector with values equal to 'Orange',</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'Juice' or 'Good'. Problem: no match was found for 'bad' [third element].</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  'Juice' or 'Good'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: no match was found for 'bad' [third element].</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># You can check multiple arguments at once</span></span></span>
 <span class="r-in"><span><span class="co"># [see details for multiple arguments in Section X)]</span></span></span>
@@ -796,8 +791,8 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_charin</span><span class="op">(</span><span class="st">"au re"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_charin("au re"):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x1` must be a single character equal to 'bonjour' or 'au revoir'.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Problem: the value 'au re' doesn't match any choice (note that no partial</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  matching is performed).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: the value 'au re' doesn't match any choice (note that no partial</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> matching is performed).</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
@@ -854,64 +849,69 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xvec <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xvec = 2):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xvec` must be an integer vector with values in between 5 and 20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (strictly). Problem: it is strictly lower than 5.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (strictly).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is strictly lower than 5 (2).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xvec <span class="op">=</span> <span class="fl">21</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xvec = 21):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xvec` must be an integer vector with values in between 5 and 20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (strictly). Problem: it is greater than 20.086.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (strictly).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is greater than 20.086 (21).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xvec <span class="op">=</span> <span class="fl">5.5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xvec = 5.5):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xvec` must be an integer vector with values in between 5 and 20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (strictly). Problem: it is not of type integer, although it is numeric.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (strictly).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of type integer, although it is numeric.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Matrix checks:</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xmat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xmat = matrix(TRUE, 3, 4)):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xmat` must be a logical matrix with at least 2 rows and with 3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  columns. Problem: it has 4 columns instead of 3.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  columns.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it has 4 columns instead of 3.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xmat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xmat = matrix(2, 3, 3)):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xmat` must be a logical matrix with at least 2 rows and with 3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  columns. Problem: it is not of type logical (instead it is of type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'numeric').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  columns.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of type logical (instead it is of type 'numeric').</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xmat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xmat = matrix(FALSE, 1, 3)):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xmat` must be a logical matrix with at least 2 rows and with 3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  columns. Problem: it has 1 row while it should have at least 2 rows.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  columns.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it has 1 row while it should have at least 2 rows.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xmat <span class="op">=</span> <span class="va">iris</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xmat = iris):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xmat` must be a logical matrix. Problem: it is not a matrix</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (instead it is a data.frame).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xmat` must be a logical matrix.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not a matrix (instead it is a data.frame).</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xvmat <span class="op">=</span> <span class="va">iris</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xvmat = iris):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xvmat` must be a matrix (or vector) of type 'character' or</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'integer'. Problem: it is not a matrix nor a vector (instead it is a</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  data.frame).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  'integer'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not a matrix nor a vector (instead it is a data.frame).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xvmat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xvmat = c(NA, 5)):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xvmat` must be a matrix (or vector) of type 'character' or</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'integer' without NAs with no more than 3 rows. Problem: it contains 1 NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  while it should be NA-free.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  'integer' without NAs with no more than 3 rows.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it contains 1 NA while it should be NA-free.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xstmat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xstmat = matrix(1, 1, 3)):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xstmat` must be a square integer matrix. Problem: it is not a</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  square matrix (1 row and 3 columns).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xstmat` must be a square integer matrix.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not a square matrix (1 row and 3 columns).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xstmat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span><span class="op">)</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xstmat = matrix(c(TRUE, FALSE...:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xstmat` must be a square integer matrix. Problem: it is not</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  strictly of type integer, instead it is a logical.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xstmat` must be a square integer matrix.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not strictly of type integer, instead it is a logical.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Named vector checks:</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xnamed <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xnamed = 1:3):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnamed` must be a named vector of length 2. Problem: it does not</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  have a name attribute.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnamed` must be a named vector of length 2.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it does not have a name attribute.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_vmat</span><span class="op">(</span>xnamed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>bon<span class="op">=</span><span class="fl">1</span>, jour<span class="op">=</span><span class="fl">2</span>, les<span class="op">=</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_vmat(xnamed = c(bon = 1, jour = 2,...:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnamed` must be a named vector of length 2. Problem: it is of</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  length 3 instead of 2.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnamed` must be a named vector of length 2.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is of length 3 instead of 2.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
 <span class="r-in"><span><span class="co"># Illustration of the keywords 'data', 'value'</span></span></span>
@@ -937,15 +937,15 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="va">z</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, <span class="fl">5</span>,  <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">test_dynamic_restriction</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">z</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          [,1]      [,2]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] 14.25502 -13.48291</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2,] 14.25502 -13.48291</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           [,1]      [,2]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] -14.68151 -15.81842</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,] -14.68151 -15.81842</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Now error</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_dynamic_restriction</span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="va">z</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_dynamic_restriction(x, matrix(5, 1...:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `y` must be a numeric matrix with, in this context, 3 rows.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Problem: it has 1 row instead of 3.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it has 1 row instead of 3.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 'data'</span></span></span>
 <span class="r-in"><span><span class="co"># Computing maximum difference between two matrices</span></span></span>
@@ -964,7 +964,8 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_dynamic_bis</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_dynamic_bis(x, y):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `y` must be a numeric matrix with the same dimensions as argument</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'x' (2 rows and 3 columns). Problem: it has 3 rows instead of 2.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  'x' (2 rows and 3 columns).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it has 3 rows instead of 2.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
@@ -987,18 +988,15 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_funlist</span><span class="op">(</span>xfun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">z</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span> <span class="op">+</span> <span class="va">z</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_funlist(xfun = function(x, y, z) x...:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xfun` must be a function with a number of arguments in between 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  and 2. Problem: it has 3 arguments while it should have a maximum of 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  arguments.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  and 2.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it has 3 arguments while it should have a maximum of 2 arguments.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># list checks:</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_funlist</span><span class="op">(</span>xlist <span class="op">=</span> <span class="va">iris</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_funlist(xlist = iris[1:4]):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlist` must be a list of length not greater than 3. Problem: it</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  is of length 4, while it should have a maximum length of 3.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlist` must be a list of length not greater than 3.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is of length 4, while it should have a maximum length of 3.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_funlist</span><span class="op">(</span>xlist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_funlist(xlist = list()):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlist` must be a list. Problem: it is of length 0, while it</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  should have a positive length.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
@@ -1028,16 +1026,13 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co"># data.frame checks:</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_df</span><span class="op">(</span>xdf <span class="op">=</span> <span class="va">iris</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">50</span>,<span class="op">]</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_df(xdf = iris[1:50, ]):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xdf` must be a data.frame with at least 100 rows. Problem: it has</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  50 rows while it should have at least 100 rows.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xdf` must be a data.frame with at least 100 rows.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it has 50 rows while it should have at least 100 rows.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_df</span><span class="op">(</span>xdf <span class="op">=</span> <span class="va">iris</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_df(xdf = iris[integer(0)]):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xdf` must be a data.frame. Problem: it is of length 0, while it</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  should have a positive length.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_df</span><span class="op">(</span>xdf <span class="op">=</span> <span class="va">iris</span><span class="op">$</span><span class="va">Sepal.Length</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_df(xdf = iris$Sepal.Length):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xdf` must be a data.frame. Problem: it is not a data.frame</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (instead it is a vector).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xdf` must be a data.frame.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not a data.frame (instead it is a vector).</span>
 <span class="r-in"><span><span class="co"># Note that the following works:</span></span></span>
 <span class="r-in"><span><span class="fu">test_df</span><span class="op">(</span>xvdf <span class="op">=</span> <span class="va">iris</span><span class="op">$</span><span class="va">Sepal.Length</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1045,9 +1040,9 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_df</span><span class="op">(</span>xcustom <span class="op">=</span> <span class="va">iris</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_df(xcustom = iris):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  The (nullable) argument `xcustom` must be either: i) an object of class</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'lm' or 'glm', or ii) equal to NA. Problem: i) the object is not of the</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  appropriate class (instead it is of class data.frame), or ii) it is not of</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  length 1 (currently: 5).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  'lm' or 'glm', or ii) equal to NA.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: i) the object is not of the appropriate class (instead it is of</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> class data.frame), or ii) it is not of length 1 (currently: 5).</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
 <span class="r-in"><span><span class="co"># VIII) Formulas</span></span></span>
@@ -1104,13 +1099,13 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-out co"><span class="r-pr">#&gt;</span> Problem: the variable 'Sepal.Length' isn't there.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_formulas</span><span class="op">(</span>fml2 <span class="op">=</span> <span class="va">Sepal.Length</span><span class="op">~</span><span class="va">x1</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_formulas(fml2 = Sepal.Length ~ x1,...:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `fml2` must be a one-sided formula. Problem: it is currently</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  two-sided.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `fml2` must be a one-sided formula.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is currently two-sided.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_formulas</span><span class="op">(</span>fml3 <span class="op">=</span> <span class="op">~</span><span class="va">x1</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_formulas(fml3 = ~x1, data = iris):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `fml3` must be a two-sided formula. Problem: it is currently only</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  one-sided.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `fml3` must be a two-sided formula.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is currently only one-sided.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_formulas</span><span class="op">(</span>fml3 <span class="op">=</span> <span class="va">x1</span><span class="op">~</span><span class="va">x555</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_formulas(fml3 = x1 ~ x555, data = iris): </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> The argument 'fml3' is a formula whose variables must be in the data set</span>
@@ -1121,14 +1116,14 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_formulas(fml4 = a ~ b | c | d):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `fml4` must be a formula with no more than 2 parts in the</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  right-hand-side and with no more than 1 part in the left-hand-side.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Problem: it has 3 parts in the right-hand-side while it should have a</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  maximum of 2 parts.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it has 3 parts in the right-hand-side while it should have a</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> maximum of 2 parts.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_formulas</span><span class="op">(</span>fml4 <span class="op">=</span> <span class="va">a</span> <span class="op">|</span> <span class="va">b</span> <span class="op">~</span> <span class="va">c</span> <span class="op">|</span> <span class="va">d</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_formulas(fml4 = a | b ~ c | d):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `fml4` must be a formula with no more than 2 parts in the</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  right-hand-side and with no more than 1 part in the left-hand-side.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Problem: it has 2 parts in the left-hand-side while it should have a</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  maximum of 1 part.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it has 2 parts in the left-hand-side while it should have a maximum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> of 1 part.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
@@ -1137,7 +1132,7 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co">#</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># You can check multiple types using a pipe: '|'</span></span></span>
-<span class="r-in"><span><span class="co"># Note that global keywords (like NULL, eval, l0, etc) need not be</span></span></span>
+<span class="r-in"><span><span class="co"># Note that global keywords (like NULL, eval, etc) need not be</span></span></span>
 <span class="r-in"><span><span class="co"># separated by pipes. They can be anywhere, the following are identical:</span></span></span>
 <span class="r-in"><span><span class="co">#  - "character scalar | data.frame NULL"</span></span></span>
 <span class="r-in"><span><span class="co">#  - "NULL character scalar | data.frame"</span></span></span>
@@ -1163,15 +1158,15 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_mult</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="st">"bonjour"</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_mult(matrix("bonjour", 1, 2)):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x` must be either: i) a numeric vector, ii) a square character</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  matrix, or iii) an integer scalar. Problem: it is a matrix but it is not a</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  square matrix (1 row and 2 columns).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  matrix, or iii) an integer scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is a matrix but it is not a square matrix (1 row and 2 columns).</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_mult</span><span class="op">(</span><span class="fl">1.1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_mult(1.1):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x` must be either: i) a numeric vector of length at least equal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  to 2, ii) a square character matrix, or iii) an integer scalar. Problem: i)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  it is of length 1, while it should be at least of length 2, ii) it is not a</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  matrix (instead it is a vector), or iii) it is not an integer, although it</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  is numeric.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  to 2, ii) a square character matrix, or iii) an integer scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: i) it is of length 1, while it should be at least of length 2, ii)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> it is not a matrix (instead it is a vector), or iii) it is not an integer,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> although it is numeric.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
@@ -1196,12 +1191,12 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co"># Let's throw some errors</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_multiarg</span><span class="op">(</span>xlog2 <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_multiarg(xlog2 = 4):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog2` must be a logical scalar. Problem: it is not of type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  logical (instead it is of type 'numeric').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xlog2` must be a logical scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of type logical (instead it is of type 'numeric').</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_multiarg</span><span class="op">(</span>xnum3 <span class="op">=</span> <span class="st">"test"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_multiarg(xnum3 = "test"):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnum3` must be a numeric vector. Problem: it is not numeric</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (instead it is of type 'character').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `xnum3` must be a numeric vector.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not numeric (instead it is of type 'character').</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
@@ -1247,8 +1242,9 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co"># What follows doesn't work</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_multi_subtypes</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">5.5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_multi_subtypes(x = 5.5):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x` must be a scalar of type 'integer' or 'logical'. Problem: it</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  is not of the appropriate type (instead it is of type 'numeric').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `x` must be a scalar of type 'integer' or 'logical'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of the appropriate type (instead it is of type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'numeric').</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Note that it works if x = 5</span></span></span>
 <span class="r-in"><span><span class="co">#  (for check_arg 5 is integer although is.integer(5) returns FALSE)</span></span></span>
@@ -1257,8 +1253,8 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">test_multi_subtypes</span><span class="op">(</span>y <span class="op">=</span> <span class="fl">5.5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in test_multi_subtypes(y = 5.5):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `y` must be a vector of type 'character', 'factor' or 'Date'.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Problem: it is not of the appropriate type (instead it is of type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  'numeric').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of the appropriate type (instead it is of type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'numeric').</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Testing the "conv" keyword:</span></span></span>
 <span class="r-in"><span></span></span>
@@ -1318,11 +1314,12 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co"># Let's throw some errors</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">sum_fun</span><span class="op">(</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in sum_fun(5):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument 'y' is required. Problem: it is missing.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument 'y' is required.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is missing.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">diff_fun</span><span class="op">(</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in diff_fun(5, 1:5):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `y` must be a numeric scalar. Problem: it is not of length 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (currently: 5).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Argument `y` must be a numeric scalar.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not of length 1 (currently: 5).</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The errors are at the level of sum_fun/diff_fun although</span></span></span>
 <span class="r-in"><span><span class="co"># the arguments have been checked in my_internal.</span></span></span>
@@ -1346,8 +1343,8 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="fu">check_arg</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="st">"numeric vector"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="co"># First we ensure the arguments are lists (even of 0-length)</span></span></span>
-<span class="r-in"><span>  <span class="fu">check_arg</span><span class="op">(</span><span class="va">lm.opts</span>, <span class="va">plot.opts</span>, <span class="va">line.opts</span>, <span class="st">"named list L0"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="co"># First we ensure the arguments are lists</span></span></span>
+<span class="r-in"><span>  <span class="fu">check_arg</span><span class="op">(</span><span class="va">lm.opts</span>, <span class="va">plot.opts</span>, <span class="va">line.opts</span>, <span class="st">"named list"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># The linear regression</span></span></span>
 <span class="r-in"><span>  <span class="va">lm.opts</span><span class="op">$</span><span class="va">formula</span> <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">x</span></span></span>
@@ -1386,12 +1383,14 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">plot_cor</span><span class="op">(</span><span class="va">sepal_length</span>, <span class="va">y</span>, plot.opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in plot_cor(sepal_length, y, plot.opts = l...:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  In the list argument 'plot.opts', the (nullable) element 'type' must be a</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  single character equal to 'p' or 'h'. Problem: no match was found for 'l'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  single character equal to 'p' or 'h'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: no match was found for 'l'.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">plot_cor</span><span class="op">(</span><span class="va">sepal_length</span>, <span class="va">y</span>, line.opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lwd <span class="op">=</span> <span class="op">-</span><span class="fl">50</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="check_arg-3.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in plot_cor(sepal_length, y, line.opts = l...:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  In the list argument 'line.opts', the (nullable) element 'lwd' must be an</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  integer scalar with positive values. Problem: it is strictly lower than 0.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  integer scalar with positive values.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is strictly lower than 0 (-50).</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#</span></span></span>
@@ -1543,17 +1542,17 @@ Since the main class <code>match</code> performs a re-assignment of the variable
 <span class="r-in"><span><span class="co"># Now let's throw some errors</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">plot_fml</span><span class="op">(</span><span class="va">Sepal.Length</span> <span class="op">~</span> <span class="va">Species</span>, <span class="va">iris</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in plot_fml(Sepal.Length ~ Species, iris):</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  In the argument 'fml', the RHS must be numeric. Problem: it is not numeric</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (instead it is of type 'factor').</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  In the argument 'fml', the RHS must be numeric.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not numeric (instead it is of type 'factor').</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">plot_fml</span><span class="op">(</span><span class="va">Sepal.Length</span> <span class="op">~</span> <span class="va">Petal.Length</span>, <span class="va">iris</span>, xlab <span class="op">=</span> <span class="va">iris</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in plot_fml(Sepal.Length ~ Petal.Length, i...:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  In '...', if provided, the argument 'xlab' must be a character vector.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Problem: it is not a vector, it's a data.frame.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is not a vector, it's a data.frame.</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">plot_fml</span><span class="op">(</span><span class="va">Sepal.Length</span> <span class="op">~</span> <span class="va">Petal.Length</span>, <span class="va">iris</span>, xlab <span class="op">=</span> <span class="va">iris</span><span class="op">$</span><span class="va">Species</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : in plot_fml(Sepal.Length ~ Petal.Length, i...:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  In '...', if provided, the argument 'xlab' must be a character vector of</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  length not greater than 3. Problem: it is of length 150, while it should</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  have a maximum length of 3.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  length not greater than 3.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> PROBLEM: it is of length 150, while it should have a maximum length of 3.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>

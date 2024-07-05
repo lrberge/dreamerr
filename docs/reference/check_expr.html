@@ -18,7 +18,7 @@ captures it and integrates the captured message after a custom error message."><
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dreamerr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.5.0</span>
       </span>
     </div>
 
@@ -103,15 +103,20 @@ report a function higher in the stack, use <code>up = 1</code>, or higher.</p></
 <dt>arg_name</dt>
 <dd><p>Character scalar, default is missing. Used when the expression in
 <code>expr</code> leads to an error and the custom message is missing (i.e. no element is
-provided in <code>...</code>). In that case, the default message is: "The argument arg_name could not be evaluated.".
+provided in <code>...</code>). In that case, the default message is: "The argument <code>{</code>arg_name<code>}</code> could not be evaluated.".
 The default value for <code>arg_name</code> is <code>deparse(substitute(expr))</code>, if this guess is wrong,
 use <code>arg_name</code>.</p></dd>
 
 
 <dt>verbatim</dt>
 <dd><p>Logical scalar, default is <code>FALSE</code>. By default the elements of <code>...</code>
-allow string interpolation with "" using <a href="https://github.com/lrberge/stringmagic" class="external-link">stringmagic</a>.
+allow string interpolation with "<code><a href="https://rdrr.io/r/base/Paren.html" class="external-link">{}</a></code>" using <a href="https://github.com/lrberge/stringmagic" class="external-link">stringmagic</a>.
 If <code>TRUE</code>, no interpolation is performed.</p></dd>
+
+
+<dt>namespace</dt>
+<dd><p>Character scalar giving the namespace for which the hooks are valid. Only useful
+when hook functions are used in a package.</p></dd>
 
 </dl></div>
     <div id="details">

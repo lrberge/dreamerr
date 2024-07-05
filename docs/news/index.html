@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dreamerr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.5.0</span>
       </span>
     </div>
 
@@ -57,6 +57,29 @@
       <small>Source: <a href="https://github.com/lrberge/dreamerr/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="1.5.0" id="dreamerr-150">dreamerr 1.5.0<a class="anchor" aria-label="anchor" href="#dreamerr-150"></a></h2>
+<div class="section level3">
+<h3 id="new-features-1-5-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-5-0"></a></h3>
+<ul><li>the argument <code>.message</code> of the <code>check_</code> functions is now interpolated with <code>string_magic()</code>
+</li>
+</ul></div>
+<div class="section level3">
+<h3 id="user-level-changes-1-5-0">User-level changes<a class="anchor" aria-label="anchor" href="#user-level-changes-1-5-0"></a></h3>
+<ul><li>the type <code>l0</code> has been removed. Now vector targets receiving something 0-length in input will not fail (in the previous version, <code>l0</code> was required). Vector length can still be checked with the <code>len(a,b)</code> mechanism.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-changes-1-5-0">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-1-5-0"></a></h3>
+<ul><li><p>to increase clarity, now the problem leading to an error is displayed in a newline with the suffix <code>PROBLEM</code> in uppercase</p></li>
+<li><p>improve clarity of error messages involving lower than/greater than</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-1-5-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-5-0"></a></h3>
+<ul><li><p>fix display problem in <code>fsignif</code></p></li>
+<li><p>inrease the requirement of <code>stringmagic</code> version to be compatible with R v3.5.0</p></li>
+<li><p>the <code>check_arg</code> family of functions now correctly reports the full call stack when requested</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.4.0" id="dreamerr-140">dreamerr 1.4.0<small>2023-12-21</small><a class="anchor" aria-label="anchor" href="#dreamerr-140"></a></h2>
 <div class="section level3">
