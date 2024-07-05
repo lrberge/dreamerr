@@ -176,10 +176,6 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
         req_type = "a list"
       }
 
-      if(grepl("(?i) l0", type)){
-        req_type = paste0(req_type, " (even empty)")
-      }
-
 
       add_len = TRUE
     } else if(grepl("data.frame", my_type)){
@@ -1315,7 +1311,6 @@ deparse_short = function(x){
 #' \item \code{safe NULL}: allows the argument to be equal to \code{NULL}, but an error is thrown if the argument is of the type \code{base$variable} or \code{base[["variable"]]}. This is to prevent oversights from the user, especially useful when the main class is a vector.
 #' \item \code{NULL{expr}}: allows the argument to be equal to \code{NULL}, if the argument is \code{NULL}, then it assigns the value of expr to the argument.
 #' \item \code{MBT}: (means "must be there") an error is thrown if the argument is not provided by the user.
-#' \item \code{L0}: allows 0-length vectors--overrides the default which requires that any argument should have a positive length
 #' \item \code{eval}: used in combination with the extra argument \code{.data}. Evaluates the value of the argument both in the data set and in the environment (this means the argument can be a variable name).
 #' \item \code{evalset}: like \code{eval}, but after evaluation, assigns the obtained value to the argument. Only available in \code{check_set_arg}.
 #' \item \code{dotnames}: only when checking \code{'...'} argument (see the related section below). Enforces that each object in \code{'...'} has a name.
@@ -1503,7 +1498,7 @@ deparse_short = function(x){
 #'
 #'
 #' #
-#' # II) Examples for the globals: NULL, L0, MBT, eval, evalset
+#' # II) Examples for the globals: NULL, MBT, eval, evalset
 #' #
 #'
 #' test_globals = function(xnum, xlog = TRUE, xint){
@@ -1515,8 +1510,7 @@ deparse_short = function(x){
 #'   # NULL allows NULL values
 #'   check_arg(xlog, "logical scalar safe NULL")
 #'
-#'   # use L0 to accept length-0 objects
-#'   check_arg(xint, "integer vector L0")
+#'   check_arg(xint, "integer vector")
 #'
 #'   list(xnum = xnum, xlog = xlog)
 #' }
@@ -1537,11 +1531,6 @@ deparse_short = function(x){
 #' # but xnum accepts it
 #' test_globals(iris$log)
 #'
-#' # L0 means not NULL, 0-length vectors are OK
-#' # 0-length is OK for xint:
-#' test_globals(xnum = 2, xint = integer(0))
-#' # L0 still checks the type:
-#' try(test_globals(2, xint = numeric(0)))
 #'
 #' #
 #' # eval and evalset
@@ -1902,7 +1891,7 @@ deparse_short = function(x){
 #' #
 #'
 #' # You can check multiple types using a pipe: '|'
-#' # Note that global keywords (like NULL, eval, l0, etc) need not be
+#' # Note that global keywords (like NULL, eval, etc) need not be
 #' # separated by pipes. They can be anywhere, the following are identical:
 #' #  - "character scalar | data.frame NULL"
 #' #  - "NULL character scalar | data.frame"
@@ -2076,8 +2065,8 @@ deparse_short = function(x){
 #'
 #'   check_arg(x, y, "numeric vector")
 #'
-#'   # First we ensure the arguments are lists (even of 0-length)
-#'   check_arg(lm.opts, plot.opts, line.opts, "named list L0")
+#'   # First we ensure the arguments are lists
+#'   check_arg(lm.opts, plot.opts, line.opts, "named list")
 #'
 #'   # The linear regression
 #'   lm.opts$formula = y ~ x
@@ -2869,13 +2858,11 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       }
 
       #
-      # We now check nullity and 0-length
+      # We now check nullity 
       #
 
       # Since we've already evaluated the values of x_all, we create a shorter loop here
       # => it avoids checking for multiple IS_DOTS in the default loop
-      # However, the checking of L0 is identical => so we copy the code here
-      # => do no edit it by hand!
       #
 
 
@@ -3373,9 +3360,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         if(grepl("named", my_type, fixed = TRUE)){
           # special type for lists
           if(is.null(names(x))){
-            all_reasons[[k]][i] = "it does not have a name attribute"
-            is_done_or_fail[k] = TRUE
-            next
+            if(length(x) == 0){
+              # OK
+            } else {
+              all_reasons[[k]][i] = "it does not have a name attribute"
+              is_done_or_fail[k] = TRUE
+              next
+            }
           }
         }
 
@@ -4386,8 +4377,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           
           if(length(x) == 0){
             # if length 0: nothing to be checked
-            is_done_or_fail[k] = TRUE
-            is_done[k] = TRUE
             next
           }
 
@@ -4572,8 +4561,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           
           if(length(x) == 0){
             # if length 0: nothing to be checked
-            is_done_or_fail[k] = TRUE
-            is_done[k] = TRUE
             next
           }
 
@@ -4775,6 +4762,11 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       for(k in which(!is_done_or_fail)){
         # we need to set x_omit if not yet set
         x = x_all[[k]]
+        
+        if(length(x) == 0){
+          #length-0: OK
+          next
+        }
 
         is_num = is.numeric(x) || is.logical(x)
 
