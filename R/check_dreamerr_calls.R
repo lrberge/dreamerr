@@ -315,7 +315,7 @@ check_dreamerr_calls = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x
   }
 
   # First we delete all the globals
-  type_clean = gsub("(?i)(safe ?)?null(\\{[^\\}]*\\})?|eval(set)?|dotnames|mbt|l0", "", type)
+  type_clean = gsub("(?i)(safe ?)?null(\\{[^\\}]*\\})?|eval(set)?|dotnames|mbt", "", type)
 
   all_types = strsplit(type_clean, "|", fixed = TRUE)[[1]]
   all_types = all_types[grepl("[[:alpha:]]", all_types)]

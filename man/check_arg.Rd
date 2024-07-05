@@ -248,7 +248,6 @@ There are eight global keywords that can be placed anywhere in the type. They ar
 \item \code{safe NULL}: allows the argument to be equal to \code{NULL}, but an error is thrown if the argument is of the type \code{base$variable} or \code{base[["variable"]]}. This is to prevent oversights from the user, especially useful when the main class is a vector.
 \item \code{NULL{expr}}: allows the argument to be equal to \code{NULL}, if the argument is \code{NULL}, then it assigns the value of expr to the argument.
 \item \code{MBT}: (means "must be there") an error is thrown if the argument is not provided by the user.
-\item \code{L0}: allows 0-length vectors--overrides the default which requires that any argument should have a positive length
 \item \code{eval}: used in combination with the extra argument \code{.data}. Evaluates the value of the argument both in the data set and in the environment (this means the argument can be a variable name).
 \item \code{evalset}: like \code{eval}, but after evaluation, assigns the obtained value to the argument. Only available in \code{check_set_arg}.
 \item \code{dotnames}: only when checking \code{'...'} argument (see the related section below). Enforces that each object in \code{'...'} has a name.
@@ -431,7 +430,7 @@ try(test_scalar(xdate = 0.15))
 
 
 #
-# II) Examples for the globals: NULL, L0, MBT, eval, evalset
+# II) Examples for the globals: NULL, MBT, eval, evalset
 #
 
 test_globals = function(xnum, xlog = TRUE, xint){
@@ -443,8 +442,7 @@ test_globals = function(xnum, xlog = TRUE, xint){
   # NULL allows NULL values
   check_arg(xlog, "logical scalar safe NULL")
 
-  # use L0 to accept length-0 objects
-  check_arg(xint, "integer vector L0")
+  check_arg(xint, "integer vector")
 
   list(xnum = xnum, xlog = xlog)
 }
@@ -465,11 +463,6 @@ try(test_globals(5, xlog = iris$log))
 # but xnum accepts it
 test_globals(iris$log)
 
-# L0 means not NULL, 0-length vectors are OK
-# 0-length is OK for xint:
-test_globals(xnum = 2, xint = integer(0))
-# L0 still checks the type:
-try(test_globals(2, xint = numeric(0)))
 
 #
 # eval and evalset
@@ -830,7 +823,7 @@ try(test_formulas(fml4 = a | b ~ c | d))
 #
 
 # You can check multiple types using a pipe: '|'
-# Note that global keywords (like NULL, eval, l0, etc) need not be
+# Note that global keywords (like NULL, eval, etc) need not be
 # separated by pipes. They can be anywhere, the following are identical:
 #  - "character scalar | data.frame NULL"
 #  - "NULL character scalar | data.frame"
@@ -1004,8 +997,8 @@ plot_cor = function(x, y, lm.opts = list(), plot.opts = list(), line.opts = list
 
   check_arg(x, y, "numeric vector")
 
-  # First we ensure the arguments are lists (even of 0-length)
-  check_arg(lm.opts, plot.opts, line.opts, "named list L0")
+  # First we ensure the arguments are lists
+  check_arg(lm.opts, plot.opts, line.opts, "named list")
 
   # The linear regression
   lm.opts$formula = y ~ x

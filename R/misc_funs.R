@@ -794,7 +794,7 @@ check_set_width = function(width_expr){
 sfill = function(x = "", n = NULL, symbol = " ", right = FALSE, anchor, na = "NA"){
   # Character vectors starting with " " are not well taken care of
 
-  check_set_arg(x, "l0 character vector conv")
+  check_set_arg(x, "character vector conv")
   if(length(x) == 0) return(character(0))
 
   check_arg(n, "NULL integer scalar GE{0}")

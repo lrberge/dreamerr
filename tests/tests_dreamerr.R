@@ -179,7 +179,7 @@ test_err(test_vec(x6 = c(7, 8)))
 # len
 
 test_list = function(x1, x2, x3){
-  check_arg(x1, "list l0")
+  check_arg(x1, "list")
   check_arg(x2, "list len(2)")
   check_arg(x3, "list len(value)", .value = 2)
   invisible(NULL)
@@ -190,7 +190,7 @@ test_list = function(x1, x2, x3){
 # should work
 #
 
-# x1: list l0
+# x1: list len 0
 test_list(x1 = iris)
 test_list(x1 = list())
 
@@ -206,7 +206,7 @@ test_list(x3 = list(a = 5, b = 6))
 # should **not** work
 #
 
-# x1: list l0
+# x1: list
 test_err(test_list(x1 = 1:5))
 
 # x2: list len(2)
