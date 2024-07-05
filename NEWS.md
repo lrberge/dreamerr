@@ -1,9 +1,13 @@
 
-# dreamerr 1.4.1
+# dreamerr 1.5.0
 
 ## New features
 
 - the argument `.message` of the `check_` functions is now interpolated with `string_magic()`
+
+## User-level changes
+
+- the type `l0` has been removed. Now vector targets receiving something 0-length in input will not fail (in the previous version, `l0` was required). Vector length can still be checked with the `len(a,b)` mechanism.
 
 ## Minor changes
 

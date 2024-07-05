@@ -2906,53 +2906,6 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
           }
         }
 
-        # DO NOT EDIT BY HAND! => edit in CHUNK(L0)
-        # START::COPY(L0)
-      x_len = length(x)
-      if(length(x_len) == 1 && x_len == 0){
-        if(grepl("l0", type_low, fixed = TRUE)){
-
-          if(is.list(x)){
-            if(grepl("list", type_low, fixed = TRUE)){
-              is_done[i] = TRUE
-              next
-            } else {
-              send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-            }
-          } else {
-            is_int = grepl("integer", type_low, fixed = TRUE)
-            is_num = grepl("numeric", type_low, fixed = TRUE)
-            is_log = grepl("logical", type_low, fixed = TRUE)
-            n_types = is_int + is_num + is_log
-            if(n_types == 3){
-              is_done[i] = TRUE
-              next
-
-            } else if(n_types == 0){
-              if(grepl("list", type_low, fixed = TRUE)){
-                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-              } else {
-                is_done[i] = TRUE
-                next
-              }
-
-            } else {
-              ok = class(x)[1] %in% c("integer", "numeric", "logical")[c(is_int, is_num, is_log)]
-              if(ok){
-                is_done[i] = TRUE
-                next
-              } else {
-                msg = paste0("it is of length 0 and of type '", class(x)[1], "'")
-                send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-              }
-            }
-          }
-
-        } else {
-          send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-        }
-      }
-        # END::COPY(L0)
       }
 
     }
@@ -3245,64 +3198,14 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
             next
           }
         } else {
-          send_error("it is NULL", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
+          x_all[i] = list(NULL)
         }
+      } else {
+        # if here we will perform the full check, so we save the value of x
+        x_all[[i]] = x
       }
-
-      # START::CHUNK(L0)
-      x_len = length(x)
-      if(length(x_len) == 1 && x_len == 0){
-        # I do that, only to handle Formulas..... damn! I'm not happy with that
-        if(grepl("l0", type_low, fixed = TRUE)){
-
-          if(is.list(x)){
-            if(grepl("list", type_low, fixed = TRUE)){
-              is_done[i] = TRUE
-              next
-            } else {
-              send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-            }
-          } else {
-            is_int = grepl("integer", type_low, fixed = TRUE)
-            is_num = grepl("numeric", type_low, fixed = TRUE)
-            is_log = grepl("logical", type_low, fixed = TRUE)
-            n_types = is_int + is_num + is_log
-            if(n_types == 3){
-              is_done[i] = TRUE
-              next
-
-            } else if(n_types == 0){
-              if(grepl("list", type_low, fixed = TRUE)){
-                send_error("it is a list", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-              } else {
-                is_done[i] = TRUE
-                next
-              }
-
-            } else {
-              ok = class(x)[1] %in% c("integer", "numeric", "logical")[c(is_int, is_num, is_log)]
-              if(ok){
-                is_done[i] = TRUE
-                next
-              } else {
-                msg = paste0("it is of length 0 and of type '", class(x)[1], "'")
-                send_error(msg, x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-              }
-            }
-          }
-
-        } else {
-          send_error("it is of length 0, while it should have a positive length", x_name = x_names[i], type = type, message = .message, choices = .choices, up = .up, .value = .value, .data = .data)
-        }
-      }
-      # END::CHUNK(L0)
-
-      # if here we will perform the full check, so we save the value of x
-      x_all[[i]] = x
 
     }
-
-
 
   }
 
@@ -4224,7 +4127,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     #
     # ...len ####
     #
-
+    
     if(check_len && grepl("len(", my_type, fixed = TRUE)){
 
       for(k in which(!is_done_or_fail)){
@@ -4480,6 +4383,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         for(k in which(!is_done_or_fail)){
 
           x = x_all[[k]]
+          
+          if(length(x) == 0){
+            # if length 0: nothing to be checked
+            is_done_or_fail[k] = TRUE
+            is_done[k] = TRUE
+            next
+          }
 
           is_num = is.numeric(x) || is.logical(x)
 
@@ -4659,6 +4569,13 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         for(k in which(!is_done_or_fail)){
 
           x = x_all[[k]]
+          
+          if(length(x) == 0){
+            # if length 0: nothing to be checked
+            is_done_or_fail[k] = TRUE
+            is_done[k] = TRUE
+            next
+          }
 
           is_num = is.numeric(x) || is.logical(x)
 
