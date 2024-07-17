@@ -146,9 +146,9 @@ The meaning of the classes is as follows:
     `fun = function(x = c("value1", "value2", etc))`.
  
  - **path**: a character scalar that should point to a directory or a file. 
- Option `dir` checks that the path points to a directory. Option `read` checks that 
- the file exists already and has read permission. Option `create` creates up to 
- the grand-parent and parent folders in case these do not exist.
+   Option `dir` checks that the path points to a directory. Option `read` checks that 
+   the file exists already and has read permission. Option `create` creates  
+   the grand-parent and parent folders in case these do not exist.
  
  - **class**: an object whose class is listed in parentheses. Example: if `class(lm, glm)`, 
  then only `lm` or `glm` arguments will be accepted.
