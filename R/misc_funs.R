@@ -1117,7 +1117,7 @@ suggest_item = function(x, items, msg.write = FALSE, msg.newline = TRUE, msg.ite
         res = sma("\nFYI the {msg.item}s are: {sort, ', 'c ? items_origin}.")
       }
     } else {
-      res = sma("Maybe you meant {enum.bq.or ? res}?")
+      res = sma("Maybe you meant {enum.bq.or.20 ? res}?")
     }
 
     if(msg.newline && !grepl("^\n", res)){

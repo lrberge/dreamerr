@@ -15,6 +15,8 @@
 
 - improve clarity of error messages involving lower than/greater than
 
+- improve the number of items suggested by `suggest_item`
+
 ## Bug fixes
 
 - fix display problem in `fsignif`
