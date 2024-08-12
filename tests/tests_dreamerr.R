@@ -517,15 +517,33 @@ test_err(test_fun(x1 = 1:5))
 test_err(test_fun(x2 = function() 5))
 
 
+####
+#### len ####
+####
 
 
+test_len = function(x1, x2, x3, x4, x5){
+  a = 0
+  b = 8
+  check_arg(x1, "numeric vector GT{a} LT{b}")
+  check_arg(x2, "vector(numeric, character)")
+  check_arg(x3, "numeric vector len(, 2)")
+  check_arg(x4, "vector(numeric, character) len(1)")
+  check_arg(x5, "strict integer vector no na len(1, )")
+  invisible(NULL)
+}
 
+# no error
+test_len(character(0), NULL, integer(0))
+test_len(c(NA, 3, 4), NA_integer_, c(NA_character_, NA_character_))
+test_len(x4 = 5, x5 = 3L)
 
+# error
 
-
-
-
-
+test_err(test_len(x1 = -1))
+test_err(test_len(x3 = 3:8))
+test_err(test_len(x4 = character(0)))
+test_err(test_len(x5 = character(0)))
 
 
 

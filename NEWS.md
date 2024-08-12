@@ -7,7 +7,7 @@
 
 ## User-level changes
 
-- the type `l0` has been removed. Now `check_arg(x, "vector")` (or the like) receiving something 0-length in input will not send an error (in the previous version, `l0` was required). Vector length can still be checked with the `len(a,b)` mechanism.
+- the type `l0` has been removed. Now `check_arg(x, "vector")` (or the like) receiving something 0-length in input will not send an error (in the previous version, `l0` was required). Vector length can still be checked with the `len(a,b)` mechanism (thanks to @kylebutts for early bug reports).
 
 ## Minor changes
 
