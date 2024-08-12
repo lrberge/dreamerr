@@ -4116,7 +4116,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     is_num = FALSE
 
     #
-    # ...len ####
+    # ... len ####
     #
     
     if(check_len && grepl("len(", my_type, fixed = TRUE)){
@@ -4143,8 +4143,9 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     }
 
     #
-    # ...ncol + nrow ####
+    # ... ncol + nrow ####
     #
+    
 
     if(check_dim && (grepl("nrow(", my_type, fixed = TRUE) || grepl("ncol(", my_type, fixed = TRUE))){
 
@@ -4217,7 +4218,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     }
 
     #
-    # ...NA ####
+    # ... NA ####
     #
 
     if(check_NAOK){
@@ -4293,7 +4294,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
         # CONCERNS only matrix or vector
         # Here: if only NA => stop now
 
-        # The difference betweenthe two if sections:
+        # The difference between the two if sections:
         # - in the first: always create x_omit (means we also always perform is.na)
         # - in the 2nd: we create x_omit iff first and last values of x are NA
 
@@ -4306,6 +4307,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
             if(!x_omit_done[k]){
               x = x_all[[k]]
+              
+              if(length(x) == 0){
+                next
+              }
 
               if(!any_NA_done[k]){
                 any_NA[k] = anyNA(x)
@@ -4337,6 +4342,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
 
             if(!x_omit_done[k]){
               x = x_all[[k]]
+              
+              if(length(x) == 0){
+                next
+              }
 
               # The usual case: vectors are NOT full NA
               # so we perform is.na on full vector only if first and last values are NA
@@ -4364,7 +4373,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     }
 
     #
-    # ...Typeof ####
+    # ... Typeof ####
     #
 
     if(check_typeof){
@@ -4753,7 +4762,7 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
     }
 
     #
-    # ...Equality ####
+    # ... Equality ####
     #
 
     if(check_equality && (grepl("ge{", my_type, fixed = TRUE) || grepl("gt{", my_type, fixed = TRUE) || grepl("le{", my_type, fixed = TRUE) || grepl("lt{", my_type, fixed = TRUE))){
