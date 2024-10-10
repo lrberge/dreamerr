@@ -25,6 +25,8 @@
 
 - the `check_arg` family of functions now correctly reports the full call stack when requested
 
+- fix bug: wrong argument name displayed when `check_value` was used with the argument `.arg_name` and an error was produced because a variable was missing in a formula. Thanks to @kylebutts, #4.
+
 # dreamerr 1.4.0
 
 ## New functions

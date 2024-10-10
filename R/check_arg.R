@@ -4,10 +4,6 @@
 # ~: Ultimate control function
 #----------------------------------------------#
 
-# roxygen2::roxygenise(roclets = "rd")
-
-
-# type = "scalarNumericGT{5}LT{7}|NA|scalarLogical|matrix nrow(,5) ncol(2,5) GT{log(5)}"
 
 send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .value, .data){
 
@@ -107,6 +103,19 @@ send_error = function(all_reasons, x_name, type, message, choices = NULL, up, .v
         n_expected = extract_par(my_type, "left", int = TRUE)
         msg = message_in_between(n_expected, "left", .value)
         req_type = paste0(req_type, ifelse(IS_RIGHT, " and ", " "), msg)
+      }
+      
+      if(grepl("var\\(", my_type) && all_main_types_ok[i]){
+        # We add information on data requirements
+        reason = all_reasons[i]
+        if(grepl("__varinfo__", reason, fixed = TRUE)){
+          extra = extract_curly(reason, "__varinfo__", as.string = TRUE)
+          all_reasons[i] = gsub("^.+\\}", "", reason)
+          req_type = paste0(req_type, " ", extra)
+        } else {
+          # nothing because the error is not from this cause
+        }
+        
       }
 
       all_requested_types[i] = req_type
@@ -3535,20 +3544,23 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                     stop_up("You cannot use the type 'var(data)' (in '.type = ", my_type_raw, "') when the argument '.data' is missing. Please provide the argument '.data'.")
                   } else {
 
-                    info_arg = arg_name_header(x_names[i])
-                    stop_up(info_arg, " is a formula that must contain variables from the data set given in argument '", data_dp, "'. Problem: this data set has no variable.", up = .up + 2)
+                    all_reasons[[k]][i] = paste0("__varinfo__{whose variables must be in the data set given in argument '", data_dp, "'}the data set has no variable")
+                    is_done_or_fail[k] = TRUE
+                    next
                   }
 
                 } else if(is.null(names(.data))){
-                  info_arg = arg_name_header(x_names[i])
                   msg = ifelse(is.list(.data), "is a list but has no names attribute.", "is not a data.frame nor a list.")
-                  stop_up(info_arg, " is a formula that must contain variables from the data set given in argument '", deparse_long(mc[[".data"]]), "'. Problem: this data set ", msg, up = .up + 2)
+                  all_reasons[[k]][i] = paste0("__varinfo__{whose variables must be in the data set given in argument '", deparse_long(mc[[".data"]]), "'}the data set ", msg)
+                  is_done_or_fail[k] = TRUE
+                  next
 
                 } else {
                   x_pblm = setdiff(x_vars, names(.data))
                   if(length(x_pblm) > 0){
-                    info_arg = arg_name_header(x_names[i])
-                    stop_up(info_arg, " is a formula whose variables must be in the data set given in argument '", deparse_long(mc[[".data"]]), "'. Problem: the variable", enumerate_items(x_pblm, "s.is.quote"), " not in the data.", up = .up + 2)
+                    all_reasons[[k]][i] = paste0("__varinfo__{whose variables must be in the data set given in argument '", deparse_long(mc[[".data"]]), "'}", sma("the variable{$s, enum.q, is ? x_pblm} not in the data"))
+                    is_done_or_fail[k] = TRUE
+                    next
                   }
                 }
               } else if(!missing(.data) && !is.null(names(.data))){
@@ -3580,9 +3592,9 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
                 } else {
                   msg = "in the environment"
                 }
-
-                info_arg = arg_name_header(x_names[i])
-                stop_up(info_arg, " is a formula whose variables must be ", msg, ". Problem: the variable", enumerate_items(x_real_pblm, "s.isn't.quote"), " there.", up = .up + 2)
+                all_reasons[[k]][i] = paste0("__varinfo__{whose variables must be ", msg, "}", sma("the variable{$s, enum.q, is ? x_pblm} not there"))
+                is_done_or_fail[k] = TRUE
+                next
 
               }
 
