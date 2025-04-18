@@ -11,7 +11,7 @@ local({
       pkg_name = if(is.character(pkg_i)) pkg_i else deparse(pkg_i)
       
       if(!requireNamespace(pkg_name, quietly = TRUE)){
-        ok = try(install.packages(pkg_name, repos = "https://cloud.r-project.org/"))
+        ok = try(utils::install.packages(pkg_name, repos = "https://cloud.r-project.org/"))
         if(inherits(ok, "try-error")){
           stop("Could not install package `", pkg_name, "`. Please fix the problem manually.")
         }

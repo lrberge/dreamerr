@@ -11,7 +11,7 @@
 
 ## Minor changes
 
-- to increase clarity, now the problem leading to an error is displayed in a newline with the suffix `PROBLEM` in uppercase
+- to increase clarity, now the problem leading to an error is displayed in a newline with the prefix `PROBLEM` in uppercase
 
 - improve clarity of error messages involving lower than/greater than
 
@@ -21,7 +21,7 @@
 
 - fix display problem in `fsignif`
 
-- inrease the requirement of `stringmagic` version to be compatible with R v3.5.0
+- increase the requirement of `stringmagic` version to be compatible with R v3.5.0
 
 - the `check_arg` family of functions now correctly reports the full call stack when requested
 

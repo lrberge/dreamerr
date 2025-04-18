@@ -11,5 +11,5 @@ License: GPL-3
 Encoding: UTF-8
 VignetteBuilder: knitr
 BugReports: https://github.com/lrberge/dreamerr/issues
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
