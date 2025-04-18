@@ -3,7 +3,7 @@ Type: Package
 Title: Error Handling Made Easy
 Version: 1.5.0
 Authors@R: person("Laurent", "Berge", email = "laurent.berge@u-bordeaux.fr", role = c("aut", "cre"))
-Imports: Formula, utils, stringmagic(>= 1.1.3)
+Imports: Formula, utils, stringmagic(>= 1.2.0)
 Suggests: knitr, rmarkdown, stats, graphics
 Description: Set of tools to facilitate package development and make R a more user-friendly place. Mostly for developers (or anyone who writes/shares functions). Provides a simple, powerful and flexible way to check the arguments passed to functions. 
     The developer can easily describe the type of argument needed. If the user provides a wrong argument, then an informative error message is prompted with the requested type and the problem clearly stated--saving the user a lot of time in debugging. 
