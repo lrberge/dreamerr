@@ -3319,6 +3319,10 @@ check_arg_core = function(.x, .type, .x1, .x2, .x3, .x4, .x5, .x6, .x7, .x8, .x9
       for(k in which(!is_done)){
 
         x = x_all[[k]]
+        
+        if(is.null(x)){
+          next
+        }
 
         if(!is.atomic(x) || !is.null(dim(x))){
           all_reasons[[k]][i] = paste0("it is not a vector, ", inform_class(x, TRUE))
